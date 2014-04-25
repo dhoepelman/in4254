@@ -1,0 +1,72 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="nl.tudelft.smartphonesensing.labs.MainActivity">
+
+    <TextView
+        android:text="@string/header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView2" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="X:"
+        android:id="@+id/LblX"
+        android:layout_below="@+id/textView2"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Y:"
+        android:id="@+id/LblY"
+        android:layout_below="@+id/LblX"
+        android:layout_alignParentStart="true"
+        android:layout_alignEnd="@+id/LblX" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Z:"
+        android:id="@+id/LblZ"
+        android:layout_below="@+id/LblY"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:id="@+id/ValZ"
+        android:text="Uninitiliazed"
+        android:layout_below="@+id/LblY"
+        android:layout_alignStart="@+id/ValY" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:id="@+id/ValY"
+        android:text="Uninitiliazed"
+        android:layout_above="@+id/ValZ"
+        android:layout_alignStart="@+id/ValX" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Uninitialized"
+        android:id="@+id/ValX"
+        android:layout_above="@+id/ValY"
+        android:layout_alignEnd="@+id/textView2" />
+
+</RelativeLayout>
