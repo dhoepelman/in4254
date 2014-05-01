@@ -1,36 +1,20 @@
 package nl.tudelft.jemoetgaanapp.app;
 
-import android.app.Activity;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.view.LayoutInflater;
+import android.support.v4.app.Fragment;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
-
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import junit.framework.Assert;
+import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+
+    private final static String LOGTAG = MainActivity.class.toString();
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -58,21 +42,42 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        // Update the main content by replacing fragments
-        getSupportFragmentManager().beginTransaction()
-            .replace(R.id.container, TrainFragment.newInstance(position + 1))
-            .commit();
+        // update the main content by replacing fragments
+        Fragment fragment = null;
+        switch(position) {
+            case 0:
+                // TODO: Implementeer activity monitoring
+                break;
+            default:
+            case 1:
+                fragment = TrainFragment.newInstance(position);
+                break;
+            case 2:
+                // TODO: implementeer localization
+                break;
+        }
+        if(fragment != null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, fragment)
+                    .commit();
+        } else {
+            final Context applicationContext = getApplicationContext();
+            if(applicationContext != null) {
+                Toast.makeText(applicationContext, "Not implemented", Toast.LENGTH_LONG).show();
+            }
+            Log.d(LOGTAG, "Tried to open unimplemented fragment at menu position " + position);
+        }
     }
 
     public void onSectionAttached(int number) {
         switch (number) {
-            case 1:
+            case 0:
                 mTitle = getString(R.string.title_section1);
                 break;
-            case 2:
+            case 1:
                 mTitle = getString(R.string.title_section2);
                 break;
-            case 3:
+            case 2:
                 mTitle = getString(R.string.title_section3);
                 break;
         }
