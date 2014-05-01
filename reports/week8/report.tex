@@ -1,0 +1,101 @@
+\documentclass[a4paper,10pt,twoside]{report}
+
+\usepackage{abstract}
+\usepackage{graphicx}
+\usepackage{placeins}
+\usepackage{hyperref}
+\usepackage{pdfpages}
+\usepackage{fullpage}
+\usepackage[bf]{caption}
+\usepackage[english]{babel}
+\usepackage{verbatim}
+\usepackage{cite}
+\usepackage{wrapfig}
+\usepackage[marginpar]{todo}
+\usepackage{paralist}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{mathtools}
+\usepackage{fancyhdr}
+
+\usepackage{tikz}
+\usetikzlibrary{calc,intersections}
+\usepackage{amssymb}
+
+\hypersetup{
+    colorlinks,
+    pdftitle={Final Report Option 1 IN4254 Smart Phone Sensing},
+    pdfauthor={in4254-dhoepelman-mprovokluit},
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2ex}
+
+\usepackage[utf8]{inputenc}
+
+% Tex Live 2012 Qrazy Qwartel PPA for Preppy Pangolin:
+% sudo apt-add-repository ppa:texlive-backports/ppa
+% sudo apt-get update
+% sudo apt-get install texlive texlive-latex-extra texlive-fonts-extra
+
+% \usepackage{PTSans}
+% \renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
+\usepackage[T1]{fontenc}
+
+\newcommand{\axis}[1]{$#1$\nobreakdash-axis}
+\newcommand{\plane}[2]{$#1#2$\nobreakdash-plane}
+
+\title{\huge{\textbf{Final Report Option 1}\\IN4254 Smart Phone Sensing}}
+\date{\today}
+\author{David Hoepelman \and Mark Provo Kluit}
+
+\setlength{\headheight}{15pt}
+\addtolength{\headsep}{15pt} % no love between header and main text
+%\addtolength{\textheight}{-20pt} % more space between text and empty footer
+
+\pagestyle{fancy}
+\renewcommand{\chaptermark}[1]{\markboth{Chapter\ \thechapter\ #1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}{}}
+ 
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[RE]{\textit{\nouppercase{\leftmark}}}
+\fancyhead[LO]{\textit{\nouppercase{\rightmark}}}
+ 
+\fancypagestyle{plain}{ %
+\fancyhf{} % remove everything
+\renewcommand{\headrulewidth}{0pt} % remove lines as well
+\renewcommand{\footrulewidth}{0pt}}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+\pagenumbering{roman}
+
+\input{preface.tex}
+
+% 1: up to sections; 2: up to subsections
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+\newpage
+\pagenumbering{arabic}
+
+% \input{your-tex-file-here.tex}
+\input{introduction.tex}
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliography}
+% styles: abbrv, ieeetr, plain
+\bibliographystyle{abbrv}
+\bibliography{report}
+
+\newpage
+\appendix
+
+\input{appendix-source-code.tex}
+
+\end{document}
