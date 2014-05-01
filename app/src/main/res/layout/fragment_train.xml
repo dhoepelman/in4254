@@ -21,25 +21,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/but_sitting"
-            android:src="@drawable/act_sitting" />
+            android:src="@drawable/act_sitting"
+            android:clickable="true" />
 
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/but_walking"
-            android:src="@drawable/act_walking" />
+            android:src="@drawable/act_walking"
+            android:clickable="true" />
 
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/but_running"
-            android:src="@drawable/act_running" />
+            android:src="@drawable/act_running"
+            android:clickable="true" />
 
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/but_biking"
-            android:src="@drawable/act_biking" />
+            android:id="@+id/but_jumping"
+            android:src="@drawable/act_jumping"
+            android:clickable="true" />
 
     </LinearLayout>
 

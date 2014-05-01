@@ -63,7 +63,7 @@ public class MainActivity extends ActionBarActivity
         } else {
             final Context applicationContext = getApplicationContext();
             if(applicationContext != null) {
-                Toast.makeText(applicationContext, "Not implemented", Toast.LENGTH_LONG).show();
+                Toast.makeText(applicationContext, "Not implemented", Toast.LENGTH_SHORT).show();
             }
             Log.d(LOGTAG, "Tried to open unimplemented fragment at menu position " + position);
         }
