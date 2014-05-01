@@ -8,23 +8,26 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
-import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
+import com.google.common.base.Throwables;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
- * Created by David on 1-5-14.
+ * Fragment to train the activity detection
  */
 public class TrainFragment extends Fragment implements SensorEventListener {
 
@@ -33,6 +36,11 @@ public class TrainFragment extends Fragment implements SensorEventListener {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
+    private static final String LOGTAG = TrainFragment.class.toString();
+    /**
+     * File with results
+     */
+    public static final String results_file_path =  Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/accelerometer.csv";
 
     /**
      * Returns a new instance of this fragment for the given section
@@ -60,7 +68,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
 
         // Register the button listeners
         for(int b : ACTIVITY.activity_buttons) {
-            ((ImageButton)rootView.findViewById(b)).setOnClickListener(new View.OnClickListener() {
+            (rootView.findViewById(b)).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) { selectActivityButtonClick(v);  }
             });
@@ -75,9 +83,6 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         });
         // Make all activity buttons gray
         colorSelectedButton();
-
-        // Initialize debug text output
-        ((TextView)rootView.findViewById(R.id.val_measure_output)).setMovementMethod(new ScrollingMovementMethod());
 
         // Set up accelerometer
         smanager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
@@ -94,15 +99,6 @@ public class TrainFragment extends Fragment implements SensorEventListener {
 
     private SensorManager smanager;
     private Sensor accelerometer;
-
-    //    private double[] currentValues = new double[] {0.0, 0.0, 0.0};
-    private final double filter_modifier = 0.4;
-
-    private final int bufferLength = 5;
-    // Create empty buffers
-    private final List<List<Float>> storedValues = new ArrayList<List<Float>>(3);
-
-    private int currentPos = 0;
 
     ArrayList<Measurement> buffer = new ArrayList<>();
 
@@ -137,16 +133,11 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         // Ignore
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        stopMeasuring();
-    }
-
     private long measurement_start;
     private void startMeasuring() {
         smanager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         measurement_start = System.currentTimeMillis();
+        buffer.clear();
     }
 
 
@@ -160,17 +151,35 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     }
 
     private void writeBuffer() {
-        final TextView output = (TextView)rootView.findViewById(R.id.val_measure_output);
-        if(output == null) {
-            return;
+        try {
+            if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)
+                    && !Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
+                final File resultsFile = new File(results_file_path);
+                if(!resultsFile.exists()) {
+                    resultsFile.createNewFile();
+                }
+                PrintWriter w = new PrintWriter(new FileOutputStream(resultsFile, true));
+                for(Measurement m : buffer) {
+                    w.append(m.toString());
+                    w.append("\n");
+                }
+                w.close();
+                buffer.clear();
+                String msg = String.format("Succesfully written buffer to %s", results_file_path);
+                Log.i(LOGTAG, msg);
+                Toast.makeText(getActivity().getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+            } else {
+                String msg = "Could not write buffer: external storage not mounted";
+                Log.w(LOGTAG, msg);
+                Toast.makeText(getActivity().getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+            }
         }
-        StringBuilder sb = new StringBuilder();
-        for(Measurement m : buffer) {
-            sb.append(m);
-            sb.append("\n");
+        catch(IOException e) {
+            final String msg = String.format("Could not create or write results file %s", results_file_path);
+            Toast.makeText(getActivity().getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+            Log.e(LOGTAG, msg);
+            Log.d(LOGTAG, Throwables.getStackTraceAsString(e));
         }
-        output.setText(sb.toString());
-        buffer.clear();
     }
 
     private ACTIVITY selectedactivity;
@@ -184,14 +193,14 @@ public class TrainFragment extends Fragment implements SensorEventListener {
             Toast.makeText(getActivity().getApplicationContext(), "Select activity first", Toast.LENGTH_SHORT).show();
         } else {
             v.setEnabled(false);
-            ((Button)getView().findViewById(R.id.but_stop)).setEnabled(true);
+            (getView().findViewById(R.id.but_stop)).setEnabled(true);
             startMeasuring();
         }
     }
 
     public void stopTrainingButtonClick(final View v) {
         v.setEnabled(false);
-        ((Button)getView().findViewById(R.id.but_start)).setEnabled(true);
+        (getView().findViewById(R.id.but_start)).setEnabled(true);
         stopMeasuring();
     }
 
