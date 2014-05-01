@@ -1,6 +1,7 @@
 package nl.tudelft.jemoetgaanapp.app;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -8,12 +9,16 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +76,13 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         // Make all activity buttons gray
         colorSelectedButton();
 
+        // Initialize debug text output
+        ((TextView)rootView.findViewById(R.id.val_measure_output)).setMovementMethod(new ScrollingMovementMethod());
+
+        // Set up accelerometer
+        smanager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        accelerometer = smanager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+
         return rootView;
     }
 
@@ -103,6 +115,9 @@ public class TrainFragment extends Fragment implements SensorEventListener {
             this.timestamp = timestamp;
             this.values = values;
         }
+        public String toString() {
+            return String.format("%s,%d,%.4f,%.4f,%.4f", activity.name(), timestamp, values[0], values[1], values[2]);
+        }
     }
 
     public void onSensorChanged(SensorEvent event) {
@@ -114,7 +129,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
             case Sensor.TYPE_ACCELEROMETER:
             case Sensor.TYPE_LINEAR_ACCELERATION:
                 buffer.add(new Measurement(selectedactivity, event.timestamp, event.values));
-                ((TextView)getView().findViewById(R.id.val_measuring)).setText(String.format("%.1f", (System.currentTimeMillis() - measurement_start)/100.0));
+                ((TextView)rootView.findViewById(R.id.val_measuring)).setText(String.format("%.1f", (System.currentTimeMillis() - measurement_start)/100.0));
         }
     }
 
@@ -141,6 +156,21 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         } catch(NullPointerException e) {
             // Listener was already unregistered or never registered
         }
+        writeBuffer();
+    }
+
+    private void writeBuffer() {
+        final TextView output = (TextView)rootView.findViewById(R.id.val_measure_output);
+        if(output == null) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        for(Measurement m : buffer) {
+            sb.append(m);
+            sb.append("\n");
+        }
+        output.setText(sb.toString());
+        buffer.clear();
     }
 
     private ACTIVITY selectedactivity;
@@ -150,13 +180,19 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     }
 
     public void startTrainingButtonClick(final View v) {
-        v.setEnabled(false);
-        ((Button)getView().findViewById(R.id.but_stop)).setEnabled(true);
+        if(selectedactivity == null) {
+            Toast.makeText(getActivity().getApplicationContext(), "Select activity first", Toast.LENGTH_SHORT).show();
+        } else {
+            v.setEnabled(false);
+            ((Button)getView().findViewById(R.id.but_stop)).setEnabled(true);
+            startMeasuring();
+        }
     }
 
     public void stopTrainingButtonClick(final View v) {
         v.setEnabled(false);
         ((Button)getView().findViewById(R.id.but_start)).setEnabled(true);
+        stopMeasuring();
     }
 
     /**

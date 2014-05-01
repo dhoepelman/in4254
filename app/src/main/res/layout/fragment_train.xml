@@ -97,4 +97,13 @@
             android:gravity="right" />
     </LinearLayout>
 
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/val_measure_output"
+        android:maxLines="25"
+        android:scrollbars="vertical"
+        />
+
 </LinearLayout>
