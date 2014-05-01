@@ -32,3 +32,14 @@ proguard/
 .idea/
 *.iml
 *.iws
+
+# LaTeX
+*.aux
+*.log
+*.out
+*.toc
+reports/*/*.pdf
+
+# BibTex
+*.bbl
+*.blg
