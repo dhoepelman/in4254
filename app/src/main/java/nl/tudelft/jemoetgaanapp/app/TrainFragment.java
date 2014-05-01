@@ -11,7 +11,9 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,6 @@ public class TrainFragment extends Fragment implements SensorEventListener {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private static final int[] activity_buttons = new int[] { R.id.but_sitting, R.id.but_walking, R.id.but_running, R.id.but_jumping };
 
     /**
      * Returns a new instance of this fragment for the given section
@@ -44,22 +45,31 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     public TrainFragment() {
     }
 
+    private View rootView;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View rootView = inflater.inflate(R.layout.fragment_train, container, false);
+        rootView = inflater.inflate(R.layout.fragment_train, container, false);
         //final TextView textView = (TextView) rootView.findViewById(R.id.section_label);
         //textView.setText(Integer.toString(getArguments().getInt(ARG_SECTION_NUMBER)));
 
         // Register the button listeners
-        for(int b : activity_buttons) {
+        for(int b : ACTIVITY.activity_buttons) {
             ((ImageButton)rootView.findViewById(b)).setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View v) { selectActivity(v);  }
+                public void onClick(View v) { selectActivityButtonClick(v);  }
             });
         }
-        // Make all buttons gray
-        unSelectButtons();
+        rootView.findViewById(R.id.but_start).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) { startTrainingButtonClick(v); }
+        });
+        rootView.findViewById(R.id.but_stop).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) { stopTrainingButtonClick(v); }
+        });
+        // Make all activity buttons gray
+        colorSelectedButton();
 
         return rootView;
     }
@@ -94,12 +104,6 @@ public class TrainFragment extends Fragment implements SensorEventListener {
             this.values = values;
         }
     }
-    private enum ACTIVITY {
-        SITTING,
-        WALKING,
-        RUNNING,
-        JUMPING,
-    }
 
     public void onSensorChanged(SensorEvent event) {
         // We received new data from one of the sensors
@@ -110,6 +114,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
             case Sensor.TYPE_ACCELEROMETER:
             case Sensor.TYPE_LINEAR_ACCELERATION:
                 buffer.add(new Measurement(selectedactivity, event.timestamp, event.values));
+                ((TextView)getView().findViewById(R.id.val_measuring)).setText(String.format("%.1f", (System.currentTimeMillis() - measurement_start)/100.0));
         }
     }
 
@@ -123,8 +128,10 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         stopMeasuring();
     }
 
+    private long measurement_start;
     private void startMeasuring() {
         smanager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        measurement_start = System.currentTimeMillis();
     }
 
 
@@ -132,38 +139,69 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         try {
             smanager.unregisterListener(this);
         } catch(NullPointerException e) {
-            // Listener was already unregistered
+            // Listener was already unregistered or never registered
         }
     }
 
     private ACTIVITY selectedactivity;
-    public void selectActivity(final View v) {
-        final int selected_button = v.getId();
-
-        ACTIVITY selected = null;
-        switch(selected_button) {
-            case R.id.but_sitting:
-                selected = ACTIVITY.SITTING;
-                break;
-            case R.id.but_walking:
-                selected = ACTIVITY.WALKING;
-                break;
-            case R.id.but_running:
-                selected = ACTIVITY.RUNNING;
-                break;
-            case R.id.but_jumping:
-                selected = ACTIVITY.JUMPING;
-                break;
-        }
-        selectedactivity = selected;
-        // (Visually) select the right button
-        unSelectButtons();
-        v.setBackgroundColor(Color.BLACK);
+    public void selectActivityButtonClick(final View v) {
+        selectedactivity = ACTIVITY.buttonToActivity(v.getId());
+        colorSelectedButton();
     }
 
-    private void unSelectButtons() {
-        for(int b : activity_buttons) {
-            getView().findViewById(b).setBackgroundColor(Color.GRAY);
+    public void startTrainingButtonClick(final View v) {
+        v.setEnabled(false);
+        ((Button)getView().findViewById(R.id.but_stop)).setEnabled(true);
+    }
+
+    public void stopTrainingButtonClick(final View v) {
+        v.setEnabled(false);
+        ((Button)getView().findViewById(R.id.but_start)).setEnabled(true);
+    }
+
+    /**
+     * (Visually) select the right button
+     */
+    private void colorSelectedButton() {
+        for(int b : ACTIVITY.activity_buttons) {
+            rootView.findViewById(b).setBackgroundColor(Color.GRAY);
+        }
+        if(selectedactivity != null) {
+            rootView.findViewById(selectedactivity.button_id).setBackgroundColor(Color.BLACK);
+        }
+    }
+
+    private enum ACTIVITY {
+        SITTING(R.id.but_sitting),
+        WALKING(R.id.but_walking),
+        RUNNING(R.id.but_running),
+        JUMPING(R.id.but_jumping);
+
+        public final static int[] activity_buttons = new int[] { R.id.but_sitting, R.id.but_walking, R.id.but_running, R.id.but_jumping };
+
+        public final int button_id;
+
+        private ACTIVITY(final int butid) {
+            this.button_id = butid;
+        }
+
+        public static ACTIVITY buttonToActivity(int butid) {
+            ACTIVITY selected = null;
+            switch(butid) {
+                case R.id.but_sitting:
+                    selected = ACTIVITY.SITTING;
+                    break;
+                case R.id.but_walking:
+                    selected = ACTIVITY.WALKING;
+                    break;
+                case R.id.but_running:
+                    selected = ACTIVITY.RUNNING;
+                    break;
+                case R.id.but_jumping:
+                    selected = ACTIVITY.JUMPING;
+                    break;
+            }
+            return selected;
         }
     }
 }
