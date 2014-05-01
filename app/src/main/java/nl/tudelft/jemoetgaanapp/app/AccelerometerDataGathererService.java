@@ -92,23 +92,23 @@ public class AccelerometerDataGathererService extends Service implements SensorE
     }
 
     public void possiblyWriteBuffer() {
-        if(System.currentTimeMillis() - lastWrite >= write_every) {
+        if (System.currentTimeMillis() - lastWrite >= write_every) {
             writeBuffer();
         }
     }
 
     public void writeBuffer() {
         try {
-            if(buffer.size() > 0
+            if (!buffer.isEmpty()
                && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)
                && !Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
                 final File resultsFile = new File(results_file_path);
-                if(!resultsFile.exists()) {
+                if (!resultsFile.exists()) {
                     resultsFile.createNewFile();
                 }
                 PrintWriter w = new PrintWriter(new FileOutputStream(resultsFile, true));
                 Iterator<Map.Entry<Long, float[]>> it = buffer.entrySet().iterator();
-                while(it.hasNext()) {
+                while (it.hasNext()) {
                     Map.Entry<Long, float[]> e = it.next();
                     // Write this entry as a comma-separated line
                     w.write(e.getKey() + "," + Joiner.on(",").join(Arrays.asList(e.getValue())) + "\n");

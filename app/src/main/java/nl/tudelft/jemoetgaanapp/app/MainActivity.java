@@ -44,7 +44,7 @@ public class MainActivity extends ActionBarActivity
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
         Fragment fragment = null;
-        switch(position) {
+        switch (position) {
             case 0:
                 // TODO: Implementeer activity monitoring
                 break;
@@ -56,13 +56,14 @@ public class MainActivity extends ActionBarActivity
                 // TODO: implementeer localization
                 break;
         }
-        if(fragment != null) {
+        if (fragment != null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, fragment)
-                    .commit();
-        } else {
+                .replace(R.id.container, fragment)
+                .commit();
+        }
+        else {
             final Context applicationContext = getApplicationContext();
-            if(applicationContext != null) {
+            if (applicationContext != null) {
                 Toast.makeText(applicationContext, "Not implemented", Toast.LENGTH_SHORT).show();
             }
             Log.d(LOGTAG, "Tried to open unimplemented fragment at menu position " + position);
