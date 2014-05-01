@@ -15,10 +15,21 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
     }
+
+    signingConfigs {
+        debug {
+            storeFile file("../keystore.jks")
+            storePassword "in4254"
+            keyAlias "sps-sign-key"
+            keyPassword "in4254"
+        }
+    }
+
     buildTypes {
         release {
             runProguard false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.debug
         }
     }
 }
