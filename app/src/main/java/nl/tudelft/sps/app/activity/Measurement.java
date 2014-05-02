@@ -93,15 +93,15 @@ public class Measurement implements IMeasurement {
      * Helper to divide raw measurements into windows
      */
     public static class Helper {
-        public final ACTIVITY activity;
+
         private List<Measurement> measurements = new ArrayList<>();
         private Measurement current;
         private Measurement next;
         private int current_loc = 0;
         private int numFullWindows = 0;
 
-        public Helper(ACTIVITY activity) {
-            this.activity = activity;
+        public Helper() {
+
         }
 
         /**
@@ -122,10 +122,15 @@ public class Measurement implements IMeasurement {
             return numFullWindows;
         }
 
-        public void addMeasurement(float[] values) {
+        /**
+         * Add a measurement to the current Measurement.
+         * @return The current measurement, or the completed measurement if it was completed by this method call
+         */
+        public Measurement addMeasurement(float[] values) {
             if (values.length != 3) {
                 throw new IllegalArgumentException("Expected 3 values");
             }
+            Measurement ret = current;
 
             if (current == null || current_loc == WINDOW_SIZE) {
                 if (current == null) {
@@ -133,6 +138,7 @@ public class Measurement implements IMeasurement {
                     current = new Measurement();
                     current_loc = 0;
                     measurements.add(current);
+                    ret = current;
                 } else {
                     // Measurement was full, replace with next
                     current = next;
@@ -149,6 +155,8 @@ public class Measurement implements IMeasurement {
                 addToMeasurement(next, values);
             }
             current_loc++;
+
+            return ret;
         }
 
         private void addToMeasurement(Measurement m, float[] values) {

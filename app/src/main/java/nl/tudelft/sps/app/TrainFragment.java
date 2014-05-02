@@ -1,15 +1,11 @@
 package nl.tudelft.sps.app;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Color;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,15 +22,19 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
 import nl.tudelft.sps.app.activity.IMeasurement;
 import nl.tudelft.sps.app.activity.Measurement;
+import nl.tudelft.sps.app.activity.MeasurerHeadlessFragment;
 
 /**
  * Fragment to train the activity detection
  */
-public class TrainFragment extends Fragment implements SensorEventListener {
+public class TrainFragment extends Fragment implements MeasurerHeadlessFragment.Callback {
 
     /**
      * File to which the measured acceleration values are written
@@ -57,12 +57,12 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     private View rootView;
     private TextView valueMeasurement;
     private TextView valueNumberOfWindows;
-    private SensorManager sensorManager;
-    private Sensor accelerometer;
+
     private long measurementStart;
 
     private ACTIVITY selectedActivity;
-    private Measurement.Helper measurementHelper;
+    public static final String TAG_MEASURER_FRAGMENT = "trainfragment_measurer";
+    private MeasurerHeadlessFragment measurerFragment;
 
     /**
      * Returns a new instance of this fragment for the given section number
@@ -113,9 +113,20 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         // Make all activity buttons gray
         colorSelectedButton();
 
-        // Set-up accelerometer
-        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        // Try to get or create the measurer fragment
+        FragmentManager fm = getFragmentManager();
+        measurerFragment = (MeasurerHeadlessFragment) fm.findFragmentByTag(TAG_MEASURER_FRAGMENT);
+        if(measurerFragment == null) {
+            // Fragment doesn't exist, create
+            measurerFragment = new MeasurerHeadlessFragment();
+            fm.beginTransaction().add(measurerFragment, TAG_MEASURER_FRAGMENT).commit();
+        }
+        measurerFragment.setOwner(this);
+
+        if(savedInstanceState != null) {
+            measurements = (Collection<IMeasurement>)savedInstanceState.getSerializable("measurements");
+            measurementStart = savedInstanceState.getLong("measurementStart");
+        }
 
         return rootView;
     }
@@ -126,43 +137,31 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         ((MainActivity) activity).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
     }
 
-    public void onSensorChanged(SensorEvent event) {
-        // We received new data from one of the sensors
-
-        //Log.d(LOG_TAG, "Type: " + event.sensor.getType());
-
-        switch (event.sensor.getType()) {
-            case Sensor.TYPE_ACCELEROMETER:
-            case Sensor.TYPE_LINEAR_ACCELERATION:
-                measurementHelper.addMeasurement(event.values);
-
-                final double value = (System.currentTimeMillis() - measurementStart) / 1000.0;
-                valueMeasurement.setText(String.format("%.1f", value));
-                valueNumberOfWindows.setText(Integer.toString(measurementHelper.getNumberOfFullWindows()));
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(measurements != null && measurements.size() > 0) {
+            // We are currently measuring, save the measurements and starting time
+            outState.putSerializable("measurements", (Serializable)measurements);
+            outState.putLong("measurementStart", measurementStart);
         }
     }
 
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // Ignore
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        measurerFragment.setOwner(null);
     }
 
+    private Collection<IMeasurement> measurements;
     private void startMeasuring() {
         measurementStart = System.currentTimeMillis();
-
-        // Create an empty helper
-        measurementHelper = new Measurement.Helper(selectedActivity);
-
-        // Start listening
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+        measurements = new ArrayList<>();
+        measurerFragment.startMeasuring();
     }
 
     private void stopMeasuring() {
-        try {
-            sensorManager.unregisterListener(this);
-        } catch (NullPointerException e) {
-            // Listener was already unregistered or never registered
-        }
-        measurementHelper.removeIncompleteMeasurements();
+        measurerFragment.stopMeasuring();
         writeBuffer();
     }
 
@@ -183,12 +182,13 @@ public class TrainFragment extends Fragment implements SensorEventListener {
                     writer.append(header);
                 }
 
-                for (IMeasurement measurement : measurementHelper.getMeasurements()) {
+                for (IMeasurement measurement : measurements) {
                     writer.append(selectedActivity.name());
                     writer.append(",");
                     writer.append(Doubles.join(",", measurement.getFeatureVector()));
                     writer.append("\n");
                 }
+                measurements.clear();
                 writer.close();
 
                 final String msg = String.format("Succesfully written buffer to %s", RESULTS_FILE_PATH);
@@ -263,21 +263,11 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         Toast.makeText(getActivity().getApplicationContext(), message, Toast.LENGTH_LONG).show();
     }
 
-    /*
-    private class Measurement {
-        public final long timestamp;
-        public final ACTIVITY activity;
-        public final float[] values;
-
-        public Measurement(ACTIVITY activity, long timestamp, float[] values) {
-            this.activity = activity;
-            this.timestamp = timestamp;
-            this.values = values;
-        }
-
-        public String toString() {
-            return String.format("%s,%d,%.4f,%.4f,%.4f", activity.name(), timestamp, values[0], values[1], values[2]);
-        }
+    @Override
+    public void onCompletedMeasurement(IMeasurement m) {
+        measurements.add(m);
+        final double value = (System.currentTimeMillis() - measurementStart) / 1000.0;
+        valueMeasurement.setText(String.format("%.1f", value));
+        valueNumberOfWindows.setText(Integer.toString(measurements.size()));
     }
-    */
 }
