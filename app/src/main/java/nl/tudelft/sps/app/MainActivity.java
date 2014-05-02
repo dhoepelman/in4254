@@ -1,4 +1,4 @@
-package nl.tudelft.jemoetgaanapp.app;
+package nl.tudelft.sps.app;
 
 import android.content.Context;
 import android.os.Bundle;

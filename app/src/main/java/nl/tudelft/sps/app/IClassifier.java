@@ -1,4 +1,4 @@
-package nl.tudelft.jemoetgaanapp.app;
+package nl.tudelft.sps.app;
 
 /**
  * Created by David on 2-5-2014.

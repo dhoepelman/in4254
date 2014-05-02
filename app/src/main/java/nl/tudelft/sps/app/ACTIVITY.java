@@ -1,4 +1,4 @@
-package nl.tudelft.jemoetgaanapp.app;
+package nl.tudelft.sps.app;
 
 /**
 * Enum for different type of activities
