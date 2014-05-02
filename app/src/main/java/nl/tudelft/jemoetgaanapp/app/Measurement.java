@@ -1,5 +1,7 @@
 package nl.tudelft.jemoetgaanapp.app;
 
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -18,6 +20,7 @@ public class Measurement {
     public static final int WINDOW_OVERLAP = 128;
 
     private final float[][] raw_measurements;
+    private SummaryStatistics[] summaryStatistics;
 
     public Measurement() {
         raw_measurements = new float[WINDOW_SIZE][];
@@ -27,24 +30,41 @@ public class Measurement {
      * True if the window is full
      */
     public boolean isCompleted() {
-        return raw_measurements[WINDOW_SIZE-1] != null;
+        return raw_measurements[WINDOW_SIZE - 1] != null;
     }
 
     /**
      * Mean of the window (separate for all 3 axes)
      */
-    public float[] getMean() {
-        // TODO: Implement mean
-        return null;
-    }
+    public double[] getMean() {
+        if(summaryStatistics == null) {
+            calculateSummaryStatistics();
+        }
+        return new double[]{
+                summaryStatistics[0].getMean(),
+                summaryStatistics[1].getMean(),
+                summaryStatistics[2].getMean(),
+        };
+    };
 
     /**
      * Standard deviation of the window (separate on all 3 axes)
-     * @return
      */
-    public float[] getStdDev() {
-        // TODO: Implement standard deviation
+    public double[] getStdDev() {
+        if(summaryStatistics == null) {
+            calculateSummaryStatistics();
+        }
+        return new double[]{
+                summaryStatistics[0].getStandardDeviation(),
+                summaryStatistics[1].getStandardDeviation(),
+                summaryStatistics[2].getStandardDeviation(),
+        };
     }
+
+    private void calculateSummaryStatistics() {
+        summaryStatistics = new SummaryStatistics[] {new SummaryStatistics(), new SummaryStatistics(), new SummaryStatistics()};
+    }
+
 
     /**
      * Helper to divide raw measurements into windows
