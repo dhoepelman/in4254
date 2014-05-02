@@ -74,32 +74,29 @@ public class Measurement {
     /**
      * Helper to divide raw measurements into windows
      */
-    public class Helper {
+    public static class Helper {
+        public final ACTIVITY activity;
         private List<Measurement> measurements = new ArrayList<>();
         private Measurement current;
         private Measurement next;
         private int current_loc = 0;
 
-        /**
-         * Get all measurements
-         * WARNING: if removing incomplete measurements, so do not call while still measuring
-         */
-        public Collection<Measurement> getMeasurements(boolean remove_incomplete) {
-            if (remove_incomplete) {
-                // Remove the last measurement if it's incomplete
-                while (measurements.size() > 0 && !measurements.get(measurements.size() - 1).isCompleted()) {
-                    measurements.remove(measurements.size() - 1);
-                }
-            }
-            return measurements;
+        public Helper(ACTIVITY activity) {
+            this.activity = activity;
         }
 
         /**
          * Get all measurements
-         * WARNING: do not call while still measuring
          */
         public Collection<Measurement> getMeasurements() {
-            return getMeasurements(true);
+            return measurements;
+        }
+
+        public void removeIncompleteMeasurements() {
+            // Remove the last measurement if it's incomplete
+            while (measurements.size() > 0 && !measurements.get(measurements.size() - 1).isCompleted()) {
+                measurements.remove(measurements.size() - 1);
+            }
         }
 
         public void addMeasurement(float[] values) {

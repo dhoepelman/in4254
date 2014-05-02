@@ -41,9 +41,15 @@
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/but_jumping"
-            android:src="@drawable/act_jumping"
+            android:id="@+id/but_stairsup"
+            android:src="@drawable/act_stairsup"
             android:clickable="true" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/but_stairsdown"
+            android:src="@drawable/act_stairsdown" />
 
     </LinearLayout>
 
@@ -95,6 +101,31 @@
             android:text="s"
             android:id="@+id/lblS"
             android:gravity="right" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/linearLayout">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="# Windows:"
+            android:id="@+id/lblNumWindows" />
+
+        <TextView
+            android:layout_width="179dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="0"
+            android:id="@+id/val_num_windows"
+            android:paddingLeft="25dp"
+            android:textAlignment="textEnd"
+            android:gravity="right" />
+
     </LinearLayout>
 
 </LinearLayout>

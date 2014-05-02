@@ -7,8 +7,8 @@ enum ACTIVITY {
     SITTING(),
     WALKING(),
     RUNNING(),
-    JUMPING();
-
+    STAIRS_UP(),
+    STAIRS_DOWN();
 
     ACTIVITY() {
 

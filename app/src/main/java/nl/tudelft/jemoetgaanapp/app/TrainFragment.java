@@ -17,10 +17,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.primitives.Doubles;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,18 +29,17 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Fragment to train the activity detection
  */
 public class TrainFragment extends Fragment implements SensorEventListener {
 
-    private BiMap<Integer, ACTIVITY> activity_buttons = new ImmutableBiMap.Builder<Integer, ACTIVITY>()
-        .put(R.id.but_sitting,ACTIVITY.SITTING)
-        .put(R.id.but_walking,ACTIVITY.WALKING)
-        .put( R.id.but_running,ACTIVITY.RUNNING)
-        .put(R.id.but_jumping,ACTIVITY.JUMPING)
-        .build();
+    /**
+     * File to which the measured acceleration values are written
+     */
+    public static final String RESULTS_FILE_PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/features.csv";
     /**
      * The fragment argument representing the section number for this
      * fragment.
@@ -47,21 +47,18 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     private static final String LOG_TAG = TrainFragment.class.toString();
-
-    /**
-     * File to which the measured acceleration values are written
-     */
-    public static final String RESULTS_FILE_PATH =  Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/accelerometer.csv";
-
+    private BiMap<Integer, ACTIVITY> activity_buttons = new ImmutableBiMap.Builder<Integer, ACTIVITY>()
+            .put(R.id.but_sitting, ACTIVITY.SITTING)
+            .put(R.id.but_walking, ACTIVITY.WALKING)
+            .put(R.id.but_running, ACTIVITY.RUNNING)
+            .put(R.id.but_stairsup, ACTIVITY.STAIRS_UP)
+            .put(R.id.but_stairsdown, ACTIVITY.STAIRS_DOWN)
+            .build();
     private View rootView;
-
     private TextView valueMeasurement;
-
+    private TextView valueNumberOfWindows;
     private SensorManager sensorManager;
     private Sensor accelerometer;
-
-    final List<Measurement> buffer = new ArrayList<>();
-
     private long measurementStart;
 
     private ACTIVITY selectedActivity;
@@ -78,30 +75,12 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         return fragment;
     }
 
-    public static ACTIVITY buttonToActivity(int butid) {
-        ACTIVITY selected = null;
-        switch(butid) {
-            case R.id.but_sitting:
-                selected = ACTIVITY.SITTING;
-                break;
-            case R.id.but_walking:
-                selected = ACTIVITY.WALKING;
-                break;
-            case R.id.but_running:
-                selected = ACTIVITY.RUNNING;
-                break;
-            case R.id.but_jumping:
-                selected = ACTIVITY.JUMPING;
-                break;
-        }
-        return selected;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_train, container, false);
         valueMeasurement = (TextView) rootView.findViewById(R.id.val_measuring);
+        valueNumberOfWindows = (TextView) rootView.findViewById(R.id.valNumWindows);
 
         // Register the button listeners
         for (int buttonId : activity_buttons.keySet()) {
@@ -153,10 +132,11 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
             case Sensor.TYPE_LINEAR_ACCELERATION:
-                buffer.add(new Measurement(selectedActivity, event.timestamp, event.values));
+                measurementHelper.addMeasurement(event.values);
 
                 final double value = (System.currentTimeMillis() - measurementStart) / 100.0;
                 valueMeasurement.setText(String.format("%.1f", value));
+                valueNumberOfWindows.setText(measurementHelper.getMeasurements().size());
         }
     }
 
@@ -164,9 +144,12 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         // Ignore
     }
 
+    private Measurement.Helper measurementHelper;
     private void startMeasuring() {
-        buffer.clear();
         measurementStart = System.currentTimeMillis();
+
+        // Create an empty helper
+        measurementHelper = new Measurement.Helper(selectedActivity);
 
         // Start listening
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
@@ -175,10 +158,10 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     private void stopMeasuring() {
         try {
             sensorManager.unregisterListener(this);
-        }
-        catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             // Listener was already unregistered or never registered
         }
+        measurementHelper.removeIncompleteMeasurements();
         writeBuffer();
     }
 
@@ -188,49 +171,55 @@ public class TrainFragment extends Fragment implements SensorEventListener {
                     && !Environment.MEDIA_MOUNTED_READ_ONLY.equals(Environment.getExternalStorageState())) {
 
                 final File resultsFile = new File(RESULTS_FILE_PATH);
-                if(!resultsFile.exists()) {
+                String header = null;
+                if (!resultsFile.exists()) {
                     resultsFile.createNewFile();
+                    header = "ACTIVITY;MeanX;MeanY;MeanZ;StdDevX;StdDevY;StdDevZ\n";
                 }
 
                 final PrintWriter writer = new PrintWriter(new FileOutputStream(resultsFile, true));
-                for (Measurement measurement : buffer) {
-                    writer.append(measurement.toString() + "\n");
+                if(header != null) {
+                    writer.append(header);
+                }
+                Locale.setDefault(Locale.ENGLISH);  // Use . as decimal separator
+                for (Measurement measurement : measurementHelper.getMeasurements()) {
+                    writer.append(selectedActivity.name());
+                    writer.append(",");
+                    writer.append(Doubles.join(",",measurement.getMean()));
+                    writer.append(",");
+                    writer.append(Doubles.join(",", measurement.getStdDev()));
                 }
                 writer.close();
-                buffer.clear();
 
                 final String msg = String.format("Succesfully written buffer to %s", RESULTS_FILE_PATH);
                 Log.i(LOG_TAG, msg);
                 Toast.makeText(getActivity().getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-            }
-            else {
+            } else {
                 logAndDisplayToast("Could not write buffer: external storage not mounted");
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logAndDisplayToast(String.format("Could not create or write results file %s", RESULTS_FILE_PATH));
             Log.d(LOG_TAG, Throwables.getStackTraceAsString(e));
         }
     }
 
     public void onSelectActivityButtonClick(final View view) {
-        selectedActivity = buttonToActivity(view.getId());
+        selectedActivity = activity_buttons.get(view.getId());
         colorSelectedButton();
     }
 
     public void onStartTrainingButtonClick(final View view) {
         if (selectedActivity == null) {
             displayToast("Select an activity first");
-        }
-        else {
+        } else {
             // Disable the start button
             view.setEnabled(false);
+
+            startMeasuring();
 
             // Enable the stop button
             final View stopButton = getView().findViewById(R.id.but_stop);
             stopButton.setEnabled(true);
-
-            startMeasuring();
         }
     }
 
@@ -238,11 +227,14 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         // Disable the stop button
         view.setEnabled(false);
 
+        stopMeasuring();
+
+        // Set final number of windows
+        valueNumberOfWindows.setText(measurementHelper.getMeasurements().size());
+
         // Enable the start button
         final View startButton = getView().findViewById(R.id.but_start);
         startButton.setEnabled(true);
-
-        stopMeasuring();
     }
 
 
@@ -255,22 +247,6 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         }
         if (selectedActivity != null) {
             rootView.findViewById(activity_buttons.inverse().get(selectedActivity)).setBackgroundColor(Color.BLACK);
-        }
-    }
-
-    private class Measurement {
-        public final long timestamp;
-        public final ACTIVITY activity;
-        public final float[] values;
-
-        public Measurement(ACTIVITY activity, long timestamp, float[] values) {
-            this.activity = activity;
-            this.timestamp = timestamp;
-            this.values = values;
-        }
-
-        public String toString() {
-            return String.format("%s,%d,%.4f,%.4f,%.4f", activity.name(), timestamp, values[0], values[1], values[2]);
         }
     }
 
@@ -289,4 +265,22 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     private void displayToast(String message) {
         Toast.makeText(getActivity().getApplicationContext(), message, Toast.LENGTH_LONG).show();
     }
+
+    /*
+    private class Measurement {
+        public final long timestamp;
+        public final ACTIVITY activity;
+        public final float[] values;
+
+        public Measurement(ACTIVITY activity, long timestamp, float[] values) {
+            this.activity = activity;
+            this.timestamp = timestamp;
+            this.values = values;
+        }
+
+        public String toString() {
+            return String.format("%s,%d,%.4f,%.4f,%.4f", activity.name(), timestamp, values[0], values[1], values[2]);
+        }
+    }
+    */
 }
