@@ -18,6 +18,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableBiMap;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,6 +34,12 @@ import java.util.List;
  */
 public class TrainFragment extends Fragment implements SensorEventListener {
 
+    private BiMap<Integer, ACTIVITY> activity_buttons = new ImmutableBiMap.Builder<Integer, ACTIVITY>()
+        .put(R.id.but_sitting,ACTIVITY.SITTING)
+        .put(R.id.but_walking,ACTIVITY.WALKING)
+        .put( R.id.but_running,ACTIVITY.RUNNING)
+        .put(R.id.but_jumping,ACTIVITY.JUMPING)
+        .build();
     /**
      * The fragment argument representing the section number for this
      * fragment.
@@ -69,6 +78,25 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         return fragment;
     }
 
+    public static ACTIVITY buttonToActivity(int butid) {
+        ACTIVITY selected = null;
+        switch(butid) {
+            case R.id.but_sitting:
+                selected = ACTIVITY.SITTING;
+                break;
+            case R.id.but_walking:
+                selected = ACTIVITY.WALKING;
+                break;
+            case R.id.but_running:
+                selected = ACTIVITY.RUNNING;
+                break;
+            case R.id.but_jumping:
+                selected = ACTIVITY.JUMPING;
+                break;
+        }
+        return selected;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -76,7 +104,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         valueMeasurement = (TextView) rootView.findViewById(R.id.val_measuring);
 
         // Register the button listeners
-        for (int buttonId : ACTIVITY.activity_buttons) {
+        for (int buttonId : activity_buttons.keySet()) {
             rootView.findViewById(buttonId).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -186,7 +214,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     }
 
     public void onSelectActivityButtonClick(final View view) {
-        selectedActivity = ACTIVITY.buttonToActivity(view.getId());
+        selectedActivity = buttonToActivity(view.getId());
         colorSelectedButton();
     }
 
@@ -217,15 +245,16 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         stopMeasuring();
     }
 
+
     /**
      * (Visually) select the right button
      */
     private void colorSelectedButton() {
-        for (int buttonId : ACTIVITY.activity_buttons) {
+        for (int buttonId : activity_buttons.keySet()) {
             rootView.findViewById(buttonId).setBackgroundColor(Color.GRAY);
         }
         if (selectedActivity != null) {
-            rootView.findViewById(selectedActivity.button_id).setBackgroundColor(Color.BLACK);
+            rootView.findViewById(activity_buttons.inverse().get(selectedActivity)).setBackgroundColor(Color.BLACK);
         }
     }
 
@@ -242,45 +271,6 @@ public class TrainFragment extends Fragment implements SensorEventListener {
 
         public String toString() {
             return String.format("%s,%d,%.4f,%.4f,%.4f", activity.name(), timestamp, values[0], values[1], values[2]);
-        }
-    }
-
-    private enum ACTIVITY {
-        SITTING(R.id.but_sitting),
-        WALKING(R.id.but_walking),
-        RUNNING(R.id.but_running),
-        JUMPING(R.id.but_jumping);
-
-        public static final int[] activity_buttons = new int[] {
-            R.id.but_sitting,
-            R.id.but_walking,
-            R.id.but_running,
-            R.id.but_jumping
-        };
-
-        public final int button_id;
-
-        private ACTIVITY(final int butid) {
-            this.button_id = butid;
-        }
-
-        public static ACTIVITY buttonToActivity(int butid) {
-            ACTIVITY selected = null;
-            switch(butid) {
-                case R.id.but_sitting:
-                    selected = ACTIVITY.SITTING;
-                    break;
-                case R.id.but_walking:
-                    selected = ACTIVITY.WALKING;
-                    break;
-                case R.id.but_running:
-                    selected = ACTIVITY.RUNNING;
-                    break;
-                case R.id.but_jumping:
-                    selected = ACTIVITY.JUMPING;
-                    break;
-            }
-            return selected;
         }
     }
 
