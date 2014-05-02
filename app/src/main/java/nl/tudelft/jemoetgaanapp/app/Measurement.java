@@ -37,7 +37,7 @@ public class Measurement {
      * Mean of the window (separate for all 3 axes)
      */
     public double[] getMean() {
-        if(summaryStatistics == null) {
+        if (summaryStatistics == null) {
             calculateSummaryStatistics();
         }
         return new double[]{
@@ -45,13 +45,13 @@ public class Measurement {
                 summaryStatistics[1].getMean(),
                 summaryStatistics[2].getMean(),
         };
-    };
+    }
 
     /**
      * Standard deviation of the window (separate on all 3 axes)
      */
     public double[] getStdDev() {
-        if(summaryStatistics == null) {
+        if (summaryStatistics == null) {
             calculateSummaryStatistics();
         }
         return new double[]{
@@ -62,7 +62,12 @@ public class Measurement {
     }
 
     private void calculateSummaryStatistics() {
-        summaryStatistics = new SummaryStatistics[] {new SummaryStatistics(), new SummaryStatistics(), new SummaryStatistics()};
+        summaryStatistics = new SummaryStatistics[]{new SummaryStatistics(), new SummaryStatistics(), new SummaryStatistics()};
+        for (float[] m : raw_measurements) {
+            for (int i = 0; i < 3; i++) {
+                summaryStatistics[i].addValue(m[i]);
+            }
+        }
     }
 
 
@@ -80,10 +85,10 @@ public class Measurement {
          * WARNING: if removing incomplete measurements, so do not call while still measuring
          */
         public Collection<Measurement> getMeasurements(boolean remove_incomplete) {
-            if(remove_incomplete) {
+            if (remove_incomplete) {
                 // Remove the last measurement if it's incomplete
-                while(measurements.size() > 0 && !measurements.get(measurements.size()-1).isCompleted()) {
-                    measurements.remove(measurements.size()-1);
+                while (measurements.size() > 0 && !measurements.get(measurements.size() - 1).isCompleted()) {
+                    measurements.remove(measurements.size() - 1);
                 }
             }
             return measurements;
@@ -93,17 +98,17 @@ public class Measurement {
          * Get all measurements
          * WARNING: do not call while still measuring
          */
-        public Collection<Measurement> getMeasurements(){
+        public Collection<Measurement> getMeasurements() {
             return getMeasurements(true);
         }
 
         public void addMeasurement(float[] values) {
-            if(values.length != 3) {
+            if (values.length != 3) {
                 throw new IllegalArgumentException("Expected 3 values");
             }
 
-            if(current == null || current_loc == WINDOW_SIZE) {
-                if(current == null) {
+            if (current == null || current_loc == WINDOW_SIZE) {
+                if (current == null) {
                     // We don't have any measurement, start one
                     current = new Measurement();
                     current_loc = 0;
@@ -119,7 +124,7 @@ public class Measurement {
             }
 
             current.raw_measurements[current_loc] = values;
-            if(current_loc >= WINDOW_OVERLAP) {
+            if (current_loc >= WINDOW_OVERLAP) {
                 next.raw_measurements[current_loc - WINDOW_OVERLAP] = values;
             }
             current_loc++;
