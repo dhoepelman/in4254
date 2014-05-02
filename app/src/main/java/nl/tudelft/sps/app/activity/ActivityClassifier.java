@@ -22,7 +22,7 @@ public class ActivityClassifier implements IClassifier {
      * Classify a measurement as an activity using K-nn
      */
     public ACTIVITY classify(IMeasurement measurement) {
-        final TreeMap<Double, ActivityMeasurementData> sortedNeighbors = new TreeMap<Double, ActivityMeasurementData>();
+        final TreeMap<Double, ActivityMeasurementData> sortedNeighbors = new TreeMap<>();
 
         for (ActivityMeasurementData neighbor : trainingPoints) {
             // Compute the distance between the measurement and its neighbor
