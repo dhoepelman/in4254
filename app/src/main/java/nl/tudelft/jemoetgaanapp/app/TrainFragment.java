@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -27,9 +26,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Fragment to train the activity detection
@@ -62,6 +58,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     private long measurementStart;
 
     private ACTIVITY selectedActivity;
+    private Measurement.Helper measurementHelper;
 
     /**
      * Returns a new instance of this fragment for the given section number
@@ -79,6 +76,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_train, container, false);
+        assert rootView != null;
         valueMeasurement = (TextView) rootView.findViewById(R.id.val_measuring);
         valueNumberOfWindows = (TextView) rootView.findViewById(R.id.val_num_windows);
 
@@ -144,7 +142,6 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         // Ignore
     }
 
-    private Measurement.Helper measurementHelper;
     private void startMeasuring() {
         measurementStart = System.currentTimeMillis();
 
@@ -174,20 +171,18 @@ public class TrainFragment extends Fragment implements SensorEventListener {
                 String header = null;
                 if (!resultsFile.exists()) {
                     resultsFile.createNewFile();
-                    header = "ACTIVITY;MeanX;MeanY;MeanZ;StdDevX;StdDevY;StdDevZ\n";
+                    header = "ACTIVITY,MeanX,MeanY,MeanZ,StdDevX,StdDevY,StdDevZ,CorrXY,CorrYZ,CorrZX\n";
                 }
 
                 final PrintWriter writer = new PrintWriter(new FileOutputStream(resultsFile, true));
-                if(header != null) {
+                if (header != null) {
                     writer.append(header);
                 }
-                Locale.setDefault(Locale.ENGLISH);  // Use . as decimal separator
-                for (Measurement measurement : measurementHelper.getMeasurements()) {
+
+                for (IMeasurement measurement : measurementHelper.getMeasurements()) {
                     writer.append(selectedActivity.name());
                     writer.append(",");
-                    writer.append(Doubles.join(",",measurement.getMean()));
-                    writer.append(",");
-                    writer.append(Doubles.join(",", measurement.getStdDev()));
+                    writer.append(Doubles.join(",", measurement.getFeatureVector()));
                     writer.append("\n");
                 }
                 writer.close();

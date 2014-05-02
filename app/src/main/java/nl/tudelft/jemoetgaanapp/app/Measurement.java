@@ -1,6 +1,9 @@
 package nl.tudelft.jemoetgaanapp.app;
 
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import com.google.common.primitives.Doubles;
+
+import org.apache.commons.math3.stat.correlation.Covariance;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,7 +12,7 @@ import java.util.List;
 /**
  * [1] Ravi, Nishkam, et al. "Activity recognition from accelerometer data." AAAI. Vol. 5. 2005.
  */
-public class Measurement {
+public class Measurement implements IMeasurement {
     /**
      * Window size. Based on [1]. 50Hz measurements
      */
@@ -19,57 +22,72 @@ public class Measurement {
      */
     public static final int WINDOW_OVERLAP = 128;
 
-    private final float[][] raw_measurements;
-    private SummaryStatistics[] summaryStatistics;
+    private final DescriptiveStatistics[] raw_measurements;
+    private double[] featureVector = null;
 
     public Measurement() {
-        raw_measurements = new float[WINDOW_SIZE][];
+        raw_measurements = new DescriptiveStatistics[]{
+                new DescriptiveStatistics(WINDOW_SIZE),
+                new DescriptiveStatistics(WINDOW_SIZE),
+                new DescriptiveStatistics(WINDOW_SIZE)
+        };
     }
 
     /**
      * True if the window is full
      */
     public boolean isCompleted() {
-        return raw_measurements[WINDOW_SIZE - 1] != null;
+        return raw_measurements[0].getN() >= WINDOW_SIZE;
+    }
+
+    public double getMean(int axis) {
+        return raw_measurements[axis].getMean();
+    }
+
+    public double getStdDev(int axis) {
+        return raw_measurements[axis].getStandardDeviation();
+    }
+
+   /**
+     * Get the covariance between two axes
+     */
+    public double getCorrelation(int axis1, int axis2) {
+        return getCorrelation(axis1, axis2, getStdDev(axis1), getStdDev(axis2));
+    }
+
+    private double getCorrelation(int axis1, int axis2, double stdDev1, double stdDev2) {
+        double cov = new Covariance().covariance(raw_measurements[axis1].getValues(), raw_measurements[axis2].getValues());
+        return cov / (stdDev1*stdDev2);
     }
 
     /**
-     * Mean of the window (separate for all 3 axes)
+     * Get the feature vector of this measurement
      */
-    public double[] getMean() {
-        if (summaryStatistics == null) {
-            calculateSummaryStatistics();
+    @Override
+    public double[] getFeatureVector() {
+        if(featureVector == null) {
+            final double stdDev0 = getStdDev(0);
+            final double stdDev1 = getStdDev(1);
+            final double stdDev2 = getStdDev(2);
+            featureVector = new double[]{
+                    getMean(0),
+                    getMean(1),
+                    getMean(2),
+                    stdDev0,
+                    stdDev1,
+                    stdDev2,
+                    getCorrelation(0, 1, stdDev0, stdDev1),  // Corr(x,y)
+                    getCorrelation(1, 2, stdDev1, stdDev2),  // Corr(y,z)
+                    getCorrelation(2, 0, stdDev2, stdDev0),  // Corr(z,x)
+            };
         }
-        return new double[]{
-                summaryStatistics[0].getMean(),
-                summaryStatistics[1].getMean(),
-                summaryStatistics[2].getMean(),
-        };
+        return featureVector;
     }
 
-    /**
-     * Standard deviation of the window (separate on all 3 axes)
-     */
-    public double[] getStdDev() {
-        if (summaryStatistics == null) {
-            calculateSummaryStatistics();
-        }
-        return new double[]{
-                summaryStatistics[0].getStandardDeviation(),
-                summaryStatistics[1].getStandardDeviation(),
-                summaryStatistics[2].getStandardDeviation(),
-        };
+    @Override
+    public String toString() {
+        return "Measurement(" + Doubles.join(",", getFeatureVector()) + ")";
     }
-
-    private void calculateSummaryStatistics() {
-        summaryStatistics = new SummaryStatistics[]{new SummaryStatistics(), new SummaryStatistics(), new SummaryStatistics()};
-        for (float[] m : raw_measurements) {
-            for (int i = 0; i < 3; i++) {
-                summaryStatistics[i].addValue(m[i]);
-            }
-        }
-    }
-
 
     /**
      * Helper to divide raw measurements into windows
@@ -89,7 +107,7 @@ public class Measurement {
         /**
          * Get all measurements
          */
-        public Collection<Measurement> getMeasurements() {
+        public Collection<? extends IMeasurement> getMeasurements() {
             return measurements;
         }
 
@@ -126,11 +144,17 @@ public class Measurement {
                 measurements.add(next);
             }
 
-            current.raw_measurements[current_loc] = values;
+            addToMeasurement(current, values);
             if (current_loc >= WINDOW_OVERLAP) {
-                next.raw_measurements[current_loc - WINDOW_OVERLAP] = values;
+                addToMeasurement(next, values);
             }
             current_loc++;
+        }
+
+        private void addToMeasurement(Measurement m, float[] values) {
+            m.raw_measurements[0].addValue(values[0]);
+            m.raw_measurements[1].addValue(values[1]);
+            m.raw_measurements[2].addValue(values[2]);
         }
     }
 }
