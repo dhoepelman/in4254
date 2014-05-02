@@ -80,6 +80,7 @@ public class Measurement {
         private Measurement current;
         private Measurement next;
         private int current_loc = 0;
+        private int numFullWindows = 0;
 
         public Helper(ACTIVITY activity) {
             this.activity = activity;
@@ -99,6 +100,10 @@ public class Measurement {
             }
         }
 
+        public int getNumberOfFullWindows() {
+            return numFullWindows;
+        }
+
         public void addMeasurement(float[] values) {
             if (values.length != 3) {
                 throw new IllegalArgumentException("Expected 3 values");
@@ -114,6 +119,7 @@ public class Measurement {
                     // Measurement was full, replace with next
                     current = next;
                     current_loc = WINDOW_OVERLAP;
+                    numFullWindows++;
                 }
                 // Create an empty "next" measurement
                 next = new Measurement();

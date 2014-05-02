@@ -80,7 +80,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_train, container, false);
         valueMeasurement = (TextView) rootView.findViewById(R.id.val_measuring);
-        valueNumberOfWindows = (TextView) rootView.findViewById(R.id.valNumWindows);
+        valueNumberOfWindows = (TextView) rootView.findViewById(R.id.val_num_windows);
 
         // Register the button listeners
         for (int buttonId : activity_buttons.keySet()) {
@@ -134,9 +134,9 @@ public class TrainFragment extends Fragment implements SensorEventListener {
             case Sensor.TYPE_LINEAR_ACCELERATION:
                 measurementHelper.addMeasurement(event.values);
 
-                final double value = (System.currentTimeMillis() - measurementStart) / 100.0;
+                final double value = (System.currentTimeMillis() - measurementStart) / 1000.0;
                 valueMeasurement.setText(String.format("%.1f", value));
-                valueNumberOfWindows.setText(measurementHelper.getMeasurements().size());
+                valueNumberOfWindows.setText(Integer.toString(measurementHelper.getNumberOfFullWindows()));
         }
     }
 
@@ -152,7 +152,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         measurementHelper = new Measurement.Helper(selectedActivity);
 
         // Start listening
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
     }
 
     private void stopMeasuring() {
@@ -188,6 +188,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
                     writer.append(Doubles.join(",",measurement.getMean()));
                     writer.append(",");
                     writer.append(Doubles.join(",", measurement.getStdDev()));
+                    writer.append("\n");
                 }
                 writer.close();
 
@@ -228,9 +229,6 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         view.setEnabled(false);
 
         stopMeasuring();
-
-        // Set final number of windows
-        valueNumberOfWindows.setText(measurementHelper.getMeasurements().size());
 
         // Enable the start button
         final View startButton = getView().findViewById(R.id.but_start);
