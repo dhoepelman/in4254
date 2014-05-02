@@ -1,4 +1,4 @@
-package nl.tudelft.sps.app;
+package nl.tudelft.sps.app.activity;
 
 import com.google.common.primitives.Doubles;
 

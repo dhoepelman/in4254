@@ -27,6 +27,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import nl.tudelft.sps.app.activity.ACTIVITY;
+import nl.tudelft.sps.app.activity.IMeasurement;
+import nl.tudelft.sps.app.activity.Measurement;
+
 /**
  * Fragment to train the activity detection
  */

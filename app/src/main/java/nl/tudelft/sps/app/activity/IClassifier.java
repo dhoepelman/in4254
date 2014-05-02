@@ -1,7 +1,7 @@
-package nl.tudelft.sps.app;
+package nl.tudelft.sps.app.activity;
 
 /**
- * Created by David on 2-5-2014.
+ * Interface for Activity classifiers
  */
 public interface IClassifier {
     /**

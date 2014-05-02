@@ -1,9 +1,9 @@
-package nl.tudelft.sps.app;
+package nl.tudelft.sps.app.activity;
 
 /**
 * Enum for different type of activities
 */
-enum ACTIVITY {
+public enum ACTIVITY {
     SITTING(),
     WALKING(),
     RUNNING(),
