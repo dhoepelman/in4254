@@ -13,6 +13,7 @@ import java.util.List;
  * [1] Ravi, Nishkam, et al. "Activity recognition from accelerometer data." AAAI. Vol. 5. 2005.
  */
 public class Measurement implements IMeasurement {
+
     /**
      * Window size. Based on [1]. 50Hz measurements
      */
@@ -38,6 +39,18 @@ public class Measurement implements IMeasurement {
      */
     public boolean isCompleted() {
         return raw_measurements[0].getN() >= WINDOW_SIZE;
+    }
+    @Override
+    public boolean isValid() {
+        return isCompleted();
+    }
+
+
+    /**
+     * Gives a [0,1] percentage of how far this Measurement is
+     */
+    public double percentageCompleted() {
+        return raw_measurements[0].getN()/(double)WINDOW_SIZE;
     }
 
     public double getMean(int axis) {
@@ -87,6 +100,15 @@ public class Measurement implements IMeasurement {
     @Override
     public String toString() {
         return "Measurement(" + Doubles.join(",", getFeatureVector()) + ")";
+    }
+
+    public void addToMeasurement(float[] values) {
+        if(values.length != 3) {
+            throw new IllegalArgumentException("Measurement must have only X,Y,Z axis");
+        }
+        raw_measurements[0].addValue(values[0]);
+        raw_measurements[1].addValue(values[1]);
+        raw_measurements[2].addValue(values[2]);
     }
 
     /**
@@ -144,17 +166,12 @@ public class Measurement implements IMeasurement {
                 measurements.add(next);
             }
 
-            addToMeasurement(current, values);
+            current.addToMeasurement(values);
             if (current_loc >= WINDOW_OVERLAP) {
-                addToMeasurement(next, values);
+                next.addToMeasurement(values);
             }
             current_loc++;
         }
 
-        private void addToMeasurement(Measurement m, float[] values) {
-            m.raw_measurements[0].addValue(values[0]);
-            m.raw_measurements[1].addValue(values[1]);
-            m.raw_measurements[2].addValue(values[2]);
-        }
     }
 }

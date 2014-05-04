@@ -8,7 +8,8 @@ public enum ACTIVITY {
     WALKING(),
     RUNNING(),
     STAIRS_UP(),
-    STAIRS_DOWN();
+    STAIRS_DOWN(),
+    UNKNOWN();
 
     ACTIVITY() {
 
