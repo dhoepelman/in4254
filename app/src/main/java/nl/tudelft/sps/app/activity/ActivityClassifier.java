@@ -36,7 +36,11 @@ public class ActivityClassifier implements IClassifier {
 //        final SortedMap<ACTIVITY, Integer> sortedSqrtNNeighbors = new TreeMap<ACTIVITY, Integer>(countComparator);
 
         // Add the closest sqrt(n) neighbors to a new map
-        final double sqrtN = Math.sqrt(trainingPoints.size());
+        long sqrtN = Math.round(Math.sqrt(trainingPoints.size()));
+        // Make it odd if it is even
+        if ((sqrtN % 2) == 0) {
+            sqrtN++;
+        }
         for (int i = 0; i < sqrtN; i++) {
             final ACTIVITY activity = sortedNeighbors.pollFirstEntry().getValue().activity;
 
