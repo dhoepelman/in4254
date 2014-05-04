@@ -142,6 +142,7 @@ public class Measurement implements IMeasurement {
 
         public synchronized void cleanWindow() {
             current = new Measurement();
+            current_loc = 0;
         }
 
         public synchronized Measurement getCurrentWindow() {

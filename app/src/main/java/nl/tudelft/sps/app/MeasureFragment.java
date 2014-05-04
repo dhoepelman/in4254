@@ -65,7 +65,7 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
         rootView = inflater.inflate(R.layout.fragment_measure, container, false);
         assert rootView != null;
 
-        labelWindows = (TextView) rootView.findViewById(R.id.label_activity);
+        labelWindows = (TextView) rootView.findViewById(R.id.label_windows);
         labelActivity = (TextView) rootView.findViewById(R.id.label_activity);
 
         labelWindows.setText(String.format("%d", numberOfWindows));
@@ -96,7 +96,10 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
                     labelWindows.setText(String.format("%d", numberOfWindows));
 
                     // Perform the classification
-                    final ACTIVITY classifiedActivity = classifier.classify(measurementHelper.getCurrentWindow());
+                    //final ACTIVITY classifiedActivity = classifier.classify(measurementHelper.getCurrentWindow());
+                    // org.apache.commons.math3.exception.MathIllegalArgumentException: sample contains 0 observed points, at least 2 are required
+                    // occurs if no training data has been added
+                    final ACTIVITY classifiedActivity = ACTIVITY.RUNNING;
 
                     // Print classifiedActivity on the screen
                     labelActivity.setText(String.valueOf(classifiedActivity));
@@ -149,6 +152,7 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
                     while ((line = reader.readLine()) != null) {
                         // Extract the features and put the data from each line into its own IMeasurement instance
                         final Measurement measurement = Measurement.createMeasurement(line);
+                        System.err.println("Another line bites the dust!");
                         classifier.train(measurement.getMeasuredActivity(), measurement);
                     }
                 }
