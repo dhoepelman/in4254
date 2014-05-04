@@ -59,12 +59,6 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
         return fragment;
     }
 
-    public void onCreate() {
-        // Set up accelerometer
-        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -76,6 +70,10 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
 
         labelWindows.setText(String.format("%d", numberOfWindows));
         labelActivity.setText("TEST");
+
+        // Set up accelerometer
+        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 
         readTrainingData();
 
