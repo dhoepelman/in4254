@@ -147,22 +147,22 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
 
                     // Read every line of the file
                     String line;
-                    int i = 0;
+                    int processedMeasurements = 0;
                     while ((line = reader.readLine()) != null) {
                         final String[] values = line.split(",", 2);
                         // Extract the features and put the data from each line into its own IMeasurement instance
                         final IMeasurement measurement = new TrainedMeasurement(values[1]);
                         classifier.train(ACTIVITY.valueOf(values[0]), measurement);
-                        i++;
+                        processedMeasurements++;
                     }
-                    displayToast("Added " + String.valueOf(i) + " samples to the classifier");
+                    displayToast(String.format("Added %d measurements to the classifier", processedMeasurements));
                 }
                 catch (IOException exception) {
                     displayToast("Failed to read training data");
                 }
             }
             else {
-                displayToast(resultsFile.getName() + " does not exist");
+                displayToast(String.format("%s does not exist", resultsFile.getName()));
             }
         }
         else {

@@ -123,10 +123,6 @@ public class Measurement implements IMeasurement {
         public boolean isFull() {
             return current_loc == WINDOW_SIZE;
         }
-
-        protected void addToMeasurement(Measurement m, float[] values) {
-            current.addToMeasurement(values);
-        }
     }
 
     public static class MonitorHelper extends Helper {
@@ -152,7 +148,7 @@ public class Measurement implements IMeasurement {
                 throw new RuntimeException("Window is full");
             }
 
-            addToMeasurement(current, values);
+            current.addToMeasurement(values);
             current_loc++;
 
             return isFull();
