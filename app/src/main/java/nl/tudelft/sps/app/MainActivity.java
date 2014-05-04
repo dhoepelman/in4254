@@ -11,6 +11,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import nl.tudelft.sps.app.activity.ActivityClassifier;
+import nl.tudelft.sps.app.activity.IClassifier;
+import nl.tudelft.sps.app.activity.RandomClassifier;
+
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
@@ -45,12 +49,12 @@ public class MainActivity extends ActionBarActivity
         // update the main content by replacing fragments
         Fragment fragment = null;
         switch (position) {
-            case 0:
-                // TODO: Implementeer activity monitoring
-                break;
             default:
-            case 1:
+            case 0:
                 fragment = TrainFragment.newInstance(position);
+                break;
+            case 1:
+                // TODO: Implementeer activity monitoring
                 break;
             case 2:
                 // TODO: implementeer localization
@@ -114,6 +118,18 @@ public class MainActivity extends ActionBarActivity
         //    return true;
         //}
         return super.onOptionsItemSelected(item);
+    }
+
+    private IClassifier classifier;
+    /**
+     * Get the classifier for Activity from measurements
+     */
+    public IClassifier getClassifier() {
+        if(classifier == null) {
+            //classifier = new ActivityClassifier();
+            classifier = new RandomClassifier();
+        }
+        return classifier;
     }
 
 }
