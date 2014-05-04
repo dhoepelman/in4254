@@ -9,9 +9,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import nl.tudelft.sps.app.activity.ACTIVITY;
+
 /**
  * [1] Ravi, Nishkam, et al. "Activity recognition from accelerometer data." AAAI. Vol. 5. 2005.
  */
+// TODO isn't this actually a MeasurementsWindow instead of a Measurement?
 public class Measurement implements IMeasurement {
     /**
      * Window size. Based on [1]. 50Hz measurements
@@ -25,12 +28,40 @@ public class Measurement implements IMeasurement {
     private final DescriptiveStatistics[] raw_measurements;
     private double[] featureVector = null;
 
-    public Measurement() {
+    private final ACTIVITY measuredActivity;
+
+    protected Measurement(ACTIVITY measuredActivity) {
         raw_measurements = new DescriptiveStatistics[]{
                 new DescriptiveStatistics(WINDOW_SIZE),
                 new DescriptiveStatistics(WINDOW_SIZE),
                 new DescriptiveStatistics(WINDOW_SIZE)
         };
+
+        this.measuredActivity = measuredActivity;
+    }
+
+    public Measurement() {
+        this(null);
+    }
+
+    /**
+     * Constructs a MeasurementWindow based using a line of CSV data
+     *
+     * @param line with Comma Separated Values
+     */
+    public static Measurement createMeasurement(String line) {
+        // FIXME fill the raw_measurements with the data from line
+        // TODO Add the detected activity type to measuredActivity
+
+        return new Measurement(ACTIVITY.STAIRS_UP); // TODO test value
+    }
+
+    /**
+     * Returns a non-null value if this object was constructed from a CSV line, return null
+     * if used during training.
+     */
+    public ACTIVITY getMeasuredActivity() {
+        return measuredActivity;
     }
 
     /**
@@ -89,18 +120,60 @@ public class Measurement implements IMeasurement {
         return "Measurement(" + Doubles.join(",", getFeatureVector()) + ")";
     }
 
+    private static abstract class Helper {
+        protected Measurement current;
+        protected int current_loc = 0;
+
+        public boolean isFull() {
+            return current_loc == WINDOW_SIZE;
+        }
+
+        protected void addToMeasurement(Measurement m, float[] values) {
+            m.raw_measurements[0].addValue(values[0]);
+            m.raw_measurements[1].addValue(values[1]);
+            m.raw_measurements[2].addValue(values[2]);
+        }
+    }
+
+    public static class MonitorHelper extends Helper {
+        public MonitorHelper() {
+            cleanWindow();
+        }
+
+        public synchronized void cleanWindow() {
+            current = new Measurement();
+        }
+
+        public synchronized Measurement getCurrentWindow() {
+            return current;
+        }
+
+        public synchronized boolean addMeasurement(float[] values) {
+            if (values.length != 3) {
+                throw new IllegalArgumentException("Expected 3 values");
+            }
+
+            if (isFull()) {
+                throw new RuntimeException("Window is full");
+            }
+
+            addToMeasurement(current, values);
+            current_loc++;
+
+            return isFull();
+        }
+    }
+
     /**
      * Helper to divide raw measurements into windows
      */
-    public static class Helper {
+    public static class TrainHelper extends Helper {
         public final ACTIVITY activity;
-        private List<Measurement> measurements = new ArrayList<>();
-        private Measurement current;
+        private final List<Measurement> measurements = new ArrayList<>();
         private Measurement next;
-        private int current_loc = 0;
         private int numFullWindows = 0;
 
-        public Helper(ACTIVITY activity) {
+        public TrainHelper(ACTIVITY activity) {
             this.activity = activity;
         }
 
@@ -127,7 +200,7 @@ public class Measurement implements IMeasurement {
                 throw new IllegalArgumentException("Expected 3 values");
             }
 
-            if (current == null || current_loc == WINDOW_SIZE) {
+            if (current == null || isFull()) {
                 if (current == null) {
                     // We don't have any measurement, start one
                     current = new Measurement();
@@ -149,12 +222,6 @@ public class Measurement implements IMeasurement {
                 addToMeasurement(next, values);
             }
             current_loc++;
-        }
-
-        private void addToMeasurement(Measurement m, float[] values) {
-            m.raw_measurements[0].addValue(values[0]);
-            m.raw_measurements[1].addValue(values[1]);
-            m.raw_measurements[2].addValue(values[2]);
         }
     }
 }

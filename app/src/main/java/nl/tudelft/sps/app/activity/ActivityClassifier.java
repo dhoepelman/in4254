@@ -31,7 +31,6 @@ public class ActivityClassifier implements IClassifier {
             sortedNeighbors.put(neighborDistance, neighbor);
         }
 
-        // TODO Use new DefaultedMap() if we can get AS convinced to build org.apache.commons.collections4
         final Map<ACTIVITY, Integer> sqrtNNeighbors = new HashMap<ACTIVITY, Integer>();
 //        final ActivityCountComparator countComparator = new ActivityCountComparator(sqrtNNeighbors);
 //        final SortedMap<ACTIVITY, Integer> sortedSqrtNNeighbors = new TreeMap<ACTIVITY, Integer>(countComparator);

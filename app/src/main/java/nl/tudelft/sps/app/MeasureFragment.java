@@ -12,15 +12,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.os.Environment;
 
+import java.io.*;
+import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by David on 1-5-14.
- */
+import nl.tudelft.sps.app.activity.*;
+
 public class MeasureFragment extends Fragment implements SensorEventListener {
 
     /**
@@ -28,6 +31,20 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
+
+    private View rootView;
+
+    private TextView labelWindows;
+    private TextView labelActivity;
+
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+
+    private final Measurement.MonitorHelper measurementHelper = new Measurement.MonitorHelper();
+
+    private final ActivityClassifier classifier = new ActivityClassifier();
+
+    private int numberOfWindows = 0;
 
     /**
      * Returns a new instance of this fragment for the given section
@@ -42,19 +59,27 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
         return fragment;
     }
 
-    public MeasureFragment() {
-    }
-
     public void onCreate() {
         // Set up accelerometer
-        smanager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
-        accelerometer = smanager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_measure, container, false);
+        rootView = inflater.inflate(R.layout.fragment_measure, container, false);
+        assert rootView != null;
+
+        labelWindows = (TextView) rootView.findViewById(R.id.label_activity);
+        labelActivity = (TextView) rootView.findViewById(R.id.label_activity);
+
+        labelWindows.setText(String.format("%d", numberOfWindows));
+        labelActivity.setText("TEST");
+
+        readTrainingData();
+
+        return rootView;
     }
 
     @Override
@@ -63,70 +88,25 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
         ((MainActivity) activity).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
     }
 
-    private SensorManager smanager;
-    private Sensor accelerometer;
-
-    //    private double[] currentValues = new double[] {0.0, 0.0, 0.0};
-    private final double filter_modifier = 0.4;
-
-    private final int bufferLength = 5;
-    // Create empty buffers
-    private final List<List<Float>> storedValues = new ArrayList<List<Float>>(3);
-
-    private int currentPos = 0;
-
     public void onSensorChanged(SensorEvent event) {
-        // We received new data from one of the sensors
-
-        //Log.d(LOGTAG, "Type: " + event.sensor.getType());
-
-        if (storedValues.isEmpty()) {
-            for (int i = 0; i < 3; i++) {
-                final List<Float> list = new ArrayList<Float>(bufferLength);
-                for(int j = 0; i < 5; i++) {
-                    list.add(0f);
-                }
-                storedValues.add(list);
-            }
-        }
-
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
             case Sensor.TYPE_LINEAR_ACCELERATION:
-//                for (int i = 0; i < 3; i++) {
-//                    currentValues[i] = filter_modifier * event.values[i] + (1 - filter_modifier) * currentValues[i];
-//                }
-                final int currentIndex = currentPos++ % 5;
-                for (int i = 0; i < 3; i++) {
-                    storedValues.get(i).set(currentIndex, event.values[i]);
-                    Collections.sort(storedValues.get(i));
+                if (measurementHelper.addMeasurement(event.values)) {
+                    // Process current window
+                    numberOfWindows++;
+                    labelWindows.setText(String.format("%d", numberOfWindows));
+
+                    // Perform the classification
+                    final ACTIVITY classifiedActivity = classifier.classify(measurementHelper.getCurrentWindow());
+
+                    // Print classifiedActivity on the screen
+                    labelActivity.setText(String.valueOf(classifiedActivity));
+
+                    // Clean the window so that it is empty when the
+                    // first future sensor data is added
+                    measurementHelper.cleanWindow();
                 }
-
-                final DecimalFormat f = new DecimalFormat("#.##");
-
-                //((TextView) findViewById(R.id.ValX)).setText(f.format(currentValues[0]));
-                //((TextView)findViewById(R.id.ValY)).setText(f.format(currentValues[1]));
-                //((TextView)findViewById(R.id.ValZ)).setText(f.format(currentValues[2]));
-
-                for (int i = 0; i < 3; i++) {
-                    junit.framework.Assert.assertEquals(bufferLength, storedValues.get(i).size());
-                }
-
-                final TextView valueX = (TextView) getView().findViewById(R.id.ValX);
-                final TextView valueY = (TextView) getView().findViewById(R.id.ValY);
-                final TextView valueZ = (TextView) getView().findViewById(R.id.ValZ);
-
-                if (valueX == null || valueY == null || valueZ == null) {
-                    // First keelhaul all the androids, then abandon ship!
-                    return;
-                }
-
-                // Get the median values
-                valueX.setText(f.format(storedValues.get(0).get(bufferLength / 2)));
-                valueY.setText(f.format(storedValues.get(1).get(bufferLength / 2)));
-                valueZ.setText(f.format(storedValues.get(2).get(bufferLength / 2)));
-
-                break;
         }
     }
 
@@ -137,13 +117,55 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
     @Override
     public void onResume() {
         super.onResume();
-        smanager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
+        startMeasuring();
+    }
+
+    private void startMeasuring() {
+        // Clean the window
+        measurementHelper.cleanWindow();
+
+        // Start listening
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        smanager.unregisterListener(this);
+        try {
+            sensorManager.unregisterListener(this);
+        } catch (NullPointerException e) {
+            // Listener was already unregistered or never registered
+        }
+    }
+
+    private void readTrainingData() {
+        // Read TrainFragment.RESULTS_FILE_PATH and do classifier.train(measurement_of_current_line)
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            final File resultsFile = new File(TrainFragment.RESULTS_FILE_PATH);
+            if (resultsFile.exists()) {
+                try {
+                    final BufferedReader reader = new BufferedReader(new FileReader(resultsFile));
+
+                    // Read every line of the file
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        // Extract the features and put the data from each line into its own IMeasurement instance
+                        final Measurement measurement = Measurement.createMeasurement(line);
+                        classifier.train(measurement.getMeasuredActivity(), measurement);
+                    }
+                }
+                catch (IOException exception) {
+                    displayToast("Failed to read training data");
+                }
+            }
+        }
+    }
+
+    /**
+     * Display the message as a toast
+     */
+    private void displayToast(String message) {
+        Toast.makeText(getActivity().getApplicationContext(), message, Toast.LENGTH_LONG).show();
     }
 
 }

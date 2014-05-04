@@ -46,7 +46,8 @@ public class MainActivity extends ActionBarActivity
         Fragment fragment = null;
         switch (position) {
             case 0:
-                // TODO: Implementeer activity monitoring
+                // TODO: Implement activity monitoring
+                fragment = MeasureFragment.newInstance(position);
                 break;
             default:
             case 1:
