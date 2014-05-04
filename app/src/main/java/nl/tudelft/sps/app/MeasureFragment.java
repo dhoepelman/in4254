@@ -96,10 +96,8 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
                     labelWindows.setText(String.format("%d", numberOfWindows));
 
                     // Perform the classification
-                    //final ACTIVITY classifiedActivity = classifier.classify(measurementHelper.getCurrentWindow());
-                    // org.apache.commons.math3.exception.MathIllegalArgumentException: sample contains 0 observed points, at least 2 are required
-                    // occurs if no training data has been added
-                    final ACTIVITY classifiedActivity = ACTIVITY.RUNNING;
+                    final ACTIVITY classifiedActivity = classifier.classify(measurementHelper.getCurrentWindow());
+//                    final ACTIVITY classifiedActivity = ACTIVITY.RUNNING;
 
                     // Print classifiedActivity on the screen
                     labelActivity.setText(String.valueOf(classifiedActivity));
@@ -149,18 +147,26 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
 
                     // Read every line of the file
                     String line;
+                    int i = 0;
                     while ((line = reader.readLine()) != null) {
+                        final String[] values = line.split(",", 2);
                         // Extract the features and put the data from each line into its own IMeasurement instance
-                        final IMeasurement measurement = Measurement.createMeasurement(line);
-                        System.err.println("Another line bites the dust!");
-                        //classifier.train(measurement.getMeasuredActivity(), measurement);
-                        classifier.train(ACTIVITY.UNKNOWN, measurement);
+                        final IMeasurement measurement = new TrainedMeasurement(values[1]);
+                        classifier.train(ACTIVITY.valueOf(values[0]), measurement);
+                        i++;
                     }
+                    displayToast("Added " + String.valueOf(i) + " samples to the classifier");
                 }
                 catch (IOException exception) {
                     displayToast("Failed to read training data");
                 }
             }
+            else {
+                displayToast(resultsFile.getName() + " does not exist");
+            }
+        }
+        else {
+            displayToast("External storage not mounted");
         }
     }
 

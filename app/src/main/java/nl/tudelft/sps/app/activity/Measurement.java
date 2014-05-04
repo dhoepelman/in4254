@@ -28,26 +28,12 @@ public class Measurement implements IMeasurement {
     private final DescriptiveStatistics[] raw_measurements;
     private double[] featureVector = null;
 
-
     public Measurement() {
         raw_measurements = new DescriptiveStatistics[]{
-                new DescriptiveStatistics(WINDOW_SIZE),
-                new DescriptiveStatistics(WINDOW_SIZE),
-                new DescriptiveStatistics(WINDOW_SIZE)
+            new DescriptiveStatistics(WINDOW_SIZE),
+            new DescriptiveStatistics(WINDOW_SIZE),
+            new DescriptiveStatistics(WINDOW_SIZE)
         };
-    }
-
-    /**
-     * Constructs a MeasurementWindow based using a line of CSV data
-     *
-     * @param line with Comma Separated Values
-     */
-    public static IMeasurement createMeasurement(String line) {
-        // FIXME fill the raw_measurements with the data from line
-        // TODO Add the detected activity type to measuredActivity
-
-        //return new Measurement(ACTIVITY.STAIRS_UP); // TODO test value
-        return IMeasurement.INVALID_MEASUREMENT;
     }
 
     /**
@@ -56,11 +42,11 @@ public class Measurement implements IMeasurement {
     public boolean isCompleted() {
         return raw_measurements[0].getN() >= WINDOW_SIZE;
     }
+
     @Override
     public boolean isValid() {
         return isCompleted();
     }
-
 
     /**
      * Gives a [0,1] percentage of how far this Measurement is
@@ -86,7 +72,7 @@ public class Measurement implements IMeasurement {
 
     private double getCorrelation(int axis1, int axis2, double stdDev1, double stdDev2) {
         double cov = new Covariance().covariance(raw_measurements[axis1].getValues(), raw_measurements[axis2].getValues());
-        return cov / (stdDev1*stdDev2);
+        return cov / (stdDev1 * stdDev2);
     }
 
     /**
@@ -94,10 +80,10 @@ public class Measurement implements IMeasurement {
      */
     @Override
     public double[] getFeatureVector() {
-        if(!isCompleted()) {
+        if (!isCompleted()) {
             return IMeasurement.INVALID_MEASUREMENT.getFeatureVector();
         }
-        if(featureVector == null) {
+        if (featureVector == null) {
             final double stdDev0 = getStdDev(0);
             final double stdDev1 = getStdDev(1);
             final double stdDev2 = getStdDev(2);
@@ -122,7 +108,7 @@ public class Measurement implements IMeasurement {
     }
 
     public void addToMeasurement(float[] values) {
-        if(values.length != 3) {
+        if (values.length != 3) {
             throw new IllegalArgumentException("Measurement must have only X,Y,Z axis");
         }
         raw_measurements[0].addValue(values[0]);
