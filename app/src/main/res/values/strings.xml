@@ -2,9 +2,9 @@
 <resources>
 
     <string name="app_name">SPS App</string>
-    <string name="title_section1">Activity Monitoring (UNIMPL)</string>
-    <string name="title_section2">Train Activity Monitoring</string>
-    <string name="title_section3">Localization (UNIMPL)</string>
+    <string name="title_section_test_activity">Activity testing</string>
+    <string name="title_section_train_activity">Activity training</string>
+    <string name="title_section_localization">Localization (UNIMPL)</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_settings">Settings</string>
