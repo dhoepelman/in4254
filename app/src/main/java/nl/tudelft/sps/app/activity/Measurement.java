@@ -9,9 +9,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+
 /**
  * [1] Ravi, Nishkam, et al. "Activity recognition from accelerometer data." AAAI. Vol. 5. 2005.
  */
+
 public class Measurement implements IMeasurement {
 
     /**
@@ -26,12 +28,26 @@ public class Measurement implements IMeasurement {
     private final DescriptiveStatistics[] raw_measurements;
     private double[] featureVector = null;
 
+
     public Measurement() {
         raw_measurements = new DescriptiveStatistics[]{
                 new DescriptiveStatistics(WINDOW_SIZE),
                 new DescriptiveStatistics(WINDOW_SIZE),
                 new DescriptiveStatistics(WINDOW_SIZE)
         };
+    }
+
+    /**
+     * Constructs a MeasurementWindow based using a line of CSV data
+     *
+     * @param line with Comma Separated Values
+     */
+    public static IMeasurement createMeasurement(String line) {
+        // FIXME fill the raw_measurements with the data from line
+        // TODO Add the detected activity type to measuredActivity
+
+        //return new Measurement(ACTIVITY.STAIRS_UP); // TODO test value
+        return IMeasurement.INVALID_MEASUREMENT;
     }
 
     /**
@@ -78,6 +94,9 @@ public class Measurement implements IMeasurement {
      */
     @Override
     public double[] getFeatureVector() {
+        if(!isCompleted()) {
+            return IMeasurement.INVALID_MEASUREMENT.getFeatureVector();
+        }
         if(featureVector == null) {
             final double stdDev0 = getStdDev(0);
             final double stdDev1 = getStdDev(1);
@@ -111,18 +130,59 @@ public class Measurement implements IMeasurement {
         raw_measurements[2].addValue(values[2]);
     }
 
+    private static abstract class Helper {
+        protected Measurement current;
+        protected int current_loc = 0;
+
+        public boolean isFull() {
+            return current_loc == WINDOW_SIZE;
+        }
+
+        protected void addToMeasurement(Measurement m, float[] values) {
+            current.addToMeasurement(values);
+        }
+    }
+
+    public static class MonitorHelper extends Helper {
+        public MonitorHelper() {
+            cleanWindow();
+        }
+
+        public synchronized void cleanWindow() {
+            current = new Measurement();
+            current_loc = 0;
+        }
+
+        public synchronized Measurement getCurrentWindow() {
+            return current;
+        }
+
+        public synchronized boolean addMeasurement(float[] values) {
+            if (values.length != 3) {
+                throw new IllegalArgumentException("Expected 3 values");
+            }
+
+            if (isFull()) {
+                throw new RuntimeException("Window is full");
+            }
+
+            addToMeasurement(current, values);
+            current_loc++;
+
+            return isFull();
+        }
+    }
+
     /**
      * Helper to divide raw measurements into windows
      */
-    public static class Helper {
+    public static class TrainHelper extends Helper {
         public final ACTIVITY activity;
-        private List<Measurement> measurements = new ArrayList<>();
-        private Measurement current;
+        private final List<Measurement> measurements = new ArrayList<>();
         private Measurement next;
-        private int current_loc = 0;
         private int numFullWindows = 0;
 
-        public Helper(ACTIVITY activity) {
+        public TrainHelper(ACTIVITY activity) {
             this.activity = activity;
         }
 
@@ -149,7 +209,7 @@ public class Measurement implements IMeasurement {
                 throw new IllegalArgumentException("Expected 3 values");
             }
 
-            if (current == null || current_loc == WINDOW_SIZE) {
+            if (current == null || isFull()) {
                 if (current == null) {
                     // We don't have any measurement, start one
                     current = new Measurement();
@@ -172,6 +232,5 @@ public class Measurement implements IMeasurement {
             }
             current_loc++;
         }
-
     }
 }

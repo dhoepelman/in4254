@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="undefined"
-        android:id="@+id/ValX"
+        android:id="@+id/label_windows"
         android:layout_alignTop="@+id/section_label"
         android:layout_toRightOf="@+id/section_label"
         android:layout_marginLeft="32dp" />
@@ -28,19 +28,9 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="undefined"
-        android:id="@+id/ValY"
-        android:layout_below="@+id/ValX"
-        android:layout_alignLeft="@+id/ValX"
-        android:layout_alignStart="@+id/ValX" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="undefined"
-        android:id="@+id/ValZ"
-        android:layout_below="@+id/ValY"
-        android:layout_alignLeft="@+id/ValY"
-        android:layout_alignStart="@+id/ValY" />
+        android:id="@+id/label_activity"
+        android:layout_below="@+id/label_windows"
+        android:layout_alignLeft="@+id/label_windows"
+        android:layout_alignStart="@+id/label_windows" />
 
 </RelativeLayout>

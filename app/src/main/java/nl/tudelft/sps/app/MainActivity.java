@@ -51,10 +51,11 @@ public class MainActivity extends ActionBarActivity
         switch (position) {
             default:
             case 0:
-                fragment = TrainFragment.newInstance(position);
+                // TODO: Implement activity monitoring
+                fragment = MeasureFragment.newInstance(position);
                 break;
             case 1:
-                // TODO: Implementeer activity monitoring
+                fragment = TrainFragment.newInstance(position);
                 break;
             case 2:
                 // TODO: implementeer localization
