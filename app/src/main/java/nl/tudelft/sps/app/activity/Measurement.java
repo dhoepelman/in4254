@@ -54,19 +54,18 @@ public class Measurement implements IMeasurement {
      * True if the window is full
      */
     public boolean isCompleted() {
-        return raw_measurements[0].getN() >= WINDOW_SIZE;
+        return getProgress() >= WINDOW_SIZE;
     }
     @Override
     public boolean isValid() {
         return isCompleted();
     }
 
-
     /**
-     * Gives a [0,1] percentage of how far this Measurement is
+     * Gets the number of samples that are already in the measurement.
      */
-    public double percentageCompleted() {
-        return raw_measurements[0].getN()/(double)WINDOW_SIZE;
+    public int getProgress() {
+        return (int)raw_measurements[0].getN();
     }
 
     public double getMean(int axis) {

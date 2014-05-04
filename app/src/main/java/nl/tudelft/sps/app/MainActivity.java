@@ -11,7 +11,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import nl.tudelft.sps.app.activity.ActivityClassifier;
 import nl.tudelft.sps.app.activity.IClassifier;
 import nl.tudelft.sps.app.activity.RandomClassifier;
 
@@ -29,6 +28,7 @@ public class MainActivity extends ActionBarActivity
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitle;
+    private IClassifier classifier;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,12 +36,12 @@ public class MainActivity extends ActionBarActivity
         setContentView(R.layout.activity_main);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
-            getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
+                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
-            (DrawerLayout) findViewById(R.id.drawer_layout));
+                (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
     @Override
@@ -55,18 +55,20 @@ public class MainActivity extends ActionBarActivity
                 fragment = MeasureFragment.newInstance(position);
                 break;
             case 1:
-                fragment = TrainFragment.newInstance(position);
+                fragment = TestFragment.newInstance(position);
                 break;
             case 2:
+                fragment = TrainFragment.newInstance(position);
+                break;
+            case 3:
                 // TODO: implementeer localization
                 break;
         }
         if (fragment != null) {
             getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, fragment)
-                .commit();
-        }
-        else {
+                    .replace(R.id.container, fragment)
+                    .commit();
+        } else {
             final Context applicationContext = getApplicationContext();
             if (applicationContext != null) {
                 Toast.makeText(applicationContext, "Not implemented", Toast.LENGTH_SHORT).show();
@@ -81,9 +83,12 @@ public class MainActivity extends ActionBarActivity
                 mTitle = getString(R.string.title_section_test_activity);
                 break;
             case 1:
-                mTitle = getString(R.string.title_section_train_activity);
+                mTitle = getString(R.string.title_section_test_activity2);
                 break;
             case 2:
+                mTitle = getString(R.string.title_section_train_activity);
+                break;
+            case 3:
                 mTitle = getString(R.string.title_section_localization);
                 break;
         }
@@ -121,12 +126,11 @@ public class MainActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private IClassifier classifier;
     /**
      * Get the classifier for Activity from measurements
      */
     public IClassifier getClassifier() {
-        if(classifier == null) {
+        if (classifier == null) {
             //classifier = new ActivityClassifier();
             classifier = new RandomClassifier();
         }
