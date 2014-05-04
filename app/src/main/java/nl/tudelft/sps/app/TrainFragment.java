@@ -175,13 +175,9 @@ public class TrainFragment extends Fragment implements SensorEventListener {
                 String header = null;
                 if (!resultsFile.exists()) {
                     resultsFile.createNewFile();
-                    header = "ACTIVITY,MeanX,MeanY,MeanZ,StdDevX,StdDevY,StdDevZ,CorrXY,CorrYZ,CorrZX\n";
                 }
 
                 final PrintWriter writer = new PrintWriter(new FileOutputStream(resultsFile, true));
-                if (header != null) {
-                    writer.append(header);
-                }
 
                 for (IMeasurement measurement : measurementHelper.getMeasurements()) {
                     writer.append(selectedActivity.name());
@@ -263,21 +259,4 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         Toast.makeText(getActivity().getApplicationContext(), message, Toast.LENGTH_LONG).show();
     }
 
-    /*
-    private class Measurement {
-        public final long timestamp;
-        public final ACTIVITY activity;
-        public final float[] values;
-
-        public Measurement(ACTIVITY activity, long timestamp, float[] values) {
-            this.activity = activity;
-            this.timestamp = timestamp;
-            this.values = values;
-        }
-
-        public String toString() {
-            return String.format("%s,%d,%.4f,%.4f,%.4f", activity.name(), timestamp, values[0], values[1], values[2]);
-        }
-    }
-    */
 }
