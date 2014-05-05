@@ -14,7 +14,7 @@ import java.util.TreeMap;
 /**
  * K-nn classifier
  */
-public class ActivityClassifier implements IClassifier {
+public class kNNClassifier implements IClassifier {
 
     private final List<ActivityMeasurementData> trainingPoints = new ArrayList<>();
 

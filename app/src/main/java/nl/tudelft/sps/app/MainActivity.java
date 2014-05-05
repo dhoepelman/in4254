@@ -11,9 +11,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import nl.tudelft.sps.app.activity.ActivityClassifier;
+import nl.tudelft.sps.app.activity.kNNClassifier;
 import nl.tudelft.sps.app.activity.IClassifier;
-import nl.tudelft.sps.app.activity.RandomClassifier;
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -132,7 +131,7 @@ public class MainActivity extends ActionBarActivity
      */
     public IClassifier getClassifier() {
         if (classifier == null) {
-            classifier = new ActivityClassifier();
+            classifier = new kNNClassifier();
         }
         return classifier;
     }
