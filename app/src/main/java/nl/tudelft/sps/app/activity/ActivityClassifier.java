@@ -1,13 +1,12 @@
 package nl.tudelft.sps.app.activity;
 
-import com.google.common.base.Functions;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Ordering;
-
-import java.util.Comparator;
-import java.lang.Math;
-import java.util.*;
-import java.lang.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Random;
+import java.util.TreeMap;
 
 /**
  * K-nn classifier
@@ -22,18 +21,17 @@ public class ActivityClassifier implements IClassifier {
      * Classify a measurement as an activity using K-nn
      */
     public ACTIVITY classify(IMeasurement measurement) {
-        final TreeMap<Double, ActivityMeasurementData> sortedNeighbors = new TreeMap<>();
+        // Contains a map from distance to the measurement to the training point, sorted on distance
+        final NavigableMap<Double, ActivityMeasurementData> sortedNeighbors = new TreeMap<>();
 
+        // Compute the distance between the measurements and all training points
         for (ActivityMeasurementData neighbor : trainingPoints) {
-            // Compute the distance between the measurement and its neighbor
             final double neighborDistance = distance.getDistance(measurement.getFeatureVector(), neighbor.featureVector);
-
             sortedNeighbors.put(neighborDistance, neighbor);
         }
 
-        final Map<ACTIVITY, Integer> sqrtNNeighbors = new HashMap<>();
-//        final ActivityCountComparator countComparator = new ActivityCountComparator(sqrtNNeighbors);
-//        final SortedMap<ACTIVITY, Integer> sortedSqrtNNeighbors = new TreeMap<ACTIVITY, Integer>(countComparator);
+        // Count how often an ACTIVITY is among the sqrt(n) nearest neighbours
+        final Map<ACTIVITY, Integer> NNeighborActivityCount = new HashMap<>();
 
         // Add the closest sqrt(n) neighbors to a new map
         long sqrtN = Math.round(Math.sqrt(trainingPoints.size()));
@@ -41,32 +39,48 @@ public class ActivityClassifier implements IClassifier {
         if ((sqrtN % 2) == 0) {
             sqrtN++;
         }
+        // Go through the sqrt(n) nearest neighbors
         for (int i = 0; i < sqrtN; i++) {
             final ACTIVITY activity = sortedNeighbors.pollFirstEntry().getValue().activity;
 
-            // Increment count for current activity
-            if (!sqrtNNeighbors.containsKey(activity)) {
-                sqrtNNeighbors.put(activity, 0);
+            // Add the activity to the Map if it isn't there yet
+            if (!NNeighborActivityCount.containsKey(activity)) {
+                NNeighborActivityCount.put(activity, 0);
             }
-            sqrtNNeighbors.put(activity, sqrtNNeighbors.get(activity) + 1);
+            // Increment count for current activity
+            NNeighborActivityCount.put(activity, NNeighborActivityCount.get(activity) + 1);
         }
 
-        // Now sort them
-//        sortedSqrtNNeighbors.addAll(sqrtNNeighbors);
-
-        // Create a comparator that compares the values
-        // TODO May result in an infinite loop, see stackoverflow.com/questions/109383/how-to-sort-a-mapkey-value-on-the-values-in-java
-        final Ordering valueComparator = Ordering.natural().onResultOf(Functions.forMap(sqrtNNeighbors)).compound(Ordering.natural());
-        return (ACTIVITY) ImmutableSortedMap.copyOf(sqrtNNeighbors, valueComparator).lastKey();
-
-//        return sortedSqrtNNeighbors.lastKey();
+        // Select the ACTIVITY that is most prevalent among the sqrt(n) Nearest Neighbors
+        Map.Entry<ACTIVITY, Integer> winner = null;
+        for (Map.Entry<ACTIVITY, Integer> count : NNeighborActivityCount.entrySet()) {
+            if (winner == null                                                                      // There currently isn't a winner
+                    || winner.getValue() < count.getValue()                                         // Count has a higher value than the current winner
+                    || (winner.getValue().equals(count.getValue()) && new Random().nextInt(2) == 0) // When tied pick one at random
+                    ) {
+                winner = count;
+            }
+        }
+        if (winner == null) {
+            // There were no neighbors
+            return ACTIVITY.UNKNOWN;
+        } else {
+            return winner.getKey();
+        }
     }
 
     /**
      * Add a training point to the classifier
      */
     public void train(ACTIVITY activity, IMeasurement measurement) {
-        trainingPoints.add(new ActivityMeasurementData(activity, measurement));
+        trainingPoints.add(new ActivityMeasurementData(activity, measurement.getFeatureVector()));
+    }
+
+    /**
+     * An interface for a way to express distance
+     */
+    private static interface IMeasurementsDistance {
+        public double getDistance(double[] featureVector, double[] neighborFeatureVector);
     }
 
     /**
@@ -77,24 +91,27 @@ public class ActivityClassifier implements IClassifier {
         private final ACTIVITY activity;
         private final double[] featureVector;
 
-        private ActivityMeasurementData(ACTIVITY activity, IMeasurement measurement) {
+        private ActivityMeasurementData(ACTIVITY activity, double[] featureVector) {
             this.activity = activity;
-            this.featureVector = measurement.getFeatureVector();
+            this.featureVector = featureVector;
         }
     }
 
-//    private static class ActivityCountComparator implements Comparator<ACTIVITY> {
-//
-//        private final Map<ACTIVITY, Integer> sqrtNNeighbors;
-//
-//        public ActivityCountComparator(Map<ACTIVITY, Integer> sqrtNNeighbors) {
-//            this.sqrtNNeighbors = sqrtNNeighbors;
-//        }
-//
-//        public int compare(ACTIVITY left, ACTIVITY right) {
-//            return sqrtNNeighbors.get(left).compare(sqrtNNeighbors.get(right));
-//        }
-//
-//    };
+    /**
+     * Implements Euclidean distance
+     */
+    private static class EuclideanMeasurementsDistance implements IMeasurementsDistance {
+        @Override
+        public double getDistance(double[] featureVector, double[] neighborFeatureVector) {
+            final double[] featuresEucl = new double[featureVector.length];
 
+            // TODO: Calculate this more efficiently, see https://en.wikipedia.org/wiki/Euclidean_distance. There's probably also a library
+            for (int i = 0; i < featureVector.length; i++) {
+                featuresEucl[i] = Math.sqrt(Math.pow(featureVector[i], 2) + Math.pow(neighborFeatureVector[i], 2));
+            }
+
+            // TODO Haven't thought about how to combine all the individual distances
+            return featuresEucl[3];
+        }
+    }
 }
