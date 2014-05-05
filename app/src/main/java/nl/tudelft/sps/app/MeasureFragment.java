@@ -42,8 +42,6 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
 
     private final Measurement.MonitorHelper measurementHelper = new Measurement.MonitorHelper();
 
-    private final ActivityClassifier classifier = new ActivityClassifier();
-
     private int numberOfWindows = 0;
 
     /**
@@ -96,7 +94,7 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
                     labelWindows.setText(String.format("%d", numberOfWindows));
 
                     // Perform the classification
-                    final ACTIVITY classifiedActivity = classifier.classify(measurementHelper.getCurrentWindow());
+                    final ACTIVITY classifiedActivity = ((MainActivity)getActivity()).getClassifier().classify(measurementHelper.getCurrentWindow());
 //                    final ACTIVITY classifiedActivity = ACTIVITY.RUNNING;
 
                     // Print classifiedActivity on the screen
@@ -152,7 +150,7 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
                         final String[] values = line.split(",", 2);
                         // Extract the features and put the data from each line into its own IMeasurement instance
                         final IMeasurement measurement = new TrainedMeasurement(values[1]);
-                        classifier.train(ACTIVITY.valueOf(values[0]), measurement);
+                        ((MainActivity)getActivity()).getClassifier().train(ACTIVITY.valueOf(values[0]), measurement);
                         processedMeasurements++;
                     }
                     displayToast(String.format("Added %d measurements to the classifier", processedMeasurements));
