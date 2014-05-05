@@ -6,5 +6,6 @@ package nl.tudelft.sps.app.activity;
 public interface IMeasurementsDistance {
 
     public double getDistance(IMeasurement measurement, IMeasurement neighborMeasurement);
+    public double getDistance(double[] featureVector, double[] neighborFeatureVector);
 
 }

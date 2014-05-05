@@ -14,7 +14,7 @@ import java.lang.*;
  */
 public class ActivityClassifier implements IClassifier {
 
-    private final List<ActivityMeasurementData> trainingPoints = new ArrayList<ActivityMeasurementData>();
+    private final List<ActivityMeasurementData> trainingPoints = new ArrayList<>();
 
     private final IMeasurementsDistance distance = new EuclideanMeasurementsDistance();
 
@@ -26,12 +26,12 @@ public class ActivityClassifier implements IClassifier {
 
         for (ActivityMeasurementData neighbor : trainingPoints) {
             // Compute the distance between the measurement and its neighbor
-            final double neighborDistance = distance.getDistance(measurement, neighbor.measurement);
+            final double neighborDistance = distance.getDistance(measurement.getFeatureVector(), neighbor.featureVector);
 
             sortedNeighbors.put(neighborDistance, neighbor);
         }
 
-        final Map<ACTIVITY, Integer> sqrtNNeighbors = new HashMap<ACTIVITY, Integer>();
+        final Map<ACTIVITY, Integer> sqrtNNeighbors = new HashMap<>();
 //        final ActivityCountComparator countComparator = new ActivityCountComparator(sqrtNNeighbors);
 //        final SortedMap<ACTIVITY, Integer> sortedSqrtNNeighbors = new TreeMap<ACTIVITY, Integer>(countComparator);
 
@@ -75,11 +75,11 @@ public class ActivityClassifier implements IClassifier {
     private static class ActivityMeasurementData {
 
         private final ACTIVITY activity;
-        private final IMeasurement measurement;
+        private final double[] featureVector;
 
         private ActivityMeasurementData(ACTIVITY activity, IMeasurement measurement) {
             this.activity = activity;
-            this.measurement = measurement;
+            this.featureVector = measurement.getFeatureVector();
         }
     }
 
