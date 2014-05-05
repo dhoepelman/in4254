@@ -30,9 +30,9 @@ public class Measurement implements IMeasurement {
 
     public Measurement() {
         raw_measurements = new DescriptiveStatistics[]{
-            new DescriptiveStatistics(WINDOW_SIZE),
-            new DescriptiveStatistics(WINDOW_SIZE),
-            new DescriptiveStatistics(WINDOW_SIZE)
+                new DescriptiveStatistics(WINDOW_SIZE),
+                new DescriptiveStatistics(WINDOW_SIZE),
+                new DescriptiveStatistics(WINDOW_SIZE)
         };
     }
 
@@ -52,7 +52,7 @@ public class Measurement implements IMeasurement {
      * Gets the number of samples that are already in the measurement.
      */
     public int getProgress() {
-        return (int)raw_measurements[0].getN();
+        return (int) raw_measurements[0].getN();
     }
 
     public double getMean(int axis) {
@@ -63,7 +63,7 @@ public class Measurement implements IMeasurement {
         return raw_measurements[axis].getStandardDeviation();
     }
 
-   /**
+    /**
      * Get the covariance between two axes
      */
     public double getCorrelation(int axis1, int axis2) {

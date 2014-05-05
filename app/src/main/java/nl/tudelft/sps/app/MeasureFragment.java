@@ -13,16 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.os.Environment;
 
-import java.io.*;
-import java.nio.charset.Charset;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import nl.tudelft.sps.app.activity.*;
+import nl.tudelft.sps.app.activity.ACTIVITY;
+import nl.tudelft.sps.app.activity.Measurement;
 
 public class MeasureFragment extends Fragment implements SensorEventListener {
 
@@ -31,17 +24,12 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
-
+    private final Measurement.MonitorHelper measurementHelper = new Measurement.MonitorHelper();
     private View rootView;
-
     private TextView labelWindows;
     private TextView labelActivity;
-
     private SensorManager sensorManager;
     private Sensor accelerometer;
-
-    private final Measurement.MonitorHelper measurementHelper = new Measurement.MonitorHelper();
-
     private int numberOfWindows = 0;
 
     /**
@@ -72,8 +60,6 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
         // Set up accelerometer
         sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-
-        readTrainingData();
 
         return rootView;
     }
@@ -137,46 +123,6 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
         } catch (NullPointerException e) {
             // Listener was already unregistered or never registered
         }
-    }
-
-    private void readTrainingData() {
-        // Read TrainFragment.RESULTS_FILE_PATH and do classifier.train(measurement_of_current_line)
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-            final File resultsFile = new File(TrainFragment.RESULTS_FILE_PATH);
-            if (resultsFile.exists()) {
-                try {
-                    final BufferedReader reader = new BufferedReader(new FileReader(resultsFile));
-
-                    // Read every line of the file
-                    String line;
-                    int processedMeasurements = 0;
-                    while ((line = reader.readLine()) != null) {
-                        final String[] values = line.split(",", 2);
-                        // Extract the features and put the data from each line into its own IMeasurement instance
-                        final IMeasurement measurement = new TrainedMeasurement(values[1]);
-                        ((MainActivity)getActivity()).getClassifier().train(ACTIVITY.valueOf(values[0]), measurement);
-                        processedMeasurements++;
-                    }
-                    displayToast(String.format("Added %d measurements to the classifier", processedMeasurements));
-                }
-                catch (IOException exception) {
-                    displayToast("Failed to read training data");
-                }
-            }
-            else {
-                displayToast(String.format("%s does not exist", resultsFile.getName()));
-            }
-        }
-        else {
-            displayToast("External storage not mounted");
-        }
-    }
-
-    /**
-     * Display the message as a toast
-     */
-    private void displayToast(String message) {
-        Toast.makeText(getActivity().getApplicationContext(), message, Toast.LENGTH_LONG).show();
     }
 
 }

@@ -2,6 +2,7 @@ package nl.tudelft.sps.app;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -11,6 +12,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
+
+import nl.tudelft.sps.app.activity.TrainingPoint;
 import nl.tudelft.sps.app.activity.kNNClassifier;
 import nl.tudelft.sps.app.activity.IClassifier;
 
@@ -133,7 +138,39 @@ public class MainActivity extends ActionBarActivity
         if (classifier == null) {
             classifier = new kNNClassifier();
         }
+        if(!classifier.isTrained()) {
+            readTrainingData();
+        }
         return classifier;
+    }
+
+
+    private void readTrainingData() {
+        // Read TrainFragment.RESULTS_FILE_PATH and do classifier.train(measurement_of_current_line)
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            final File resultsFile = new File(TrainFragment.RESULTS_FILE_PATH);
+            if (resultsFile.exists()) {
+                try {
+                    classifier.train(TrainingPoint.fromCSV(resultsFile));
+                }
+                catch (IOException exception) {
+                    displayToast("Failed to read training data");
+                }
+            }
+            else {
+                displayToast(String.format("%s does not exist", resultsFile.getName()));
+            }
+        }
+        else {
+            displayToast("External storage not mounted");
+        }
+    }
+
+    /**
+     * Display the message as a toast
+     */
+    private void displayToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
     }
 
 }

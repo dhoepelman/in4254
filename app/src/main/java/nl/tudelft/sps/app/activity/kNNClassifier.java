@@ -16,7 +16,7 @@ import java.util.TreeMap;
  */
 public class kNNClassifier implements IClassifier {
 
-    private final List<ActivityMeasurementData> trainingPoints = new ArrayList<>();
+    private final List<TrainingPoint> trainingPoints = new ArrayList<>();
 
     private final DistanceMeasure distance = new EuclideanDistance();
 
@@ -25,15 +25,15 @@ public class kNNClassifier implements IClassifier {
      */
     public ACTIVITY classify(IMeasurement measurement) {
         // Check if the classifier is trained yet
-        if(trainingPoints.size() == 0) {
+        if (!isTrained()) {
             throw new IllegalStateException("kNN-Classifier is still untrained");
         }
 
         // Contains a map from distance to the measurement to the training point, sorted on distance
-        final NavigableMap<Double, ActivityMeasurementData> sortedNeighbors = new TreeMap<>();
+        final NavigableMap<Double, TrainingPoint> sortedNeighbors = new TreeMap<>();
 
         // Compute the distance between the measurements and all training points
-        for (ActivityMeasurementData neighbor : trainingPoints) {
+        for (TrainingPoint neighbor : trainingPoints) {
             final double neighborDistance = distance.compute(measurement.getFeatureVector(), neighbor.featureVector);
             sortedNeighbors.put(neighborDistance, neighbor);
         }
@@ -81,20 +81,23 @@ public class kNNClassifier implements IClassifier {
      * Add a training point to the classifier
      */
     public void train(ACTIVITY activity, IMeasurement measurement) {
-        trainingPoints.add(new ActivityMeasurementData(activity, measurement.getFeatureVector()));
+        train(new TrainingPoint(activity, measurement.getFeatureVector()));
     }
 
-    /**
-     * Tuple containing a measurement and its activity type
-     */
-    private static class ActivityMeasurementData {
+    private void train(TrainingPoint tp) {
+        trainingPoints.add(tp);
+    }
 
-        private final ACTIVITY activity;
-        private final double[] featureVector;
-
-        private ActivityMeasurementData(ACTIVITY activity, double[] featureVector) {
-            this.activity = activity;
-            this.featureVector = featureVector;
+    @Override
+    public void train(List<TrainingPoint> trainingPoints) {
+        for (TrainingPoint tp : trainingPoints) {
+            train(tp);
         }
     }
+
+    @Override
+    public boolean isTrained() {
+        return trainingPoints.size() != 0;
+    }
+
 }

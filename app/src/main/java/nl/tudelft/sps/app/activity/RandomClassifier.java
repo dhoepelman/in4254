@@ -1,5 +1,6 @@
 package nl.tudelft.sps.app.activity;
 
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -21,5 +22,14 @@ public class RandomClassifier implements IClassifier {
     @Override
     public void train(ACTIVITY a, IMeasurement m) {
         // Philosoraptor: can you train randomness?
+    }
+
+    @Override
+    public void train(List<TrainingPoint> trainingPoints) {
+
+    }
+
+    public boolean isTrained() {
+        return true;
     }
 }
