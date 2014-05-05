@@ -135,13 +135,15 @@ public class MainActivity extends ActionBarActivity
      * Get the classifier for Activity from measurements
      */
     public IClassifier getClassifier() {
-        if (classifier == null) {
-            classifier = new kNNClassifier();
-        }
-        if(!classifier.isTrained()) {
-            readTrainingData();
+        if (classifier == null || !classifier.isTrained()) {
+            resetClassifier();
         }
         return classifier;
+    }
+
+    public void resetClassifier() {
+        classifier = new kNNClassifier();
+        readTrainingData();
     }
 
 

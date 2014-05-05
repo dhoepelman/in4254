@@ -164,6 +164,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         }
         measurementHelper.removeIncompleteMeasurements();
         writeBuffer();
+        ((MainActivity)getActivity()).resetClassifier();
     }
 
     private void writeBuffer() {
@@ -172,7 +173,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
                     && !Environment.MEDIA_MOUNTED_READ_ONLY.equals(Environment.getExternalStorageState())) {
 
                 final File resultsFile = new File(RESULTS_FILE_PATH);
-                String header = null;
+
                 if (!resultsFile.exists()) {
                     resultsFile.createNewFile();
                 }
