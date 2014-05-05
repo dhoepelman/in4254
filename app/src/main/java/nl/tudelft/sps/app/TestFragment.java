@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,9 +31,13 @@ public class TestFragment extends Fragment {
     private final MeasurementTask.ResultProcessor MeasurementResultProcessor = new MeasurementTask.ResultProcessor() {
         @Override
         public void result(IMeasurement result) {
-            ACTIVITY res = ((MainActivity) getActivity()).getClassifier().classify(result);
-            ((TextView) rootView.findViewById(R.id.val_testresults)).append(res.name() + " from " + result.toString() + "\n");
-            doTest(); // Do more tests if needed
+            try {
+                final ACTIVITY res = ((MainActivity) getActivity()).getClassifier().classify(result);
+                ((TextView) rootView.findViewById(R.id.val_testresults)).append(res.name() + " from " + result.toString() + "\n");
+                doTest(); // Do more tests if needed
+            } catch(IllegalStateException e) {
+                Toast.makeText(getActivity().getBaseContext(), "Please train the classifier first", Toast.LENGTH_SHORT).show();
+            }
         }
     };
     private final MeasurementTask.ProgressUpdater MeasurementProgressUpdater = new MeasurementTask.ProgressUpdater() {

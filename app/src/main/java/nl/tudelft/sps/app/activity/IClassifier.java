@@ -6,6 +6,7 @@ package nl.tudelft.sps.app.activity;
 public interface IClassifier {
     /**
      * Classify a measurement as an activity
+     * @throws java.lang.IllegalStateException if the classifier needs further training
      */
     public ACTIVITY classify(IMeasurement m);
 

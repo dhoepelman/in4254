@@ -24,6 +24,11 @@ public class ActivityClassifier implements IClassifier {
      * Classify a measurement as an activity using K-nn
      */
     public ACTIVITY classify(IMeasurement measurement) {
+        // Check if the classifier is trained yet
+        if(trainingPoints.size() == 0) {
+            throw new IllegalStateException("kNN-Classifier is still untrained");
+        }
+
         // Contains a map from distance to the measurement to the training point, sorted on distance
         final NavigableMap<Double, ActivityMeasurementData> sortedNeighbors = new TreeMap<>();
 
