@@ -102,6 +102,7 @@ public class NavigationDrawerFragment extends Fragment {
                 android.R.id.text1,
                 new String[]{
                         getString(R.string.title_section_test_activity),
+                        getString(R.string.title_section_test_activity2),
                         getString(R.string.title_section_train_activity),
                         getString(R.string.title_section_localization),
                 }));

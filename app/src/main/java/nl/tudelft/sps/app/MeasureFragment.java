@@ -94,11 +94,15 @@ public class MeasureFragment extends Fragment implements SensorEventListener {
                     labelWindows.setText(String.format("%d", numberOfWindows));
 
                     // Perform the classification
-                    final ACTIVITY classifiedActivity = ((MainActivity)getActivity()).getClassifier().classify(measurementHelper.getCurrentWindow());
-//                    final ACTIVITY classifiedActivity = ACTIVITY.RUNNING;
+                    try {
+                        final ACTIVITY classifiedActivity = ((MainActivity) getActivity()).getClassifier().classify(measurementHelper.getCurrentWindow());
+                        //                    final ACTIVITY classifiedActivity = ACTIVITY.RUNNING;
 
-                    // Print classifiedActivity on the screen
-                    labelActivity.setText(String.valueOf(classifiedActivity));
+                        // Print classifiedActivity on the screen
+                        labelActivity.setText(String.valueOf(classifiedActivity));
+                    } catch (IllegalStateException e) {
+                        Toast.makeText(getActivity().getBaseContext(), "Please train classifier first", Toast.LENGTH_SHORT);
+                    }
 
                     // Clean the window so that it is empty when the
                     // first future sensor data is added
