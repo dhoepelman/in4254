@@ -1,5 +1,8 @@
 package nl.tudelft.sps.app.activity;
 
+import org.apache.commons.math3.ml.distance.DistanceMeasure;
+import org.apache.commons.math3.ml.distance.EuclideanDistance;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +18,7 @@ public class ActivityClassifier implements IClassifier {
 
     private final List<ActivityMeasurementData> trainingPoints = new ArrayList<>();
 
-    private final IMeasurementsDistance distance = new EuclideanMeasurementsDistance();
+    private final DistanceMeasure distance = new EuclideanDistance();
 
     /**
      * Classify a measurement as an activity using K-nn
@@ -26,7 +29,7 @@ public class ActivityClassifier implements IClassifier {
 
         // Compute the distance between the measurements and all training points
         for (ActivityMeasurementData neighbor : trainingPoints) {
-            final double neighborDistance = distance.getDistance(measurement.getFeatureVector(), neighbor.featureVector);
+            final double neighborDistance = distance.compute(measurement.getFeatureVector(), neighbor.featureVector);
             sortedNeighbors.put(neighborDistance, neighbor);
         }
 
@@ -77,13 +80,6 @@ public class ActivityClassifier implements IClassifier {
     }
 
     /**
-     * An interface for a way to express distance
-     */
-    private static interface IMeasurementsDistance {
-        public double getDistance(double[] featureVector, double[] neighborFeatureVector);
-    }
-
-    /**
      * Tuple containing a measurement and its activity type
      */
     private static class ActivityMeasurementData {
@@ -94,24 +90,6 @@ public class ActivityClassifier implements IClassifier {
         private ActivityMeasurementData(ACTIVITY activity, double[] featureVector) {
             this.activity = activity;
             this.featureVector = featureVector;
-        }
-    }
-
-    /**
-     * Implements Euclidean distance
-     */
-    private static class EuclideanMeasurementsDistance implements IMeasurementsDistance {
-        @Override
-        public double getDistance(double[] featureVector, double[] neighborFeatureVector) {
-            final double[] featuresEucl = new double[featureVector.length];
-
-            // TODO: Calculate this more efficiently, see https://en.wikipedia.org/wiki/Euclidean_distance. There's probably also a library
-            for (int i = 0; i < featureVector.length; i++) {
-                featuresEucl[i] = Math.sqrt(Math.pow(featureVector[i], 2) + Math.pow(neighborFeatureVector[i], 2));
-            }
-
-            // TODO Haven't thought about how to combine all the individual distances
-            return featuresEucl[3];
         }
     }
 }
