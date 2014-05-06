@@ -1,7 +1,7 @@
 reset
 
-set terminal png size 1920,950
-#set terminal tikz
+set terminal png size 800,475
+#set terminal tikz size 800,475
 
 classes = "Sitting Walking Running Stairs_Down Stairs_Up
 set datafile separator ","
@@ -35,8 +35,8 @@ splot for [class in classes] class.".csv" using Mean+X:Mean+Y:Mean+Z title class
 set output "StdDev.png"
 set xlabel "StdDevX"
 set ylabel "StdDevY"
-set zlabel "MeanZ"
-splot for [class in classes] class.".csv" using Mean+X:Mean+Y:Mean+Z title class with points
+set zlabel "StdDevZ"
+splot for [class in classes] class.".csv" using StdDev+X:StdDev+Y:StdDev+Z title class with points
 
 set output "Means.png"
 set xlabel "MeanX"
