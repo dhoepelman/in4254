@@ -4,8 +4,10 @@ TODO K-nn, window overlapping~\cite{ravi2005activity}.
 
 \subsection{Feature Extraction}
 \label{sec:feature-extraction}
-TODO Mean, standard deviation
+Each feature vector contains nine features: the mean for each axis, the standard deviation for each axis, and the correlations between each two axes.
 
 \subsection{Classification}
 \label{sec:classification}
-TODO K-nn (training cheap, testing expensive) or Support Vector Machines (training expensive, testing easy)
+To classify the feature vectors, we looked at two algorithms to perform the classification: kNN and Support Vector Machines (SVM). Although SVM can efficiently classify non-linear problems, kNN was found to be easy to implement while giving acceptable performance.
+
+According to \cite{wikipedia1} data with many dimensions are affected by the ``curse of dimensionality,'' which means that according to \cite{wikipedia2} the size of the data required grows exponentially with the size of the feature vectors. Since our feature vectors contains nine dimensions we may need to remove some features in order to improve the accuracy shown in the confusion matrix. Another technique described by \cite{wikipedia1} is to remove class outliers, so that the noise (visible in a two-dimensional plot) is reduced.
