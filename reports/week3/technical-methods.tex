@@ -1,13 +1,20 @@
 \section{Technical Methods}
 \label{sec:technical-methods}
-TODO K-nn, window overlapping~\cite{ravi2005activity}.
+
+We followed the approach from \cite{ravi2005activity}. 
 
 \subsection{Feature Extraction}
 \label{sec:feature-extraction}
-Each feature vector contains nine features: the mean for each axis, the standard deviation for each axis, and the correlations between each two axes.
+We collect samples from the accelerometer every 20ms and group them into windows of size 256, with 128 samples overlapping.
+
+We define every (full) window to be a measurement.
+For every measurement we calculate the following 9 features: the mean $\mu$ for each axis: $\mu_x$,$\mu_y$,$\mu_z$, the standard deviation $\sigma$ for each axis: $\sigma_x$, $\sigma_y$, $\sigma_z$), and the correlation between each two axes:  $Corr(x,y)$,$Corr(y,z)$,$Corr(z,x)$.
+Correlation is supposed to help with activities that are translations into just 1 dimension, in our case Walking, Stairs\_Up and Stairs\_Down.
+Correlation is defined as $
+	Corr(x,y) = \frac{Cov(x,y)}{\sigma_x \cdot \sigma_y}$.
 
 \subsection{Classification}
 \label{sec:classification}
 To classify the feature vectors, we looked at two algorithms to perform the classification: kNN and Support Vector Machines (SVM). Although SVM can efficiently classify non-linear problems, kNN was found to be easy to implement while giving acceptable performance.
 
-According to \cite{wikipedia1} data with many dimensions are affected by the ``curse of dimensionality,'' which means that according to \cite{wikipedia2} the size of the data required grows exponentially with the size of the feature vectors. Since our feature vectors contains nine dimensions we may need to remove some features in order to improve the accuracy shown in the confusion matrix. Another technique described by \cite{wikipedia1} is to remove class outliers, so that the noise (visible in a two-dimensional plot) is reduced.
+According to \cite{wikipedia1} data with many dimensions are affected by the ``curse of dimensionality,'' which means that according to \cite{wikipedia2} the size of the data required grows exponentially with the size of the feature vectors. Since our feature vectors contains nine dimensions we may need to remove some features in order to improve the accuracy of the classifier. Another technique described by \cite{wikipedia1} is to remove class outliers, so that the noise  is reduced.
