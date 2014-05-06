@@ -5,17 +5,20 @@ We followed the approach from \cite{ravi2005activity}. We defined 5 activities: 
 
 \subsection{Feature Extraction}
 \label{sec:feature-extraction}
-We collect samples from the accelerometer every 20ms and group them into windows of size 256, with 128 samples overlapping. We define every (full) window to be a measurement.
+We collect samples from the accelerometer every 20~ms and group them into windows of size 256, with 128 samples overlapping. We define every (full) window to be a measurement.
 
 For every measurement we calculate the following 9 features: \\
 The mean $\mu$ for each axis: $\mu_x$,$\mu_y$,$\mu_z$ \\
 The standard deviation $\sigma$ for each axis: $\sigma_x$, $\sigma_y$, $\sigma_z$ \\
-The correlation between each two axes:  $Corr(x,y)$,$Corr(y,z)$,$Corr(z,x)$.
+The correlation between each two axes:  $\text{Corr(}x,y{)}$,$\text{Corr(}y,z{)}$,$\text{Corr(}z,x{)}$.
 
 
 Correlation is supposed to help with activities that are translations into just 1 dimension \cite{ravi2005activity}, in our case Walking, Stairs\_Up and Stairs\_Down.
-Correlation is defined as $
-	Corr(x,y) = \frac{Cov(x,y)}{\sigma_x \cdot \sigma_y}$.
+Correlation is defined as:
+
+\[
+	\text{Corr(}x,y{)} = \frac{\text{Cov(}x,y{)}}{\sigma_x \cdot \sigma_y}
+\]
 
 \subsection{Classification}
 \label{sec:classification}
