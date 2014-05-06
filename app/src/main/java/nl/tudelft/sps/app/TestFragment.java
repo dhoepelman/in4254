@@ -35,11 +35,14 @@ public class TestFragment extends Fragment {
         @Override
         public void result(IMeasurement result) {
             try {
-                final ACTIVITY activity = ((MainActivity) getActivity()).getClassifier().classify(result);
-                valueResults.append(activity.name() + "\n");
+                final MainActivity mainActivity = (MainActivity) getActivity();
+                if (mainActivity != null) {
+                    final ACTIVITY activity = mainActivity.getClassifier().classify(result);
+                    valueResults.append(activity.name() + "\n");
 
-                // Do more tests if needed
-                doTest();
+                    // Do more tests if needed
+                    doTest();
+                }
             }
             catch (IllegalStateException e) {
                 toastManager.showText("Please train the classifier first", Toast.LENGTH_LONG);
