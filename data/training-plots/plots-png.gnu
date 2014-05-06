@@ -1,11 +1,11 @@
 reset
 
-set terminal png size 800,475
-#set terminal tikz size 800,475
+set terminal png size 700,475
+#set terminal tikz size 700,475
 
 classes = "Sitting Walking Running Stairs_Down Stairs_Up
 set datafile separator ","
-set key outside;
+#set key outside;
 set key right top;
 
 classes = "Sitting Walking Running Stairs_Down Stairs_Up"
