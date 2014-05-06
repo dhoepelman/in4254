@@ -1,0 +1,33 @@
+\begin{figure}[ht]
+\centering
+
+\begin{subfigure}[b]{0.49\textwidth}
+    \centering
+    \includegraphics[width=1.0\textwidth]{images/x1.png}
+    \caption{}
+    \label{fig:x1}
+\end{subfigure}
+\hspace{0.1cm}
+
+\begin{subfigure}[b]{0.49\textwidth}
+    \centering
+    \includegraphics[width=1.0\textwidth]{images/x2.png}
+    \caption{}
+    \label{fig:x2}
+\end{subfigure}
+
+\caption{TODO.}
+\label{fig:x}
+\end{figure}
+
+
+
+
+
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.5\textwidth]{images/x3.png}
+\caption{TODO.}
+\label{fig:x3}
+\end{figure}
