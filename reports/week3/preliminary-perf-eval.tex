@@ -1,3 +1,27 @@
 \section{Preliminary Performance Evaluation}
 \label{sec:perf-eval}
-TODO
+
+\begin{table}[ht]
+\centering
+\caption{Confusion matrix of our classifier}
+\begin{tabular}{lccccc}
+\toprule
+ & Sitting & Walking & Running & Stairs up & Stairs down\\
+\midrule
+Sitting & 0.75 &  &  &  0.14 & 0.10\\
+Walking &  &  &  & 0.78 & 0.22\\
+Running &  & 0.1 & 0.9 &  & \\
+Stairs up &  &  &  & 1.00 & \\
+Stairs down &  & 0.3 &  & 0.4 & \\
+\bottomrule
+\end{tabular}
+\label{tab:confusion-matrix}
+\end{table}
+
+
+Our classifier as of now performs well on running, but does not differentiate well between Walking, Stairs up and Stairs down. Specifically there is a heavy bias toward Stairs up.
+
+We might be affected by the ``Curse of Dimensionality`` \cite{wikipedia2} which means that the required size of the training data grows exponentially with the dimension of the feature vector because the volume becomes more sparse. As we have 9 features/dimensions this might be our problem.
+
+Possible solutions to improve our classifier accuracy might be removing or reducing our features/dimensions. Removing outliers (noise) in our training data might also help \cite{wikipedia1}.
+Another possible major improvement we plan to make is to use Mahalanobis distance or some other distance instead of Eucledian distance, as Eucledian distance does not perform well with high-dimensionality data \cite{wikipedia1}.
