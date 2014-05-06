@@ -3,66 +3,88 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="nl.tudelft.sps.app.TestFragment"
-    android:layout_gravity="left|center_vertical"
-    android:orientation="vertical">
+    android:layout_gravity="center_horizontal|center_vertical"
+    android:orientation="vertical"
+    android:padding="6dp">
 
     <!-- TODO: Update blank fragment layout -->
 
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_vertical|center_horizontal">
 
         <RadioGroup
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-            <RadioButton android:id="@+id/rb_times_1"
+            android:orientation="vertical"
+            android:gravity="center_vertical"
+            android:checkedButton="@+id/rb_times_5">
+
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1"
-                android:checked="true" />
-            <RadioButton android:id="@+id/rb_times_5"
+                android:gravity="center_vertical">
+                    <RadioButton android:id="@+id/rb_times_1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1"/>
+                        <!--android:checked="true" />-->
+                    <RadioButton android:id="@+id/rb_times_5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5"/>
+                    <RadioButton android:id="@+id/rb_times_10"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="10"/>
+                    <RadioButton android:id="@+id/rb_times_50"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="50"/>
+            </LinearLayout>
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="5"/>
-            <RadioButton android:id="@+id/rb_times_10"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="10"/>
-            <RadioButton android:id="@+id/rb_times_50"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="50"/>
+                android:gravity="center_vertical">
+                <RadioButton android:id="@+id/rb_times_infinite"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:text="continuously"/>
+            </LinearLayout>
         </RadioGroup>
 
         <Button
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Start Tests"
+            android:text="Start"
             android:id="@+id/but_test_start"
-            android:layout_marginLeft="50dp" />
+            android:layout_marginLeft="10dp"/>
 
     </LinearLayout>
 
+    <!-- to align with TextView -->
     <ProgressBar
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/progressBar_measurement"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
         android:indeterminate="false"
-        android:max="255" />
+        android:max="255"/>
 
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:id="@+id/val_testresults"
-        android:scrollbars = "vertical"
-        android:background="@android:drawable/editbox_background_normal" />
+        android:scrollbars="vertical"
+        android:background="@android:drawable/editbox_background_normal"/>
 
 </LinearLayout>

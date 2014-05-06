@@ -3,7 +3,6 @@
 
     <string name="app_name">SPS App</string>
     <string name="title_section_test_activity">Activity testing</string>
-    <string name="title_section_test_activity2">Activity testing 2</string>
     <string name="title_section_train_activity">Activity training</string>
     <string name="title_section_localization">Localization (UNIMPL)</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>

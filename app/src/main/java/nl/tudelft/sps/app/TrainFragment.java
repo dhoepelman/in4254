@@ -188,14 +188,18 @@ public class TrainFragment extends Fragment implements SensorEventListener {
                 }
                 writer.close();
 
-                final String msg = String.format("Succesfully written buffer to %s", RESULTS_FILE_PATH);
-                Log.i(LOG_TAG, msg);
-                Toast.makeText(getActivity().getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                final String message = String.format("Succesfully written buffer to %s", RESULTS_FILE_PATH);
+                Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+                Log.i(LOG_TAG, message);
             } else {
-                logAndDisplayToast("Could not write buffer: external storage not mounted");
+                final String message = "Could not write buffer: external storage not mounted";
+                Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+                Log.w(LOG_TAG, message);
             }
         } catch (IOException e) {
-            logAndDisplayToast(String.format("Could not create or write results file %s", RESULTS_FILE_PATH));
+            final String message = String.format("Could not create or write results file %s", RESULTS_FILE_PATH);
+            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+            Log.w(LOG_TAG, message);
             Log.d(LOG_TAG, Throwables.getStackTraceAsString(e));
         }
     }
@@ -207,8 +211,9 @@ public class TrainFragment extends Fragment implements SensorEventListener {
 
     public void onStartTrainingButtonClick(final View view) {
         if (selectedActivity == null) {
-            displayToast("Select an activity first");
-        } else {
+            Toast.makeText(getActivity(), "Select an activity first", Toast.LENGTH_SHORT).show();
+        }
+        else {
             // Disable the start button
             view.setEnabled(false);
 
@@ -242,22 +247,6 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         if (selectedActivity != null) {
             rootView.findViewById(activity_buttons.inverse().get(selectedActivity)).setBackgroundColor(Color.BLACK);
         }
-    }
-
-    /**
-     * Log the message to LOG_TAG and display it as a toast in the
-     * current activity.
-     */
-    private void logAndDisplayToast(String message) {
-        Log.w(LOG_TAG, message);
-        displayToast(message);
-    }
-
-    /**
-     * Display the message as a toast
-     */
-    private void displayToast(String message) {
-        Toast.makeText(getActivity().getApplicationContext(), message, Toast.LENGTH_LONG).show();
     }
 
 }

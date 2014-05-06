@@ -23,7 +23,7 @@ public class kNNClassifier implements IClassifier {
     /**
      * Classify a measurement as an activity using K-nn
      */
-    public ACTIVITY classify(IMeasurement measurement) {
+    public synchronized ACTIVITY classify(IMeasurement measurement) {
         // Check if the classifier is trained yet
         if (!isTrained()) {
             throw new IllegalStateException("kNN-Classifier is still untrained");
@@ -42,11 +42,12 @@ public class kNNClassifier implements IClassifier {
         final Map<ACTIVITY, Integer> NNeighborActivityCount = new HashMap<>();
 
         // Add the closest sqrt(n) neighbors to a new map
-        long sqrtN = Math.round(Math.sqrt(trainingPoints.size()));
+        long sqrtN = Math.round(Math.sqrt(sortedNeighbors.size()));
         // Make it odd if it is even
         if ((sqrtN % 2) == 0) {
             sqrtN++;
         }
+
         // Go through the sqrt(n) nearest neighbors
         for (int i = 0; i < sqrtN; i++) {
             final ACTIVITY activity = sortedNeighbors.pollFirstEntry().getValue().activity;
@@ -69,11 +70,13 @@ public class kNNClassifier implements IClassifier {
                 winner = count;
             }
         }
-        if (winner == null) {
+
+        if (winner != null) {
+            return winner.getKey();
+        }
+        else {
             // There were no neighbors
             return ACTIVITY.UNKNOWN;
-        } else {
-            return winner.getKey();
         }
     }
 
@@ -84,7 +87,7 @@ public class kNNClassifier implements IClassifier {
         train(new TrainingPoint(activity, measurement.getFeatureVector()));
     }
 
-    private void train(TrainingPoint tp) {
+    private synchronized void train(TrainingPoint tp) {
         trainingPoints.add(tp);
     }
 
@@ -96,8 +99,8 @@ public class kNNClassifier implements IClassifier {
     }
 
     @Override
-    public boolean isTrained() {
-        return trainingPoints.size() != 0;
+    public synchronized boolean isTrained() {
+        return !trainingPoints.isEmpty();
     }
 
 }

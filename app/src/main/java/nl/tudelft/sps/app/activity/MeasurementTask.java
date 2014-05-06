@@ -10,11 +10,11 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 /**
- * A AsyncTask that takes a single Measurement in the background
+ * An AsyncTask that takes a single Measurement in the background
  */
 public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> implements SensorEventListener {
 
-    private final Measurement m = new Measurement();
+    private final Measurement measurement = new Measurement();
 
     /**
      * Object on which doInBackground can wait for the measurement to complete
@@ -31,20 +31,20 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
     private final ProgressUpdater progressUpdater;
     private final ResultProcessor resultProcessor;
 
-    public MeasurementTask(ResultProcessor rp) {
-        this(rp, null);
+    public MeasurementTask(ResultProcessor processor) {
+        this(processor, null);
     }
 
-    public MeasurementTask(ResultProcessor rp,ProgressUpdater pu) {
-        this.progressUpdater = pu;
-        this.resultProcessor = rp;
+    public MeasurementTask(ResultProcessor processor, ProgressUpdater updater) {
+        this.progressUpdater = updater;
+        this.resultProcessor = processor;
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        if(!m.isCompleted()) {
-            m.addToMeasurement(sensorEvent.values);
-            publishProgress(m.getProgress());
+        if (!measurement.isCompleted()) {
+            measurement.addToMeasurement(sensorEvent.values);
+            publishProgress(measurement.getProgress());
         } else {
             // We're done
             synchronized (gate) {
@@ -55,12 +55,12 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
-        // ignore
+        // Ignore
     }
 
     @Override
     protected void onProgressUpdate(Integer... values) {
-        if(progressUpdater != null) {
+        if (progressUpdater != null) {
             progressUpdater.update(values[0]);
         }
     }
@@ -72,8 +72,8 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
 
     @Override
     protected IMeasurement doInBackground(Activity... activities) {
-        SensorManager sensorManager = (SensorManager) activities[0].getSystemService(Context.SENSOR_SERVICE);
-        Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        final SensorManager sensorManager = (SensorManager) activities[0].getSystemService(Context.SENSOR_SERVICE);
+        final Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
 
@@ -88,12 +88,12 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
 
         sensorManager.unregisterListener(this);
 
-        if(!m.isCompleted()) {
+        if (!measurement.isCompleted()) {
             // Something went wrong or the timeout expired
             Log.w(getClass().getName(), "Did not create a complete measurement");
             return IMeasurement.INVALID_MEASUREMENT;
         } else {
-            return m;
+            return measurement;
         }
     }
 }

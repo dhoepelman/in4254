@@ -56,23 +56,20 @@ public class MainActivity extends ActionBarActivity
         switch (position) {
             default:
             case 0:
-                // TODO: Implement activity monitoring
-                fragment = MeasureFragment.newInstance(position);
-                break;
-            case 1:
                 fragment = TestFragment.newInstance(position);
                 break;
-            case 2:
+            case 1:
                 fragment = TrainFragment.newInstance(position);
                 break;
-            case 3:
+            case 2:
                 // TODO: implementeer localization
                 break;
         }
         if (fragment != null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, fragment)
-                    .commit();
+            getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.container, fragment)
+                .commit();
         } else {
             final Context applicationContext = getApplicationContext();
             if (applicationContext != null) {
@@ -88,12 +85,9 @@ public class MainActivity extends ActionBarActivity
                 mTitle = getString(R.string.title_section_test_activity);
                 break;
             case 1:
-                mTitle = getString(R.string.title_section_test_activity2);
-                break;
-            case 2:
                 mTitle = getString(R.string.title_section_train_activity);
                 break;
-            case 3:
+            case 2:
                 mTitle = getString(R.string.title_section_localization);
                 break;
         }
@@ -146,9 +140,11 @@ public class MainActivity extends ActionBarActivity
         readTrainingData();
     }
 
-
+    /**
+     * Read from the file containing the training measurements and
+     * use them to train the classifier.
+     */
     private void readTrainingData() {
-        // Read TrainFragment.RESULTS_FILE_PATH and do classifier.train(measurement_of_current_line)
         if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
             final File resultsFile = new File(TrainFragment.RESULTS_FILE_PATH);
             if (resultsFile.exists()) {
@@ -172,7 +168,7 @@ public class MainActivity extends ActionBarActivity
      * Display the message as a toast
      */
     private void displayToast(String message) {
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
 }
