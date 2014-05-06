@@ -23,5 +23,9 @@ Our classifier as of now performs well on running, but does not differentiate we
 
 We might be affected by the ``Curse of Dimensionality`` \cite{wikipedia2} which means that the required size of the training data grows exponentially with the dimension of the feature vector because the volume becomes more sparse. As we have 9 features/dimensions this might be our problem.
 
-Possible solutions to improve our classifier accuracy might be removing or reducing our features/dimensions. Removing outliers (noise) in our training data might also help \cite{wikipedia1}.
+\subsection{Possible improvements}
+
+Possible solutions to improve our classifier accuracy might be removing or reducing our features/dimensions.
+Removing outliers (noise) in our training data might also help \cite{wikipedia1}.
 Another possible major improvement we plan to make is to use Mahalanobis distance or some other distance instead of Eucledian distance, as Eucledian distance does not perform well with high-dimensionality data \cite{wikipedia1}.
+We also plan to play with the number of neighbors.
