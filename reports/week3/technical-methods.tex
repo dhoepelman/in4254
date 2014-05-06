@@ -13,7 +13,7 @@ The standard deviation $\sigma$ for each axis: $\sigma_x$, $\sigma_y$, $\sigma_z
 The correlation between each two axes:  $Corr(x,y)$,$Corr(y,z)$,$Corr(z,x)$.
 
 
-Correlation is supposed to help with activities that are translations into just 1 dimension, in our case Walking, Stairs\_Up and Stairs\_Down.
+Correlation is supposed to help with activities that are translations into just 1 dimension \cite{ravi2005activity}, in our case Walking, Stairs\_Up and Stairs\_Down.
 Correlation is defined as $
 	Corr(x,y) = \frac{Cov(x,y)}{\sigma_x \cdot \sigma_y}$.
 
@@ -21,7 +21,12 @@ Correlation is defined as $
 \label{sec:classification}
 To classify the feature vectors, we looked at two algorithms to perform the classification: k-NN and Support Vector Machines (SVM). Although SVM can efficiently classify non-linear problems, k-NN was found to be easy to implement while giving acceptable performance in the literature. For distance we use Eucledian Distance.
 
-We collected 550 training samples (110 for each activity). We used $\sqrt{550}=23$ neighbours. We used a 50-50 random tie-breaker. We store the training data in a file so it can be re-used. A visual exploration of the feature vectors is available in the appendix.
+We collected 550 training samples (110 for each activity).
+We used $\sqrt{550}=23$ neighbors.
+We use a 50-50 random tie-breaker.
+We store the training data in a file so it can be re-used.
+A visual exploration of the feature vectors is available in the appendix.
 
-For testing the classifier we selected an activity in our app and started measuring while doing said activity. We took relatively little testing samples (100, 20 for each activity) because we saw the poor performance of our classifier and wanted to improve it before doing a test with more samples.
+For testing the classifier we selected an activity in our app and started measuring while doing said activity.
+We took relatively little testing samples (100, 20 for each activity) because we saw the poor performance of our classifier and wanted to improve it before doing a test with more samples.
 
