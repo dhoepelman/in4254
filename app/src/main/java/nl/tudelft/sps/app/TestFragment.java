@@ -1,8 +1,11 @@
 package nl.tudelft.sps.app;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +15,14 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -37,8 +48,11 @@ public class TestFragment extends Fragment {
             try {
                 final MainActivity mainActivity = (MainActivity) getActivity();
                 if (mainActivity != null) {
-                    final ACTIVITY activity = mainActivity.getClassifier().classify(result);
-                    valueResults.append(activity.name() + "\n");
+                    final ACTIVITY actualActivity = mainActivity.getClassifier().classify(result);
+                    valueResults.append(String.format("Actual: %s\tExpected: %s\n", actualActivity.name(), selectedActivity.name()));
+
+                    // Log the result so it can be processed later to create a confusion matrix
+                    writeResult(actualActivity, selectedActivity); // TODO write results asynchronous (it seems to slow down the start of the next measurement)
 
                     // Do more tests if needed
                     doTest();
@@ -91,6 +105,23 @@ public class TestFragment extends Fragment {
         R.id.rb_times_infinite
     };
 
+    private BiMap<Integer, ACTIVITY> activity_buttons = new ImmutableBiMap.Builder<Integer, ACTIVITY>()
+        .put(R.id.but_test_sitting, ACTIVITY.SITTING)
+        .put(R.id.but_test_walking, ACTIVITY.WALKING)
+        .put(R.id.but_test_running, ACTIVITY.RUNNING)
+        .put(R.id.but_test_stairsup, ACTIVITY.STAIRS_UP)
+        .put(R.id.but_test_stairsdown, ACTIVITY.STAIRS_DOWN)
+        .build();
+
+    private ACTIVITY selectedActivity;
+
+    private static final String LOG_TAG = TestFragment.class.toString();
+
+    /**
+     * File to which the measured acceleration values are written
+     */
+    public static final String RESULTS_FILE_PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/testing.csv";
+
     /**
      * Returns a new instance of this fragment for the given section number
      */
@@ -101,6 +132,42 @@ public class TestFragment extends Fragment {
         final TestFragment fragment = new TestFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    private void writeResult(ACTIVITY actual, ACTIVITY expected) {
+        final long timestamp = System.currentTimeMillis() / 1000L;
+
+        try {
+            if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
+                    && !Environment.MEDIA_MOUNTED_READ_ONLY.equals(Environment.getExternalStorageState())) {
+
+                final File resultsFile = new File(RESULTS_FILE_PATH);
+
+                if (!resultsFile.exists()) {
+                    resultsFile.createNewFile();
+                }
+
+                // Write the data to RESULTS_FILE_PATH
+                final PrintWriter writer = new PrintWriter(new FileOutputStream(resultsFile, true));
+                writer.append(String.format("%d,%s,%s\n", timestamp, actual.name(), expected.name()));
+                writer.close();
+
+                final String message = String.format("Succesfully written results to %s", RESULTS_FILE_PATH);
+                toastManager.showText(message, Toast.LENGTH_SHORT);
+                Log.i(LOG_TAG, message);
+            }
+            else {
+                final String message = "Could not write buffer: external storage not mounted";
+                toastManager.showText(message, Toast.LENGTH_SHORT);
+                Log.w(LOG_TAG, message);
+            }
+        }
+        catch (IOException e) {
+            final String message = String.format("Could not create or write results file %s", RESULTS_FILE_PATH);
+            toastManager.showText(message, Toast.LENGTH_LONG);
+            Log.w(LOG_TAG, message);
+            Log.d(LOG_TAG, Throwables.getStackTraceAsString(e));
+        }
     }
 
     @Override
@@ -131,16 +198,66 @@ public class TestFragment extends Fragment {
             }
         });
 
+        // Connect click listener to stop button
+        ((Button) rootView.findViewById(R.id.but_test_stop)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onStopTestsButtonClick(view);
+            }
+        });
+
+        // Register the button listeners
+        for (int buttonId : activity_buttons.keySet()) {
+            rootView.findViewById(buttonId).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickActivityButton(view);
+                }
+            });
+        }
+
+        // Make all activity buttons gray
+        colorSelectedButton();
+
         return rootView;
     }
 
-    public void onStartTestsButtonClick(View view) {
-        synchronized (updateLock) {
-            doInfinitely.set(measureInfinitely);
-            timesLeft.set(measureTimes);
-        }
+    public void onClickActivityButton(final View view) {
+        selectedActivity = activity_buttons.get(view.getId());
+        colorSelectedButton();
+    }
 
-        doTest();
+    /**
+     * (Visually) select the right button
+     */
+    private void colorSelectedButton() {
+        for (int buttonId : activity_buttons.keySet()) {
+            rootView.findViewById(buttonId).setBackgroundColor(Color.GRAY);
+        }
+        if (selectedActivity != null) {
+            rootView.findViewById(activity_buttons.inverse().get(selectedActivity)).setBackgroundColor(Color.BLACK);
+        }
+    }
+
+    public void onStartTestsButtonClick(final View view) {
+        if (selectedActivity == null) {
+            toastManager.showText("Select an activity first", Toast.LENGTH_SHORT);
+        }
+        else {
+            synchronized (updateLock) {
+                doInfinitely.set(measureInfinitely);
+                timesLeft.set(measureTimes);
+            }
+
+            doTest();
+        }
+    }
+
+    public void onStopTestsButtonClick(final View view) {
+        final MeasurementTask oldTask = currentTask.get();
+        if (oldTask != null) {
+            oldTask.cancel(false);
+        }
     }
 
     public void doTest() {
@@ -155,10 +272,12 @@ public class TestFragment extends Fragment {
 
         if (infinitelyRemaining || timesRemaining > 0) {
             if (!infinitelyRemaining) {
+                // TODO for some reasons the 2nd .. nth toast gets shown only after half way during the measurement (1st gets displayed immediately)
                 toastManager.showText(String.format("%d remaining tests", timesRemaining), Toast.LENGTH_SHORT);
             }
             else {
-                toastManager.showText("More, more and more nananana!", Toast.LENGTH_SHORT);
+                // TODO for some reasons the 2nd .. nth toast gets shown only after half way during the measurement (1st gets displayed immediately)
+                toastManager.showText("Many more remaining", Toast.LENGTH_SHORT);
             }
 
             final MeasurementTask task = new MeasurementTask(measurementResultProcessor, measurementProgressUpdater);
@@ -184,7 +303,7 @@ public class TestFragment extends Fragment {
         ((MainActivity) activity).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
     }
 
-    public void onRBTimesClicked(View view) {
+    public void onRBTimesClicked(final View view) {
         final RadioButton radioButton = (RadioButton) view;
         if (radioButton.isChecked()) {
             switch (view.getId()) {

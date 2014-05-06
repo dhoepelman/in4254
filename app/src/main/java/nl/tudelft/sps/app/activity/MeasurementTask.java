@@ -42,7 +42,7 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        if (!measurement.isCompleted()) {
+        if (!measurement.isCompleted() && !isCancelled()) {
             measurement.addToMeasurement(sensorEvent.values);
             publishProgress(measurement.getProgress());
         } else {
@@ -89,6 +89,9 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
         sensorManager.unregisterListener(this);
 
         if (!measurement.isCompleted()) {
+            if (isCancelled()) {
+                publishProgress(0);
+            }
             // Something went wrong or the timeout expired
             Log.w(getClass().getName(), "Did not create a complete measurement");
             return IMeasurement.INVALID_MEASUREMENT;

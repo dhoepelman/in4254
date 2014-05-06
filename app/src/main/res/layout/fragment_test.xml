@@ -5,7 +5,7 @@
     tools:context="nl.tudelft.sps.app.TestFragment"
     android:layout_gravity="center_horizontal|center_vertical"
     android:orientation="vertical"
-    android:padding="6dp">
+    android:layout_margin="6dp">
 
     <!-- TODO: Update blank fragment layout -->
 
@@ -13,14 +13,14 @@
         android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical|center_horizontal">
+        android:gravity="top|center_horizontal">
 
         <RadioGroup
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center_vertical"
-            android:checkedButton="@+id/rb_times_5">
+            android:checkedButton="@+id/rb_times_1">
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -51,23 +51,78 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical">
                 <RadioButton android:id="@+id/rb_times_infinite"
-                     android:layout_width="wrap_content"
-                     android:layout_height="wrap_content"
-                     android:text="continuously"/>
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Continuously"/>
             </LinearLayout>
         </RadioGroup>
 
-        <Button
-            style="?android:attr/buttonStyleSmall"
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Start"
-            android:id="@+id/but_test_start"
-            android:layout_marginLeft="10dp"/>
+            android:gravity="fill_vertical"
+            android:layout_marginLeft="10dp">
+            <Button android:id="@+id/but_test_start"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start testing"
+                android:layout_marginTop="7dp"/>
+            <Button android:id="@+id/but_test_stop"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Stop testing"
+                android:layout_marginTop="6dp"/>
+        </LinearLayout>
 
     </LinearLayout>
 
-    <!-- to align with TextView -->
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:orientation="horizontal"
+       android:gravity="left"
+       android:layout_marginLeft="2dp">
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/but_test_sitting"
+            android:src="@drawable/act_sitting"
+            android:clickable="true" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/but_test_walking"
+            android:src="@drawable/act_walking"
+            android:clickable="true" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/but_test_running"
+            android:src="@drawable/act_running"
+            android:clickable="true" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/but_test_stairsup"
+            android:src="@drawable/act_stairsup"
+            android:clickable="true" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/but_test_stairsdown"
+            android:src="@drawable/act_stairsdown" />
+
+    </LinearLayout>
+
+    <!-- Margin right and left to align with TextView -->
     <ProgressBar
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="fill_parent"
