@@ -1,6 +1,10 @@
 package nl.tudelft.sps.app.activity;
 
 import com.google.common.primitives.Doubles;
+import com.j256.ormlite.dao.ForeignCollection;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.ForeignCollectionField;
+import com.j256.ormlite.table.DatabaseTable;
 
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -13,15 +17,11 @@ import java.util.List;
 /**
  * [1] Ravi, Nishkam, et al. "Activity recognition from accelerometer data." AAAI. Vol. 5. 2005.
  */
-
+@DatabaseTable(tableName = "act_measurements")
 public class Measurement implements IMeasurement {
     public static final String TABLE_NAME = "act_measurements";
     public static final String COLUMN_TIMESTAMP = "timestamp";
     public static final String COLUMN_ACTIVITY = "activity";
-
-    private final long timestamp;
-    private final ACTIVITY activity;
-
     /**
      * Window size. Based on [1]. 50Hz measurements
      */
@@ -30,9 +30,39 @@ public class Measurement implements IMeasurement {
      * Window overlap. Based on [1]
      */
     public static final int WINDOW_OVERLAP = 128;
+    @DatabaseField(id = true)
+    long id;
+    @DatabaseField
+    long timestamp;
+    @DatabaseField(unknownEnumName = "Unknown")
+    ACTIVITY activity;
+    @ForeignCollectionField(eager = false)
+    ForeignCollection<Sample> samples;
+    @DatabaseField
+    double MeanX = Double.NaN;
+    @DatabaseField
+    double MeanY = Double.NaN;
+    @DatabaseField
+    double MeanZ = Double.NaN;
+    @DatabaseField
+    double StdDevX = Double.NaN;
+    @DatabaseField
+    double StdDevY = Double.NaN;
+    @DatabaseField
+    double StdDevZ = Double.NaN;
+    @DatabaseField
+    double CorrXY = Double.NaN;
+    @DatabaseField
+    double CorrYZ = Double.NaN;
+    @DatabaseField
+    double CorrZX = Double.NaN;
 
-    private final DescriptiveStatistics[] window;
+    /**
+     * Window
+     */
+    private DescriptiveStatistics[] window;
     private double[] featureVector = null;
+
 
     public Measurement(long timestamp, ACTIVITY activity) {
         window = new DescriptiveStatistics[]{
@@ -44,7 +74,79 @@ public class Measurement implements IMeasurement {
         this.activity = activity;
     }
 
-    public Measurement() { this(System.currentTimeMillis(), ACTIVITY.UNKNOWN); };
+    public Measurement() {
+        // ORMLite
+    }
+
+    private DescriptiveStatistics[] getDescriptiveStatistics() {
+        if (window == null) {
+            window = Sample.toDescriptiveStatistics(samples);
+        }
+        return window;
+    }
+
+    public double getMeanX() {
+        if(MeanX == Double.NaN) {
+            MeanX = getDescriptiveStatistics()[0].getMean();
+        }
+        return MeanX;
+    }
+
+    public double getMeanY() {
+        if(MeanY == Double.NaN) {
+            MeanY = getDescriptiveStatistics()[1].getMean();
+        }
+        return MeanY;
+    }
+
+    public double getMeanZ() {
+        if(MeanZ == Double.NaN) {
+            MeanZ = getDescriptiveStatistics()[2].getMean();
+        }
+        return MeanZ;
+    }
+
+    public double getStdDevX() {
+        if(StdDevX == Double.NaN) {
+            StdDevX = getDescriptiveStatistics()[0].getStandardDeviation();
+        }
+        return StdDevX;
+    }
+
+    public double getStdDevY() {
+        if(StdDevY == Double.NaN) {
+            StdDevY = getDescriptiveStatistics()[1].getStandardDeviation();
+        }
+        return StdDevY;
+    }
+
+    public double getStdDevZ() {
+        if(StdDevZ == Double.NaN) {
+            StdDevZ = getDescriptiveStatistics()[2].getStandardDeviation();
+        }
+        return StdDevZ;
+    }
+
+    public double getCorrXY() {
+        if(CorrXY == Double.NaN) {
+            CorrXY = new Covariance().covariance(window[0].getValues(), window[1].getValues()) / (getStdDevX() * getStdDevY());
+        }
+        return CorrXY;
+    }
+
+    public double getCorrYZ() {
+        if(CorrYZ == Double.NaN) {
+            CorrYZ = new Covariance().covariance(window[1].getValues(), window[2].getValues()) / (getStdDevY() * getStdDevZ());
+        }
+        return CorrYZ;
+    }
+
+    public double getCorrZX() {
+        if(CorrZX == Double.NaN) {
+            CorrZX = new Covariance().covariance(window[2].getValues(), window[0].getValues()) / (getStdDevX() * getStdDevY());
+        }
+        return CorrZX;
+    }
 
     /**
      * True if the window is full
@@ -70,26 +172,6 @@ public class Measurement implements IMeasurement {
         return (int) window[0].getN();
     }
 
-    private double getMean(int axis) {
-        return window[axis].getMean();
-    }
-
-    private double getStdDev(int axis) {
-        return window[axis].getStandardDeviation();
-    }
-
-    /**
-     * Get the covariance between two axes
-     */
-    private double getCorrelation(int axis1, int axis2) {
-        return getCorrelation(axis1, axis2, getStdDev(axis1), getStdDev(axis2));
-    }
-
-    private double getCorrelation(int axis1, int axis2, double stdDev1, double stdDev2) {
-        double cov = new Covariance().covariance(window[axis1].getValues(), window[axis2].getValues());
-        return cov / (stdDev1 * stdDev2);
-    }
-
     /**
      * Get the feature vector of this measurement
      */
@@ -99,19 +181,16 @@ public class Measurement implements IMeasurement {
             return IMeasurement.INVALID_MEASUREMENT.getFeatureVector();
         }
         if (featureVector == null) {
-            final double stdDev0 = getStdDev(0);
-            final double stdDev1 = getStdDev(1);
-            final double stdDev2 = getStdDev(2);
             featureVector = new double[]{
-                    getMean(0),
-                    getMean(1),
-                    getMean(2),
-                    stdDev0,
-                    stdDev1,
-                    stdDev2,
-                    getCorrelation(0, 1, stdDev0, stdDev1),  // Corr(x,y)
-                    getCorrelation(1, 2, stdDev1, stdDev2),  // Corr(y,z)
-                    getCorrelation(2, 0, stdDev2, stdDev0),  // Corr(z,x)
+                    getMeanX(),
+                    getMeanY(),
+                    getMeanZ(),
+                    getStdDevX(),
+                    getStdDevY(),
+                    getStdDevZ(),
+                    getCorrXY(),
+                    getCorrYZ(),
+                    getCorrZX(),
             };
         }
         return featureVector;
@@ -122,13 +201,14 @@ public class Measurement implements IMeasurement {
         return "Measurement(" + Doubles.join(",", getFeatureVector()) + ")";
     }
 
-    public void addToMeasurement(float[] values) {
+    public void addToMeasurement(final float[] values, long timestamp) {
         if (values.length != 3) {
             throw new IllegalArgumentException("Measurement must have only X,Y,Z axis");
         }
         window[0].addValue(values[0]);
         window[1].addValue(values[1]);
         window[2].addValue(values[2]);
+        samples.add(new Sample(this, timestamp, values[0], values[1], values[2]));
     }
 
     private static abstract class Helper {
@@ -154,7 +234,7 @@ public class Measurement implements IMeasurement {
             return current;
         }
 
-        public synchronized boolean addMeasurement(float[] values) {
+        public synchronized boolean addMeasurement(float[] values, long timestamp) {
             if (values.length != 3) {
                 throw new IllegalArgumentException("Expected 3 values");
             }
@@ -163,7 +243,7 @@ public class Measurement implements IMeasurement {
                 throw new RuntimeException("Window is full");
             }
 
-            current.addToMeasurement(values);
+            current.addToMeasurement(values, timestamp);
             current_loc++;
 
             return isFull();
@@ -201,7 +281,7 @@ public class Measurement implements IMeasurement {
             return numFullWindows;
         }
 
-        public void addMeasurement(float[] values) {
+        public void addMeasurement(float[] values, long timestamp) {
             if (values.length != 3) {
                 throw new IllegalArgumentException("Expected 3 values");
             }
@@ -223,9 +303,9 @@ public class Measurement implements IMeasurement {
                 measurements.add(next);
             }
 
-            current.addToMeasurement(values);
+            current.addToMeasurement(values, timestamp);
             if (current_loc >= WINDOW_OVERLAP) {
-                next.addToMeasurement(values);
+                next.addToMeasurement(values, timestamp);
             }
             current_loc++;
         }

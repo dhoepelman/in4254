@@ -106,11 +106,11 @@ public class TestFragment extends Fragment {
     };
 
     private BiMap<Integer, ACTIVITY> activity_buttons = new ImmutableBiMap.Builder<Integer, ACTIVITY>()
-        .put(R.id.but_test_sitting, ACTIVITY.SITTING)
-        .put(R.id.but_test_walking, ACTIVITY.WALKING)
-        .put(R.id.but_test_running, ACTIVITY.RUNNING)
-        .put(R.id.but_test_stairsup, ACTIVITY.STAIRS_UP)
-        .put(R.id.but_test_stairsdown, ACTIVITY.STAIRS_DOWN)
+        .put(R.id.but_test_sitting, ACTIVITY.Sitting)
+        .put(R.id.but_test_walking, ACTIVITY.Walking)
+        .put(R.id.but_test_running, ACTIVITY.Running)
+        .put(R.id.but_test_stairsup, ACTIVITY.Stairs_Up)
+        .put(R.id.but_test_stairsdown, ACTIVITY.Stairs_Down)
         .build();
 
     private ACTIVITY selectedActivity;

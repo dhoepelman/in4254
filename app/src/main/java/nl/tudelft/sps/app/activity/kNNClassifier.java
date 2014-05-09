@@ -76,7 +76,7 @@ public class kNNClassifier implements IClassifier {
         }
         else {
             // There were no neighbors
-            return ACTIVITY.UNKNOWN;
+            return ACTIVITY.Unknown;
         }
     }
 

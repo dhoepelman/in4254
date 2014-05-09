@@ -13,7 +13,7 @@ public class RandomClassifier implements IClassifier {
     @Override
     public ACTIVITY classify(IMeasurement m) {
         if(m.isValid()) {
-            return ACTIVITY.UNKNOWN;
+            return ACTIVITY.Unknown;
         } else {
             return ACTIVITY.values()[r.nextInt(ACTIVITY.values().length)];
         }

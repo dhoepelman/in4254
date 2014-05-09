@@ -48,7 +48,7 @@ public interface IMeasurement {
 
         @Override
         public ACTIVITY getActivity() {
-            return ACTIVITY.UNKNOWN;
+            return ACTIVITY.Unknown;
         }
     };
 }

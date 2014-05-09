@@ -43,7 +43,7 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         if (!measurement.isCompleted() && !isCancelled()) {
-            measurement.addToMeasurement(sensorEvent.values);
+            measurement.addToMeasurement(sensorEvent.values, sensorEvent.timestamp);
             publishProgress(measurement.getProgress());
         } else {
             // We're done

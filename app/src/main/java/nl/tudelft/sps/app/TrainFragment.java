@@ -48,11 +48,11 @@ public class TrainFragment extends Fragment implements SensorEventListener {
 
     private static final String LOG_TAG = TrainFragment.class.toString();
     private BiMap<Integer, ACTIVITY> activity_buttons = new ImmutableBiMap.Builder<Integer, ACTIVITY>()
-            .put(R.id.but_sitting, ACTIVITY.SITTING)
-            .put(R.id.but_walking, ACTIVITY.WALKING)
-            .put(R.id.but_running, ACTIVITY.RUNNING)
-            .put(R.id.but_stairsup, ACTIVITY.STAIRS_UP)
-            .put(R.id.but_stairsdown, ACTIVITY.STAIRS_DOWN)
+            .put(R.id.but_sitting, ACTIVITY.Sitting)
+            .put(R.id.but_walking, ACTIVITY.Walking)
+            .put(R.id.but_running, ACTIVITY.Running)
+            .put(R.id.but_stairsup, ACTIVITY.Stairs_Up)
+            .put(R.id.but_stairsdown, ACTIVITY.Stairs_Down)
             .build();
     private View rootView;
     private TextView valueMeasurement;
@@ -134,7 +134,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
             case Sensor.TYPE_LINEAR_ACCELERATION:
-                measurementHelper.addMeasurement(event.values);
+                measurementHelper.addMeasurement(event.values, event.timestamp);
 
                 final double value = (System.currentTimeMillis() - measurementStart) / 1000.0;
                 valueMeasurement.setText(String.format("%.1f", value));
