@@ -15,6 +15,12 @@ import java.util.List;
  */
 
 public class Measurement implements IMeasurement {
+    public static final String TABLE_NAME = "act_measurements";
+    public static final String COLUMN_TIMESTAMP = "timestamp";
+    public static final String COLUMN_ACTIVITY = "activity";
+
+    private final long timestamp;
+    private final ACTIVITY activity;
 
     /**
      * Window size. Based on [1]. 50Hz measurements
@@ -25,16 +31,20 @@ public class Measurement implements IMeasurement {
      */
     public static final int WINDOW_OVERLAP = 128;
 
-    private final DescriptiveStatistics[] raw_measurements;
+    private final DescriptiveStatistics[] window;
     private double[] featureVector = null;
 
-    public Measurement() {
-        raw_measurements = new DescriptiveStatistics[]{
+    public Measurement(long timestamp, ACTIVITY activity) {
+        window = new DescriptiveStatistics[]{
                 new DescriptiveStatistics(WINDOW_SIZE),
                 new DescriptiveStatistics(WINDOW_SIZE),
                 new DescriptiveStatistics(WINDOW_SIZE)
         };
+        this.timestamp = timestamp;
+        this.activity = activity;
     }
+
+    public Measurement() { this(System.currentTimeMillis(), ACTIVITY.UNKNOWN); };
 
     /**
      * True if the window is full
@@ -48,30 +58,35 @@ public class Measurement implements IMeasurement {
         return isCompleted();
     }
 
+    @Override
+    public ACTIVITY getActivity() {
+        return activity;
+    }
+
     /**
      * Gets the number of samples that are already in the measurement.
      */
     public int getProgress() {
-        return (int) raw_measurements[0].getN();
+        return (int) window[0].getN();
     }
 
-    public double getMean(int axis) {
-        return raw_measurements[axis].getMean();
+    private double getMean(int axis) {
+        return window[axis].getMean();
     }
 
-    public double getStdDev(int axis) {
-        return raw_measurements[axis].getStandardDeviation();
+    private double getStdDev(int axis) {
+        return window[axis].getStandardDeviation();
     }
 
     /**
      * Get the covariance between two axes
      */
-    public double getCorrelation(int axis1, int axis2) {
+    private double getCorrelation(int axis1, int axis2) {
         return getCorrelation(axis1, axis2, getStdDev(axis1), getStdDev(axis2));
     }
 
     private double getCorrelation(int axis1, int axis2, double stdDev1, double stdDev2) {
-        double cov = new Covariance().covariance(raw_measurements[axis1].getValues(), raw_measurements[axis2].getValues());
+        double cov = new Covariance().covariance(window[axis1].getValues(), window[axis2].getValues());
         return cov / (stdDev1 * stdDev2);
     }
 
@@ -111,9 +126,9 @@ public class Measurement implements IMeasurement {
         if (values.length != 3) {
             throw new IllegalArgumentException("Measurement must have only X,Y,Z axis");
         }
-        raw_measurements[0].addValue(values[0]);
-        raw_measurements[1].addValue(values[1]);
-        raw_measurements[2].addValue(values[2]);
+        window[0].addValue(values[0]);
+        window[1].addValue(values[1]);
+        window[2].addValue(values[2]);
     }
 
     private static abstract class Helper {

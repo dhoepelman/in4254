@@ -16,6 +16,11 @@ public interface IMeasurement {
     boolean isValid();
 
     /**
+     * Get the activity associated to this measurement.
+     */
+    public ACTIVITY getActivity();
+
+    /**
      * This measurement can be returned when there is an invalid measurement
      */
     public static IMeasurement INVALID_MEASUREMENT = new IMeasurement() {
@@ -39,6 +44,11 @@ public interface IMeasurement {
         @Override
         public boolean isValid() {
             return false;
+        }
+
+        @Override
+        public ACTIVITY getActivity() {
+            return ACTIVITY.UNKNOWN;
         }
     };
 }
