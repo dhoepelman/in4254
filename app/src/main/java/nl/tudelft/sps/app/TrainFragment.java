@@ -10,25 +10,16 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.common.primitives.Doubles;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
-import nl.tudelft.sps.app.activity.IMeasurement;
 import nl.tudelft.sps.app.activity.Measurement;
 
 /**
@@ -46,7 +37,6 @@ public class TrainFragment extends Fragment implements SensorEventListener {
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
 
-    private static final String LOG_TAG = TrainFragment.class.toString();
     private BiMap<Integer, ACTIVITY> activity_buttons = new ImmutableBiMap.Builder<Integer, ACTIVITY>()
             .put(R.id.but_sitting, ACTIVITY.Sitting)
             .put(R.id.but_walking, ACTIVITY.Walking)
@@ -150,7 +140,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         measurementStart = System.currentTimeMillis();
 
         // Create an empty helper
-        measurementHelper = new Measurement.TrainHelper(selectedActivity);
+        measurementHelper = new Measurement.TrainHelper(selectedActivity, ((MainActivity) getActivity()).getDatabaseHelper());
 
         // Start listening
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
@@ -168,39 +158,8 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     }
 
     private void writeBuffer() {
-        try {
-            if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
-                    && !Environment.MEDIA_MOUNTED_READ_ONLY.equals(Environment.getExternalStorageState())) {
-
-                final File resultsFile = new File(RESULTS_FILE_PATH);
-
-                if (!resultsFile.exists()) {
-                    resultsFile.createNewFile();
-                }
-
-                final PrintWriter writer = new PrintWriter(new FileOutputStream(resultsFile, true));
-
-                for (IMeasurement measurement : measurementHelper.getMeasurements()) {
-                    writer.append(selectedActivity.name());
-                    writer.append(",");
-                    writer.append(Doubles.join(",", measurement.getFeatureVector()));
-                    writer.append("\n");
-                }
-                writer.close();
-
-                final String message = String.format("Succesfully written buffer to %s", RESULTS_FILE_PATH);
-                Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
-                Log.i(LOG_TAG, message);
-            } else {
-                final String message = "Could not write buffer: external storage not mounted";
-                Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
-                Log.w(LOG_TAG, message);
-            }
-        } catch (IOException e) {
-            final String message = String.format("Could not create or write results file %s", RESULTS_FILE_PATH);
-            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
-            Log.w(LOG_TAG, message);
-            Log.d(LOG_TAG, Throwables.getStackTraceAsString(e));
+        for (Measurement measurement : measurementHelper.getMeasurements()) {
+            ((MainActivity) getActivity()).getDatabaseHelper().getMeasurementDao().create(measurement);
         }
     }
 

@@ -84,23 +84,25 @@ public class kNNClassifier implements IClassifier {
      * Add a training point to the classifier
      */
     public void train(ACTIVITY activity, IMeasurement measurement) {
-        train(new TrainingPoint(activity, measurement.getFeatureVector()));
-    }
-
-    private synchronized void train(TrainingPoint tp) {
-        trainingPoints.add(tp);
-    }
-
-    @Override
-    public void train(List<TrainingPoint> trainingPoints) {
-        for (TrainingPoint tp : trainingPoints) {
-            train(tp);
-        }
+        trainingPoints.add(new TrainingPoint(activity, measurement.getFeatureVector()));
     }
 
     @Override
     public synchronized boolean isTrained() {
         return !trainingPoints.isEmpty();
+    }
+
+    /**
+     * Tuple containing a measurement and its activity type
+     */
+    public class TrainingPoint {
+        public final ACTIVITY activity;
+        public final double[] featureVector;
+
+        public TrainingPoint(ACTIVITY activity, double[] featureVector) {
+            this.activity = activity;
+            this.featureVector = featureVector;
+        }
     }
 
 }

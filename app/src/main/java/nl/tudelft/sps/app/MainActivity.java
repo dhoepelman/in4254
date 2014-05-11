@@ -2,7 +2,6 @@ package nl.tudelft.sps.app;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -12,12 +11,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.IOException;
+import com.j256.ormlite.android.apptools.OpenHelperManager;
 
-import nl.tudelft.sps.app.activity.TrainingPoint;
-import nl.tudelft.sps.app.activity.kNNClassifier;
 import nl.tudelft.sps.app.activity.IClassifier;
+import nl.tudelft.sps.app.activity.Measurement;
+import nl.tudelft.sps.app.activity.kNNClassifier;
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -34,6 +32,7 @@ public class MainActivity extends ActionBarActivity
      */
     private CharSequence mTitle;
     private IClassifier classifier;
+    private DatabaseHelper databaseHelper = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,9 +66,9 @@ public class MainActivity extends ActionBarActivity
         }
         if (fragment != null) {
             getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.container, fragment)
-                .commit();
+                    .beginTransaction()
+                    .replace(R.id.container, fragment)
+                    .commit();
         } else {
             final Context applicationContext = getApplicationContext();
             if (applicationContext != null) {
@@ -141,34 +140,29 @@ public class MainActivity extends ActionBarActivity
     }
 
     /**
-     * Read from the file containing the training measurements and
+     * Read from the database containing the training measurements and
      * use them to train the classifier.
      */
     private void readTrainingData() {
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-            final File resultsFile = new File(TrainFragment.RESULTS_FILE_PATH);
-            if (resultsFile.exists()) {
-                try {
-                    classifier.train(TrainingPoint.fromCSV(resultsFile));
-                }
-                catch (IOException exception) {
-                    displayToast("Failed to read training data");
-                }
-            }
-            else {
-                displayToast(String.format("%s does not exist", resultsFile.getName()));
-            }
-        }
-        else {
-            displayToast("External storage not mounted");
+        for (Measurement m : getDatabaseHelper().getMeasurementDao().queryForAll()) {
+            classifier.train(m.getActivity(), m);
         }
     }
 
-    /**
-     * Display the message as a toast
-     */
-    private void displayToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (databaseHelper != null) {
+            OpenHelperManager.releaseHelper();
+            databaseHelper = null;
+        }
+    }
+
+    public DatabaseHelper getDatabaseHelper() {
+        if (databaseHelper == null) {
+            databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
+        }
+        return databaseHelper;
     }
 
 }

@@ -5,10 +5,7 @@ import com.j256.ormlite.table.DatabaseTable;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@DatabaseTable(tableName = "act_measurements")
+@DatabaseTable(tableName = "act_samples")
 public class Sample {
     @DatabaseField(foreign = true)
     Measurement measurement;
