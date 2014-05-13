@@ -6,7 +6,6 @@ import com.google.common.primitives.Doubles;
 import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
-import com.j256.ormlite.table.DatabaseTable;
 
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -73,6 +72,14 @@ public class Measurement implements IMeasurement {
 
     public Measurement() {
         // ORMLite
+    }
+
+    private void createEmptyWindow() {
+        window = new DescriptiveStatistics[]{
+                new DescriptiveStatistics(WINDOW_SIZE),
+                new DescriptiveStatistics(WINDOW_SIZE),
+                new DescriptiveStatistics(WINDOW_SIZE)
+        };
     }
 
     private DescriptiveStatistics[] getDescriptiveStatistics() {
