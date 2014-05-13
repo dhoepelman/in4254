@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import nl.tudelft.sps.app.localization.WifiMeasurementsWindow;
 import nl.tudelft.sps.app.localization.WifiScanTask;
 
 public class LocalizationTrainFragment extends Fragment {
@@ -29,10 +30,10 @@ public class LocalizationTrainFragment extends Fragment {
 
     private final WifiScanTask.ResultProcessor wifiScanResultProcessor = new WifiScanTask.ResultProcessor() {
         @Override
-        public void result(List<ScanResult> results) {
+        public void result(WifiMeasurementsWindow results) {
             if (results != null) {
                 final StringBuilder builder = new StringBuilder();
-                for (ScanResult result : results) {
+                for (ScanResult result : results.getLast().getResults()) {
                     builder.append(String.format("%s %d dBm\n", result.SSID, result.level));
                 }
                 valueResults.setText(builder);

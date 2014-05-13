@@ -15,12 +15,17 @@ import java.util.List;
 
 import nl.tudelft.sps.app.ToastManager;
 
-public class WifiScanTask extends AsyncTask<Void, Void, List<ScanResult>> {
+public class WifiScanTask extends AsyncTask<Void, Void, WifiMeasurementsWindow> {
 
     private final ResultProcessor resultProcessor;
     private final WifiManager wifiManager;
     private final Activity activity;
 
+    /**
+     * Last list of measured AP's. It is considered to be one measurement
+     * and added to the WifiMeasurementsWindow, which is then returned
+     * via the ResultProcessor when the task completes.
+     */
     private List<ScanResult> accessPoints;
 
     /**
@@ -43,34 +48,45 @@ public class WifiScanTask extends AsyncTask<Void, Void, List<ScanResult>> {
     }
 
     @Override
-    protected void onPostExecute(List<ScanResult> result) {
+    protected void onPostExecute(WifiMeasurementsWindow result) {
         resultProcessor.result(result);
     }
 
     @Override
-    protected List<ScanResult> doInBackground(Void... nothing) {
+    protected WifiMeasurementsWindow doInBackground(Void... nothing) {
         final ScanReceiver receiver = new ScanReceiver();
         activity.registerReceiver(receiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
-        try {
-            if (!wifiManager.startScan()) {
-                Log.w(getClass().getName(), "Scan not started");
-                return null;
-            }
+        final WifiMeasurementsWindow window = new WifiMeasurementsWindow();
 
-            try {
-                // The scan should be done in well under 10 seconds.
-                synchronized (gate) {
-                    gate.wait(10 * 1000);
+        try {
+            while (!window.isCompleted()) {
+                window.setStartScan();
+
+                if (!wifiManager.startScan()) {
+                    Log.w(getClass().getName(), "Scan not started");
+                    return null;
                 }
 
-                Log.w(getClass().getName(), "WIFI RESULTS FINISHED");
+                try {
+                    // The scan should be done in well under 10 seconds.
+                    synchronized (gate) {
+                        gate.wait(10 * 1000);
+                    }
 
-                return accessPoints;
-            } catch (InterruptedException exception) {
-                Log.w(getClass().getName(), "Scan was interrupted");
-                return null;
+                    Log.w(getClass().getName(), "WIFI RESULTS FINISHED");
+
+                    window.addMeasurement(accessPoints);
+                }
+                catch (InterruptedException exception) {
+                    Log.w(getClass().getName(), "Scan was interrupted");
+                    return null;
+                }
+
+                window.delayUntilNextStart();
             }
+
+            return window;
         }
         finally {
             activity.unregisterReceiver(receiver);
@@ -78,7 +94,7 @@ public class WifiScanTask extends AsyncTask<Void, Void, List<ScanResult>> {
     }
 
     public static interface ResultProcessor {
-        public void result(List<ScanResult> result);
+        public void result(WifiMeasurementsWindow result);
     }
 
     public class ScanReceiver extends BroadcastReceiver {
