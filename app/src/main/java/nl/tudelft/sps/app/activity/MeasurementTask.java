@@ -14,7 +14,7 @@ import android.util.Log;
  */
 public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> implements SensorEventListener {
 
-    private final Measurement measurement = new Measurement();
+    private final Measurement.MonitorHelper measurement;
 
     /**
      * Object on which doInBackground can wait for the measurement to complete
@@ -31,13 +31,13 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
     private final ProgressUpdater progressUpdater;
     private final ResultProcessor resultProcessor;
 
-    public MeasurementTask(ResultProcessor processor) {
-        this(processor, null);
-    }
-
-    public MeasurementTask(ResultProcessor processor, ProgressUpdater updater) {
+    public MeasurementTask(ResultProcessor processor, ProgressUpdater updater, Measurement.MonitorHelper helper) {
+        if (helper == null) {
+            throw new NullPointerException("Helper is null");
+        }
         this.progressUpdater = updater;
         this.resultProcessor = processor;
+        measurement = helper;
     }
 
     @Override
@@ -45,7 +45,8 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
         if (!measurement.isCompleted() && !isCancelled()) {
             measurement.addToMeasurement(sensorEvent.values);
             publishProgress(measurement.getProgress());
-        } else {
+        }
+        else {
             // We're done
             synchronized (gate) {
                 gate.notify();
@@ -75,6 +76,8 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
         final SensorManager sensorManager = (SensorManager) activities[0].getSystemService(Context.SENSOR_SERVICE);
         final Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 
+        measurement.addNewWindowIfFull();
+
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
 
         try {
@@ -82,7 +85,8 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
             synchronized (gate) {
                 gate.wait(10 * 1000);
             }
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e) {
             Log.w(getClass().getName(), "Measurement was interrupted");
         }
 
@@ -95,8 +99,10 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
             // Something went wrong or the timeout expired
             Log.w(getClass().getName(), "Did not create a complete measurement");
             return IMeasurement.INVALID_MEASUREMENT;
-        } else {
-            return measurement;
+        }
+        else {
+            measurement.logCurrentNext();
+            return measurement.getCurrentWindow();
         }
     }
 }

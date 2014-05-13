@@ -1,5 +1,7 @@
 package nl.tudelft.sps.app.activity;
 
+import android.util.Log;
+
 import com.google.common.primitives.Doubles;
 
 import org.apache.commons.math3.stat.correlation.Covariance;
@@ -119,6 +121,7 @@ public class Measurement implements IMeasurement {
     private static abstract class Helper {
         protected Measurement current;
         protected int current_loc = 0;
+        protected int loc_this_time = 0;
 
         public boolean isFull() {
             return current_loc == WINDOW_SIZE;
@@ -126,32 +129,55 @@ public class Measurement implements IMeasurement {
     }
 
     public static class MonitorHelper extends Helper {
-        public MonitorHelper() {
-            cleanWindow();
-        }
+        private Measurement next;
 
-        public synchronized void cleanWindow() {
+        public MonitorHelper() {
             current = new Measurement();
             current_loc = 0;
+
+            // Create an empty "next" measurement
+            next = new Measurement();
         }
 
         public synchronized Measurement getCurrentWindow() {
             return current;
         }
 
-        public synchronized boolean addMeasurement(float[] values) {
+        public synchronized void logCurrentNext() {
+            Log.w(getClass().getName(), "TEST CURRENT NEXT " + String.valueOf(current.hashCode()) + " " + String.valueOf(next.hashCode()));
+        }
+
+        public synchronized boolean isCompleted() {
+            return current.isCompleted();
+        }
+
+        public synchronized int getProgress() {
+            return current.getProgress();
+        }
+
+        public synchronized void addNewWindowIfFull() {
+            if (isFull()) {
+                // Measurement was full, replace with next
+                current = next;
+                current_loc = WINDOW_OVERLAP;
+
+                // Create an empty "next" measurement
+                next = new Measurement();
+            }
+        }
+
+        public synchronized void addToMeasurement(float[] values) {
             if (values.length != 3) {
                 throw new IllegalArgumentException("Expected 3 values");
             }
 
-            if (isFull()) {
-                throw new RuntimeException("Window is full");
-            }
+            addNewWindowIfFull();
 
             current.addToMeasurement(values);
+            if (current_loc >= WINDOW_OVERLAP) {
+                next.addToMeasurement(values);
+            }
             current_loc++;
-
-            return isFull();
         }
     }
 
