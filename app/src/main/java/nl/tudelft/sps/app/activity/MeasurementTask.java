@@ -20,14 +20,6 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
      * Object on which doInBackground can wait for the measurement to complete
      */
     private final Object gate = new Object();
-
-    public static interface ProgressUpdater {
-        public void update(Integer progress);
-    }
-    public static interface ResultProcessor {
-        public void result(IMeasurement result);
-    }
-
     private final ProgressUpdater progressUpdater;
     private final ResultProcessor resultProcessor;
 
@@ -43,7 +35,7 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         if (!measurement.isCompleted() && !isCancelled()) {
-            measurement.addToMeasurement(sensorEvent.values, sensorEvent.timestamp);
+            measurement.addToMeasurement(sensorEvent.values);
             publishProgress(measurement.getProgress());
         } else {
             // We're done
@@ -98,5 +90,13 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
         } else {
             return measurement;
         }
+    }
+
+    public static interface ProgressUpdater {
+        public void update(Integer progress);
+    }
+
+    public static interface ResultProcessor {
+        public void result(IMeasurement result);
     }
 }
