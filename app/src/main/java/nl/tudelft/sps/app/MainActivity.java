@@ -61,7 +61,7 @@ public class MainActivity extends ActionBarActivity
                 fragment = TrainFragment.newInstance(position);
                 break;
             case 2:
-                // TODO: implementeer localization
+                fragment = LocalizationTrainFragment.newInstance(position);
                 break;
         }
         if (fragment != null) {

@@ -1,5 +1,7 @@
 package nl.tudelft.sps.app.activity;
 
+import android.util.Log;
+
 import com.google.common.primitives.Doubles;
 import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
@@ -15,12 +17,12 @@ import java.util.List;
 
 import nl.tudelft.sps.app.DatabaseHelper;
 
-
 /**
  * [1] Ravi, Nishkam, et al. "Activity recognition from accelerometer data." AAAI. Vol. 5. 2005.
  */
-@DatabaseTable(tableName = "act_measurements")
+
 public class Measurement implements IMeasurement {
+
     /**
      * Window size. Based on [1]. 50Hz measurements
      */
@@ -71,14 +73,6 @@ public class Measurement implements IMeasurement {
 
     public Measurement() {
         // ORMLite
-    }
-
-    private void createEmptyWindow() {
-        window = new DescriptiveStatistics[]{
-                new DescriptiveStatistics(WINDOW_SIZE),
-                new DescriptiveStatistics(WINDOW_SIZE),
-                new DescriptiveStatistics(WINDOW_SIZE)
-        };
     }
 
     private DescriptiveStatistics[] getDescriptiveStatistics() {
@@ -223,7 +217,66 @@ public class Measurement implements IMeasurement {
     }
 
     private static abstract class Helper {
+        protected Measurement current;
+        protected int current_loc = 0;
+        protected int loc_this_time = 0;
 
+        public boolean isFull() {
+            return current_loc == WINDOW_SIZE;
+        }
+    }
+
+    public static class MonitorHelper extends Helper {
+        private Measurement next;
+
+        public MonitorHelper() {
+            current = new Measurement();
+            current_loc = 0;
+
+            // Create an empty "next" measurement
+            next = new Measurement();
+        }
+
+        public synchronized Measurement getCurrentWindow() {
+            return current;
+        }
+
+        public synchronized void logCurrentNext() {
+            Log.w(getClass().getName(), "TEST CURRENT NEXT " + String.valueOf(current.hashCode()) + " " + String.valueOf(next.hashCode()));
+        }
+
+        public synchronized boolean isCompleted() {
+            return current.isCompleted();
+        }
+
+        public synchronized int getProgress() {
+            return current.getProgress();
+        }
+
+        public synchronized void addNewWindowIfFull() {
+            if (isFull()) {
+                // Measurement was full, replace with next
+                current = next;
+                current_loc = WINDOW_OVERLAP;
+
+                // Create an empty "next" measurement
+                next = new Measurement();
+            }
+        }
+
+        public synchronized void addToMeasurement(float[] values) {
+            if (values.length != 3) {
+                throw new IllegalArgumentException("Expected 3 values");
+            }
+
+            addNewWindowIfFull();
+
+            current.addToMeasurement(values);
+            if (current_loc >= WINDOW_OVERLAP) {
+                next.addToMeasurement(values);
+            }
+            current_loc++;
+        }
     }
 
     /**

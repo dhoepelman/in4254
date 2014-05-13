@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
 import nl.tudelft.sps.app.activity.IMeasurement;
+import nl.tudelft.sps.app.activity.Measurement;
 import nl.tudelft.sps.app.activity.MeasurementTask;
 
 /**
@@ -94,6 +95,8 @@ public class TestFragment extends Fragment {
      */
     private final Object updateLock = new Object();
 
+    private Measurement.MonitorHelper measurementHelper;
+
     private int measureTimes = 1;
     private boolean measureInfinitely = false;
 
@@ -154,7 +157,7 @@ public class TestFragment extends Fragment {
 
                 final String message = String.format("Succesfully written results to %s", RESULTS_FILE_PATH);
                 toastManager.showText(message, Toast.LENGTH_SHORT);
-                Log.i(LOG_TAG, message);
+                Log.w(LOG_TAG, message);
             }
             else {
                 final String message = "Could not write buffer: external storage not mounted";
@@ -244,6 +247,9 @@ public class TestFragment extends Fragment {
             toastManager.showText("Select an activity first", Toast.LENGTH_SHORT);
         }
         else {
+            measurementHelper = new Measurement.MonitorHelper();
+            Log.w(getClass().getName(), "TEST NEW HELPER " + String.valueOf(measurementHelper.hashCode()));
+
             synchronized (updateLock) {
                 doInfinitely.set(measureInfinitely);
                 timesLeft.set(measureTimes);
@@ -280,7 +286,8 @@ public class TestFragment extends Fragment {
                 toastManager.showText("Many more remaining", Toast.LENGTH_SHORT);
             }
 
-            final MeasurementTask task = new MeasurementTask(measurementResultProcessor, measurementProgressUpdater);
+            final MeasurementTask task = new MeasurementTask(measurementResultProcessor, measurementProgressUpdater, measurementHelper);
+            Log.w(getClass().getName(), "TEST NEW TASK " + String.valueOf(measurementHelper.hashCode()));
 
             // Clean up the old task to prevent building up many running
             // tasks if the user hits the start button many times
