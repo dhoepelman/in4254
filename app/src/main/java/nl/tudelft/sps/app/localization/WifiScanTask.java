@@ -36,8 +36,6 @@ public class WifiScanTask extends AsyncTask<Void, Integer, WifiMeasurementsWindo
      */
     private final Object gate = new Object();
 
-    private final Object windowGate = new Object();
-
     public WifiScanTask(ResultProcessor processor, ProgressUpdater updater, Activity activity, ToastManager toastManager) {
         resultProcessor = processor;
         progressUpdater = updater;
@@ -73,77 +71,45 @@ public class WifiScanTask extends AsyncTask<Void, Integer, WifiMeasurementsWindo
         final WifiMeasurementsWindow window = new WifiMeasurementsWindow();
 
         try {
-            final Timer timer = new Timer(true);
-            final TimerTask timerTask = new TimerTask() {
-                public void cancelAndPurge(boolean valid) {
-                    // Thank you for your service, you have been terminated
-                    timer.cancel();
-                    timer.purge();
+            for (int i = 0; i < WifiMeasurementsWindow.WINDOW_SIZE; i++) {
+                final long currentTimestamp = System.currentTimeMillis();
 
-                    if (!valid) {
-                        window.setInvalid();
-                    }
-
-                    // We're done
-                    synchronized (windowGate) {
-                        windowGate.notify();
-                    }
-                }
-                @Override
-                public void run() {
-                    final long currentTimestamp = System.currentTimeMillis();
-
-                    if (!wifiManager.startScan()) {
-                        Log.w(getClass().getName(), "Scan not started");
-                        cancelAndPurge(false);
-                    }
-
-                    try {
-                        // The scan should be done in well under 1 seconds.
-                        synchronized (gate) {
-                            gate.wait(1 * 1000L);
-                        }
-
-                        Log.w(getClass().getName(), "WIFI SCAN FINISHED");
-
-                        window.addMeasurement(accessPoints);
-                        publishProgress(window.getProgress());
-                    }
-                    catch (InterruptedException exception) {
-                        Log.w(getClass().getName(), "Scan was interrupted");
-                        cancelAndPurge(false);
-                    }
-
-                    if (window.isCompleted()) {
-                        cancelAndPurge(true);
-                    }
-
-                    final long duration = System.currentTimeMillis() - currentTimestamp;
-                    Log.w(getClass().getName(), "WIFI SCAN RUN " + String.valueOf(window.getProgress()) + " in " + String.valueOf(duration) + " ms");
-                }
-            };
-            timer.scheduleAtFixedRate(timerTask, 0, 1000L / WifiMeasurementsWindow.MEASUREMENTS_PER_SEC);
-
-            try {
-                // Give Java one extra second to notify us after the window
-                // has been filled
-                synchronized (windowGate) {
-                    windowGate.wait(1 * 1000L * (WifiMeasurementsWindow.WINDOW_SIZE + 1));
+                if (!wifiManager.startScan()) {
+                    Log.w(getClass().getName(), "Scan not started");
+                    return null;
                 }
 
-                Log.w(getClass().getName(), "WIFI WINDOW FINISHED");
-            }
-            catch (InterruptedException exception) {
-                Log.w(getClass().getName(), "Window scan was interrupted");
-                return null;
+                // The scan should be done in well under 5 seconds.
+                synchronized (gate) {
+                    gate.wait(5 * 1000L);
+                }
+
+                if (accessPoints != null) {
+                    window.addMeasurement(accessPoints);
+
+                    publishProgress(window.getProgress());
+                    Log.w(getClass().getName(), "WIFI SCAN FINISHED");
+                }
+                else {
+                    Log.w(getClass().getName(), "Scan went horribly wrong");
+                    return null;
+                }
+
+                final long duration = System.currentTimeMillis() - currentTimestamp;
+                Log.w(getClass().getName(), "WIFI SCAN RUN " + String.valueOf(window.getProgress()) + " in " + String.valueOf(duration) + " ms");
             }
 
-            if (window.getValid()) {
-                return window;
+            Log.w(getClass().getName(), "WIFI WINDOW FINISHED");
+
+            if (!window.isCompleted()) {
+                throw new AssertionError("Window should have been completed");
             }
-            else {
-                return null;
-            }
+
+            return window;
+        }
+        catch (InterruptedException exception) {
+            Log.w(getClass().getName(), "Window scan was interrupted");
+            return null;
         }
         finally {
             activity.unregisterReceiver(receiver);

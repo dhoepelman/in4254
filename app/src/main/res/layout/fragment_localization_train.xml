@@ -21,7 +21,6 @@
     <TextView android:id="@+id/text_results"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment"
         android:scrollbars="vertical"
         android:background="@android:drawable/editbox_background_normal"/>
 

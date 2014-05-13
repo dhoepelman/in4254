@@ -16,8 +16,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.List;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import java.util.List;
+import java.util.Map.Entry;
+
+import nl.tudelft.sps.app.localization.AccessPointLevels;
 import nl.tudelft.sps.app.localization.WifiMeasurementsWindow;
 import nl.tudelft.sps.app.localization.WifiScanTask;
 
@@ -35,8 +39,17 @@ public class LocalizationTrainFragment extends Fragment {
         public void result(WifiMeasurementsWindow results) {
             if (results != null) {
                 final StringBuilder builder = new StringBuilder();
-                for (ScanResult result : results.getLast().getResults()) {
-                    builder.append(String.format("%s %d dBm\n", result.SSID, result.level));
+                for (Entry<String, AccessPointLevels> entry : results.getAllResults().entrySet()) {
+                    final AccessPointLevels apLevels = entry.getValue();
+                    final List<Integer> levels = apLevels.getLevels();
+
+                    // Build statistics for mean
+                    final DescriptiveStatistics statistics = new DescriptiveStatistics(levels.size());
+                    for (Integer level : levels) {
+                        statistics.addValue(level);
+                    }
+
+                    builder.append(String.format("%s %s\n%.2f dBm (%d samples)\n", apLevels.SSID, apLevels.BSSID, statistics.getMean(), levels.size()));
                 }
                 valueResults.setText(builder);
             }

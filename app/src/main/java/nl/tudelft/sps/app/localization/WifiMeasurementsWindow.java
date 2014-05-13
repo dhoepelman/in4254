@@ -1,33 +1,21 @@
 package nl.tudelft.sps.app.localization;
 
 import android.net.wifi.ScanResult;
-import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WifiMeasurementsWindow {
 
     /**
-     * Window size. Based on [1].
+     * Number of measurements in a window. Each measurement is a scan
+     * and takes on average about 640 ms on a Galaxy S,
      */
-    public static final int WINDOW_SIZE = 16;
-
-    /**
-     * Window overlap. Based on [1]
-     */
-    public static final int WINDOW_OVERLAP = WINDOW_SIZE / 2;
-
-    /**
-     * Measuring frequency in Hz. One scan takes on average about 640 ms on Galaxy S,
-     * so frequency should be at most 1.
-     * WINDOW_OVERLAP / MEASUREMENTS_PER_SEC gives duration of one window
-     */
-    public static final int MEASUREMENTS_PER_SEC = 1;
+    public static final int WINDOW_SIZE = 60;
 
     private final List<WifiMeasurement> measurements = new ArrayList<WifiMeasurement>();
-
-    private boolean valid = true;
 
     public boolean isCompleted() {
         return getProgress() >= WINDOW_SIZE;
@@ -35,14 +23,6 @@ public class WifiMeasurementsWindow {
 
     public int getProgress() {
         return measurements.size();
-    }
-
-    public boolean getValid() {
-        return valid;
-    }
-
-    public void setInvalid() {
-        valid = false;
     }
 
     /**
@@ -53,12 +33,20 @@ public class WifiMeasurementsWindow {
         measurements.add(new WifiMeasurement(accessPoints));
     }
 
-    /**
-     * TODO This is just a temporary method in order to show something on the screen.
-     * TODO This method should be removed when List<ScanResult> has been converted to a measurement in WifiMeasurement
-     */
-    public WifiMeasurement getLast() {
-        return measurements.get(measurements.size() - 1);
+    public Map<String, AccessPointLevels> getAllResults() {
+        final Map<String, AccessPointLevels> accessPointLevels = new HashMap<String, AccessPointLevels>();
+
+        for (WifiMeasurement measurement : measurements) {
+            for (ScanResult result : measurement.getResults()) {
+                if (!accessPointLevels.containsKey(result.BSSID)) {
+                    // We only store the levels, we don't use measurement.getTimestamp() for now
+                    accessPointLevels.put(result.BSSID, new AccessPointLevels(result.SSID, result.BSSID));
+                }
+                accessPointLevels.get(result.BSSID).addLevel(result.level);
+            }
+        }
+
+        return accessPointLevels;
     }
 
 }
