@@ -27,7 +27,7 @@ public class WifiMeasurementsWindow {
 
     private final List<WifiMeasurement> measurements = new ArrayList<WifiMeasurement>();
 
-    private long currentTimestamp;
+    private boolean valid = true;
 
     public boolean isCompleted() {
         return getProgress() >= WINDOW_SIZE;
@@ -35,6 +35,14 @@ public class WifiMeasurementsWindow {
 
     public int getProgress() {
         return measurements.size();
+    }
+
+    public boolean getValid() {
+        return valid;
+    }
+
+    public void setInvalid() {
+        valid = false;
     }
 
     /**
@@ -51,17 +59,6 @@ public class WifiMeasurementsWindow {
      */
     public WifiMeasurement getLast() {
         return measurements.get(measurements.size() - 1);
-    }
-
-    public void setStartScan() {
-        currentTimestamp = System.currentTimeMillis();
-    }
-
-    public void delayUntilNextStart() {
-        final long duration = System.currentTimeMillis() - currentTimestamp;
-        Log.w(getClass().getName(), "WIFI ADDED " + String.valueOf(measurements.size()) + " in " + String.valueOf(duration) + " ms");
-
-        // TODO Delay until time is currentTimestamp + 1000 / MEASUREMENTS_PER_SEC
     }
 
 }

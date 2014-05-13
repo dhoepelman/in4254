@@ -12,6 +12,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import nl.tudelft.sps.app.ToastManager;
 
@@ -32,6 +34,8 @@ public class WifiScanTask extends AsyncTask<Void, Void, WifiMeasurementsWindow> 
      * Object on which doInBackground can wait for the scan to complete
      */
     private final Object gate = new Object();
+
+    private final Object windowGate = new Object();
 
     public WifiScanTask(ResultProcessor processor, Activity activity, ToastManager toastManager) {
         resultProcessor = processor;
@@ -60,33 +64,76 @@ public class WifiScanTask extends AsyncTask<Void, Void, WifiMeasurementsWindow> 
         final WifiMeasurementsWindow window = new WifiMeasurementsWindow();
 
         try {
-            while (!window.isCompleted()) {
-                window.setStartScan();
+            final Timer timer = new Timer(true);
+            final TimerTask timerTask = new TimerTask() {
+                public void cancelAndPurge(boolean valid) {
+                    // Thank you for your service, you have been terminated
+                    timer.cancel();
+                    timer.purge();
 
-                if (!wifiManager.startScan()) {
-                    Log.w(getClass().getName(), "Scan not started");
-                    return null;
-                }
-
-                try {
-                    // The scan should be done in well under 10 seconds.
-                    synchronized (gate) {
-                        gate.wait(10 * 1000);
+                    if (!valid) {
+                        window.setInvalid();
                     }
 
-                    Log.w(getClass().getName(), "WIFI RESULTS FINISHED");
-
-                    window.addMeasurement(accessPoints);
+                    // We're done
+                    synchronized (windowGate) {
+                        windowGate.notify();
+                    }
                 }
-                catch (InterruptedException exception) {
-                    Log.w(getClass().getName(), "Scan was interrupted");
-                    return null;
+                @Override
+                public void run() {
+                    final long currentTimestamp = System.currentTimeMillis();
+
+                    if (!wifiManager.startScan()) {
+                        Log.w(getClass().getName(), "Scan not started");
+                        cancelAndPurge(false);
+                    }
+
+                    try {
+                        // The scan should be done in well under 1 seconds.
+                        synchronized (gate) {
+                            gate.wait(1 * 1000L);
+                        }
+
+                        Log.w(getClass().getName(), "WIFI SCAN FINISHED");
+
+                        window.addMeasurement(accessPoints);
+                    }
+                    catch (InterruptedException exception) {
+                        Log.w(getClass().getName(), "Scan was interrupted");
+                        cancelAndPurge(false);
+                    }
+
+                    if (window.isCompleted()) {
+                        cancelAndPurge(true);
+                    }
+
+                    final long duration = System.currentTimeMillis() - currentTimestamp;
+                    Log.w(getClass().getName(), "WIFI SCAN RUN " + String.valueOf(window.getProgress()) + " in " + String.valueOf(duration) + " ms");
+                }
+            };
+            timer.scheduleAtFixedRate(timerTask, 0, 1000L / WifiMeasurementsWindow.MEASUREMENTS_PER_SEC);
+
+            try {
+                // Give Java one extra second to notify us after the window
+                // has been filled
+                synchronized (windowGate) {
+                    windowGate.wait(1 * 1000L * (WifiMeasurementsWindow.WINDOW_SIZE + 1));
                 }
 
-                window.delayUntilNextStart();
+                Log.w(getClass().getName(), "WIFI WINDOW FINISHED");
+            }
+            catch (InterruptedException exception) {
+                Log.w(getClass().getName(), "Window scan was interrupted");
+                return null;
             }
 
-            return window;
+            if (window.getValid()) {
+                return window;
+            }
+            else {
+                return null;
+            }
         }
         finally {
             activity.unregisterReceiver(receiver);
