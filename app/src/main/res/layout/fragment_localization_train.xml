@@ -1,13 +1,28 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="nl.tudelft.sps.app.LocalizationTrainFragment">
+    tools:context="nl.tudelft.sps.app.LocalizationTrainFragment"
+    android:layout_gravity="center_horizontal|center_vertical"
+    android:orientation="vertical"
+    android:layout_margin="6dp">
 
-    <!-- TODO: Update blank fragment layout -->
+    <ProgressBar
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar_wifiMeasurement"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:indeterminate="false"/>
+
     <TextView android:id="@+id/text_results"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:text="@string/hello_blank_fragment"
+        android:scrollbars="vertical"
+        android:background="@android:drawable/editbox_background_normal"/>
 
-</FrameLayout>
+</LinearLayout>

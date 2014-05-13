@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +26,7 @@ public class LocalizationTrainFragment extends Fragment {
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     private TextView valueResults;
+    private ProgressBar progressBarWindow;
 
     private ToastManager toastManager;
 
@@ -41,6 +43,13 @@ public class LocalizationTrainFragment extends Fragment {
             else {
                 valueResults.setText("Error :(");
             }
+        }
+    };
+
+    private final WifiScanTask.ProgressUpdater wifiScanProgressUpdater = new WifiScanTask.ProgressUpdater() {
+        @Override
+        public void update(Integer progress) {
+            progressBarWindow.setProgress(progress);
         }
     };
 
@@ -62,6 +71,9 @@ public class LocalizationTrainFragment extends Fragment {
 
         valueResults = (TextView) rootView.findViewById(R.id.text_results);
 
+        progressBarWindow = (ProgressBar) rootView.findViewById(R.id.progressBar_wifiMeasurement);
+        progressBarWindow.setMax(WifiMeasurementsWindow.WINDOW_SIZE);
+
         setHasOptionsMenu(true);
 
         return rootView;
@@ -75,7 +87,7 @@ public class LocalizationTrainFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        final WifiScanTask wifiScanTask = new WifiScanTask(wifiScanResultProcessor, getActivity(), toastManager);
+        final WifiScanTask wifiScanTask = new WifiScanTask(wifiScanResultProcessor, wifiScanProgressUpdater, getActivity(), toastManager);
         wifiScanTask.execute();
         return super.onOptionsItemSelected(item);
     }
@@ -83,7 +95,7 @@ public class LocalizationTrainFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        //((MainActivity) activity).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
+        // TODO is this ((MainActivity) activity).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER)); necessary?
     }
 
 }

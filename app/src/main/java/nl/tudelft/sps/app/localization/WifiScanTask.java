@@ -17,9 +17,10 @@ import java.util.TimerTask;
 
 import nl.tudelft.sps.app.ToastManager;
 
-public class WifiScanTask extends AsyncTask<Void, Void, WifiMeasurementsWindow> {
+public class WifiScanTask extends AsyncTask<Void, Integer, WifiMeasurementsWindow> {
 
     private final ResultProcessor resultProcessor;
+    private final ProgressUpdater progressUpdater;
     private final WifiManager wifiManager;
     private final Activity activity;
 
@@ -37,8 +38,9 @@ public class WifiScanTask extends AsyncTask<Void, Void, WifiMeasurementsWindow> 
 
     private final Object windowGate = new Object();
 
-    public WifiScanTask(ResultProcessor processor, Activity activity, ToastManager toastManager) {
+    public WifiScanTask(ResultProcessor processor, ProgressUpdater updater, Activity activity, ToastManager toastManager) {
         resultProcessor = processor;
+        progressUpdater = updater;
         this.activity = activity;
 
         wifiManager = (WifiManager) activity.getSystemService(Context.WIFI_SERVICE);
@@ -54,6 +56,13 @@ public class WifiScanTask extends AsyncTask<Void, Void, WifiMeasurementsWindow> 
     @Override
     protected void onPostExecute(WifiMeasurementsWindow result) {
         resultProcessor.result(result);
+    }
+
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        if (progressUpdater != null) {
+            progressUpdater.update(values[0]);
+        }
     }
 
     @Override
@@ -98,6 +107,7 @@ public class WifiScanTask extends AsyncTask<Void, Void, WifiMeasurementsWindow> 
                         Log.w(getClass().getName(), "WIFI SCAN FINISHED");
 
                         window.addMeasurement(accessPoints);
+                        publishProgress(window.getProgress());
                     }
                     catch (InterruptedException exception) {
                         Log.w(getClass().getName(), "Scan was interrupted");
@@ -142,6 +152,10 @@ public class WifiScanTask extends AsyncTask<Void, Void, WifiMeasurementsWindow> 
 
     public static interface ResultProcessor {
         public void result(WifiMeasurementsWindow result);
+    }
+
+    public static interface ProgressUpdater {
+        public void update(Integer progress);
     }
 
     public class ScanReceiver extends BroadcastReceiver {

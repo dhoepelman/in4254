@@ -35,8 +35,8 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
         if (helper == null) {
             throw new NullPointerException("Helper is null");
         }
-        this.progressUpdater = updater;
-        this.resultProcessor = processor;
+        progressUpdater = updater;
+        resultProcessor = processor;
         measurement = helper;
     }
 
