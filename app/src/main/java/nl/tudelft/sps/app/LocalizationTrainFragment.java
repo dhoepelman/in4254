@@ -17,12 +17,15 @@ import android.widget.Toast;
 import android.net.wifi.ScanResult;
 
 import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.misc.TransactionManager;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import nl.tudelft.sps.app.localization.AccessPointLevels;
 import nl.tudelft.sps.app.localization.WifiMeasurement;
@@ -88,23 +91,31 @@ public class LocalizationTrainFragment extends Fragment {
                 final MainActivity mainActivity = (MainActivity) getActivity();
                 final RuntimeExceptionDao<WifiResult, Long> dao = mainActivity.getDatabaseHelper().getWifiResultDao();
 
-                int rowsCreated = 0;
-                for (WifiResult resultRow : tableRows) {
-                    final int createResult = dao.create(resultRow);
-                    if (createResult == 1) {
-                        rowsCreated++;
+                dao.callBatchTasks(new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        int created = 0;
+                        for (WifiResult resultRow : tableRows) {
+                            final int createResult = dao.create(resultRow);
+                            if (createResult == 1) {
+                                created++;
+                            }
+                        }
+                        rowsCreated.set(created);
+                        return null;
                     }
-                    Log.w(getClass().getName(), String.format("WIFI DB CREATE %d", createResult));
-                }
+                });
 
-                toastManager.showText(String.format("%d results written to database", rowsCreated), Toast.LENGTH_LONG);
-                Log.w(getClass().getName(), String.format("WIFI DB CREATED ROWS %d", rowsCreated));
+                toastManager.showText(String.format("%d results written to database", rowsCreated.get()), Toast.LENGTH_LONG);
+                Log.w(getClass().getName(), String.format("WIFI DB CREATED ROWS %d", rowsCreated.get()));
             }
             else {
                 valueResults.setText("Error :(");
             }
         }
     };
+
+    private final AtomicInteger rowsCreated = new AtomicInteger();
 
     private final WifiScanTask.ProgressUpdater wifiScanProgressUpdater = new WifiScanTask.ProgressUpdater() {
         @Override
