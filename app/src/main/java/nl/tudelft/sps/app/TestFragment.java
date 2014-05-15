@@ -50,7 +50,15 @@ public class TestFragment extends Fragment {
                 final MainActivity mainActivity = (MainActivity) getActivity();
                 if (mainActivity != null) {
                     final ACTIVITY actualActivity = mainActivity.getClassifier().classify(result);
-                    valueResults.append(String.format("Actual: %s\tExpected: %s\n", actualActivity.name(), selectedActivity.name()));
+
+                    if (firstResult) {
+                        firstResult = false;
+                    }
+                    else {
+                        valueResults.append("\n");
+                    }
+
+                    valueResults.append(String.format("Actual: %s\tExpected: %s", actualActivity.name(), selectedActivity.name()));
 
                     // Log the result so it can be processed later to create a confusion matrix
                     writeResult(actualActivity, selectedActivity); // TODO write results asynchronous (it seems to slow down the start of the next measurement)
@@ -74,6 +82,7 @@ public class TestFragment extends Fragment {
 
     private View rootView;
     private TextView valueResults;
+    private boolean firstResult;
 
     // Race conditions should not occur, but better safe than sorry
     private final AtomicInteger timesLeft = new AtomicInteger(0);
@@ -182,6 +191,7 @@ public class TestFragment extends Fragment {
         toastManager = new ToastManager(getActivity());
 
         valueResults = (TextView) rootView.findViewById(R.id.val_testresults);
+        firstResult = true;
 
         // Connect click listener to radio buttons
         for (int rb : RBTimesList) {

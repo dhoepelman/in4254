@@ -36,6 +36,7 @@ public class LocalizationTrainFragment extends Fragment {
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     private TextView valueResults;
+    private boolean firstResult;
     private ProgressBar progressBarWindow;
 
     private ToastManager toastManager;
@@ -58,7 +59,13 @@ public class LocalizationTrainFragment extends Fragment {
                         statistics.addValue(level);
                     }
 
-                    builder.append(String.format("%s %s\n%.2f dBm (%d samples)\n", apLevels.SSID, apLevels.BSSID, statistics.getMean(), levels.size()));
+                    if (firstResult) {
+                        firstResult = false;
+                    }
+                    else {
+                        builder.append("\n");
+                    }
+                    builder.append(String.format("%s %s\n%.2f dBm (%d samples)", apLevels.SSID, apLevels.BSSID, statistics.getMean(), levels.size()));
                 }
                 valueResults.setText(builder);
 
@@ -124,6 +131,7 @@ public class LocalizationTrainFragment extends Fragment {
         toastManager = new ToastManager(getActivity());
 
         valueResults = (TextView) rootView.findViewById(R.id.text_results);
+        firstResult = true;
 
         progressBarWindow = (ProgressBar) rootView.findViewById(R.id.progressBar_wifiMeasurement);
         progressBarWindow.setMax(WifiMeasurementsWindow.WINDOW_SIZE);
