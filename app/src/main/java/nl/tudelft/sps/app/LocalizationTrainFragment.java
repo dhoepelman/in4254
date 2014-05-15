@@ -19,8 +19,6 @@ import android.net.wifi.ScanResult;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.misc.TransactionManager;
 
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -54,13 +52,7 @@ public class LocalizationTrainFragment extends Fragment {
                 final StringBuilder builder = new StringBuilder();
                 for (Entry<String, AccessPointLevels> entry : results.getAccessPointLevels().entrySet()) {
                     final AccessPointLevels apLevels = entry.getValue();
-                    final List<Integer> levels = apLevels.getLevels();
-
-                    // Build statistics for mean
-                    final DescriptiveStatistics statistics = new DescriptiveStatistics(levels.size());
-                    for (Integer level : levels) {
-                        statistics.addValue(level);
-                    }
+                    final double[] meanAndStdDev = apLevels.computeMeanAndStdDev();
 
                     if (firstResult) {
                         firstResult = false;
@@ -68,7 +60,7 @@ public class LocalizationTrainFragment extends Fragment {
                     else {
                         builder.append("\n");
                     }
-                    builder.append(String.format("%s %s\n%.2f dBm (%d samples)", apLevels.SSID, apLevels.BSSID, statistics.getMean(), levels.size()));
+                    builder.append(String.format("%s %s\n%.2f dBm (%d samples)", apLevels.SSID, apLevels.BSSID, meanAndStdDev[0], apLevels.getLevels().size()));
                 }
                 valueResults.setText(builder);
 
