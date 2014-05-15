@@ -1,7 +1,6 @@
 package nl.tudelft.sps.app;
 
 import android.app.Activity;
-import android.net.wifi.ScanResult;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -15,33 +14,38 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.net.wifi.ScanResult;
 
 import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.misc.TransactionManager;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import nl.tudelft.sps.app.localization.AccessPointLevels;
-import nl.tudelft.sps.app.localization.Room;
 import nl.tudelft.sps.app.localization.WifiMeasurement;
 import nl.tudelft.sps.app.localization.WifiMeasurementsWindow;
 import nl.tudelft.sps.app.localization.WifiResult;
 import nl.tudelft.sps.app.localization.WifiScanTask;
+import nl.tudelft.sps.app.localization.Room;
 
 public class LocalizationTrainFragment extends Fragment {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private final WifiScanTask.ProgressUpdater wifiScanProgressUpdater = new WifiScanTask.ProgressUpdater() {
-        @Override
-        public void update(Integer progress) {
-            progressBarWindow.setProgress(progress);
-        }
-    };
+
     private TextView valueResults;
     private boolean firstResult;
+    private ProgressBar progressBarWindow;
+
+    private ToastManager toastManager;
+
+    private Room selectedRoom;
+
     private final WifiScanTask.ResultProcessor wifiScanResultProcessor = new WifiScanTask.ResultProcessor() {
         @Override
         public void result(WifiMeasurementsWindow results) {
@@ -60,17 +64,17 @@ public class LocalizationTrainFragment extends Fragment {
 
                     if (firstResult) {
                         firstResult = false;
-                    } else {
+                    }
+                    else {
                         builder.append("\n");
                     }
                     builder.append(String.format("%s %s\n%.2f dBm (%d samples)", apLevels.SSID, apLevels.BSSID, statistics.getMean(), levels.size()));
                 }
                 valueResults.setText(builder);
 
-
                 // Create a list of table rows so we can tell the user
                 // how many rows will be created
-                final List<WifiResult> tableRows = new ArrayList<>();
+                final List<WifiResult> tableRows = new ArrayList<WifiResult>();
 
                 final Room measuredInRoom = results.getMeasuredInRoom();
                 for (WifiMeasurement measurement : results.getMeasurements()) {
@@ -87,25 +91,38 @@ public class LocalizationTrainFragment extends Fragment {
                 final MainActivity mainActivity = (MainActivity) getActivity();
                 final RuntimeExceptionDao<WifiResult, Long> dao = mainActivity.getDatabaseHelper().getWifiResultDao();
 
-                int rowsCreated = 0;
-                for (WifiResult resultRow : tableRows) {
-                    final int createResult = dao.create(resultRow);
-                    if (createResult == 1) {
-                        rowsCreated++;
+                dao.callBatchTasks(new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        int created = 0;
+                        for (WifiResult resultRow : tableRows) {
+                            final int createResult = dao.create(resultRow);
+                            if (createResult == 1) {
+                                created++;
+                            }
+                        }
+                        rowsCreated.set(created);
+                        return null;
                     }
-                    Log.w(getClass().getName(), String.format("WIFI DB CREATE %d", createResult));
-                }
+                });
 
-                toastManager.showText(String.format("%d results written to database", rowsCreated), Toast.LENGTH_LONG);
-                Log.w(getClass().getName(), String.format("WIFI DB CREATED ROWS %d", rowsCreated));
-            } else {
+                toastManager.showText(String.format("%d results written to database", rowsCreated.get()), Toast.LENGTH_LONG);
+                Log.w(getClass().getName(), String.format("WIFI DB CREATED ROWS %d", rowsCreated.get()));
+            }
+            else {
                 valueResults.setText("Error :(");
             }
         }
     };
-    private ProgressBar progressBarWindow;
-    private ToastManager toastManager;
-    private Room selectedRoom;
+
+    private final AtomicInteger rowsCreated = new AtomicInteger();
+
+    private final WifiScanTask.ProgressUpdater wifiScanProgressUpdater = new WifiScanTask.ProgressUpdater() {
+        @Override
+        public void update(Integer progress) {
+            progressBarWindow.setProgress(progress);
+        }
+    };
 
     public static LocalizationTrainFragment newInstance(int sectionNumber) {
         final Bundle args = new Bundle();
@@ -115,6 +132,8 @@ public class LocalizationTrainFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+
+    private Button selectedButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -139,6 +158,11 @@ public class LocalizationTrainFragment extends Fragment {
                     @Override
                     public void onClick(View view) {
                         selectedRoom = Room.getEnum(view.getId());
+                        if (selectedButton != null) {
+                            selectedButton.setEnabled(true);
+                        }
+                        selectedButton = (Button) view;
+                        selectedButton.setEnabled(false);
                         toastManager.showText(String.valueOf(selectedRoom), Toast.LENGTH_SHORT);
                     }
                 });
@@ -158,7 +182,8 @@ public class LocalizationTrainFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (selectedRoom == null) {
             toastManager.showText("Select a room first", Toast.LENGTH_LONG);
-        } else {
+        }
+        else {
             final WifiScanTask wifiScanTask = new WifiScanTask(wifiScanResultProcessor, wifiScanProgressUpdater, getActivity(), toastManager);
             wifiScanTask.execute(selectedRoom);
         }

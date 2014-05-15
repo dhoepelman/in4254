@@ -24,6 +24,7 @@
             android:id="@+id/c1_a1"
             android:layout_column="1"
             android:layout_row="9"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_column="1"
             app:layout_row="9"/>
@@ -36,6 +37,7 @@
             android:id="@+id/c2_a2"
             android:layout_column="1"
             android:layout_row="8"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_row="8"
             app:layout_column="1"/>
@@ -48,6 +50,7 @@
             android:id="@+id/c3_a3"
             android:layout_column="1"
             android:layout_row="7"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_column="1"
             app:layout_row="7"/>
@@ -60,6 +63,7 @@
             android:id="@+id/c4_a4"
             android:layout_column="1"
             android:layout_row="6"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_row="6"
             app:layout_column="1"/>
@@ -72,6 +76,7 @@
             android:id="@+id/c5_a5"
             android:layout_column="1"
             android:layout_row="5"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_row="5"
             app:layout_column="1"/>
@@ -84,6 +89,7 @@
             android:id="@+id/c6_a6"
             android:layout_column="1"
             android:layout_row="4"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_row="4"
             app:layout_column="1"/>
@@ -96,6 +102,7 @@
             android:id="@+id/c7_a7"
             android:layout_column="1"
             android:layout_row="3"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_row="3"
             app:layout_column="1"/>
@@ -108,6 +115,7 @@
             android:id="@+id/c8_a8"
             android:layout_column="1"
             android:layout_row="2"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_row="2"
             app:layout_column="1"/>
@@ -120,6 +128,7 @@
             android:id="@+id/c9_a9"
             android:layout_column="1"
             android:layout_row="1"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_row="1"
             app:layout_column="1"/>
@@ -132,6 +141,7 @@
             android:id="@+id/c10_a10"
             android:layout_column="1"
             android:layout_row="0"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_row="0"
             app:layout_column="1"/>
@@ -144,6 +154,7 @@
             android:id="@+id/c11_conf_btm"
             android:layout_column="0"
             android:layout_row="9"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_column="0"
             app:layout_row="9"/>
@@ -156,6 +167,7 @@
             android:id="@+id/c12_conf_top"
             android:layout_column="0"
             android:layout_row="8"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_row="8"
             app:layout_column="0"/>
@@ -168,6 +180,7 @@
             android:id="@+id/c13_coffee"
             android:layout_column="2"
             android:layout_row="7"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_column="2"
             app:layout_row="7"/>
@@ -180,6 +193,7 @@
             android:id="@+id/c14_plea"
             android:layout_column="0"
             android:layout_row="6"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_row="6"
             app:layout_column="0"/>
@@ -192,6 +206,7 @@
             android:id="@+id/c15_mtg"
             android:layout_column="0"
             android:layout_row="5"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_row="5"
             app:layout_column="0"/>
@@ -204,6 +219,7 @@
             android:id="@+id/c16_flex_btm"
             android:layout_column="2"
             android:layout_row="2"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_column="2"
             app:layout_row="2"/>
@@ -216,6 +232,7 @@
             android:id="@+id/c17_flex_top"
             android:layout_column="2"
             android:layout_row="1"
+            android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_column="2"
             app:layout_row="1"/>
