@@ -13,6 +13,7 @@ import java.sql.SQLException;
 
 import nl.tudelft.sps.app.activity.Measurement;
 import nl.tudelft.sps.app.activity.Sample;
+import nl.tudelft.sps.app.localization.WifiResult;
 
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private static final String DATABASE_NAME = "sps.db";
@@ -20,6 +21,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     public RuntimeExceptionDao<Measurement, Long> measurementDao;
     public RuntimeExceptionDao<Sample, Void> sampleDao;
+
+    private RuntimeExceptionDao<WifiResult, Long> wifiResultDao;
 
     public DatabaseHelper(Context context) {
         // TODO: Optimize database initialization speed. See http://ormlite.com/javadoc/ormlite-core/doc-files/ormlite_4.html#Config-Optimization
@@ -31,6 +34,21 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             measurementDao = getRuntimeExceptionDao(Measurement.class);
         }
         return measurementDao;
+    }
+
+    public RuntimeExceptionDao<WifiResult, Long> getWifiResultDao() {
+        if (wifiResultDao == null) {
+            wifiResultDao = getRuntimeExceptionDao(WifiResult.class);
+
+            try {
+                TableUtils.createTableIfNotExists(wifiResultDao.getConnectionSource(), WifiResult.class);
+                Log.i(DatabaseHelper.class.getName(), "Table for " + String.valueOf(WifiResult.class) + " succesfully created");
+            }
+            catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+        return wifiResultDao;
     }
 
     public RuntimeExceptionDao<Sample, Void> getSampleDao() {
@@ -45,6 +63,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         try {
             TableUtils.createTable(connectionSource, Measurement.class);
             TableUtils.createTable(connectionSource, Sample.class);
+            TableUtils.createTable(connectionSource, WifiResult.class);
         } catch (SQLException e) {
             Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
             throw new RuntimeException(e);
@@ -58,6 +77,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         try {
             TableUtils.dropTable(connectionSource, Measurement.class, true);
             TableUtils.dropTable(connectionSource, Sample.class, true);
+            TableUtils.dropTable(connectionSource, WifiResult.class, true);
         } catch (SQLException e) {
             Log.e(DatabaseHelper.class.getName(), "Couldn't upgrade database");
             throw new RuntimeException(e);
@@ -74,6 +94,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         super.close();
         sampleDao = null;
         measurementDao = null;
+        wifiResultDao = null;
     }
 
     public void exportDatabaseFile() {

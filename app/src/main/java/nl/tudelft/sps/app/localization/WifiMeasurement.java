@@ -3,6 +3,7 @@ package nl.tudelft.sps.app.localization;
 import android.net.wifi.ScanResult;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class WifiMeasurement {
@@ -21,6 +22,6 @@ public class WifiMeasurement {
     }
 
     public List<ScanResult> getResults() {
-        return measurement;
+        return Collections.unmodifiableList(measurement);
     }
 }

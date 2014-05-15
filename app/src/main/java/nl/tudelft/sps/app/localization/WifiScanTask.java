@@ -17,7 +17,7 @@ import java.util.TimerTask;
 
 import nl.tudelft.sps.app.ToastManager;
 
-public class WifiScanTask extends AsyncTask<Void, Integer, WifiMeasurementsWindow> {
+public class WifiScanTask extends AsyncTask<Room, Integer, WifiMeasurementsWindow> {
 
     private final ResultProcessor resultProcessor;
     private final ProgressUpdater progressUpdater;
@@ -64,11 +64,11 @@ public class WifiScanTask extends AsyncTask<Void, Integer, WifiMeasurementsWindo
     }
 
     @Override
-    protected WifiMeasurementsWindow doInBackground(Void... nothing) {
+    protected WifiMeasurementsWindow doInBackground(Room... rooms) {
         final ScanReceiver receiver = new ScanReceiver();
         activity.registerReceiver(receiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
-        final WifiMeasurementsWindow window = new WifiMeasurementsWindow();
+        final WifiMeasurementsWindow window = new WifiMeasurementsWindow(rooms[0]);
 
         try {
             for (int i = 0; i < WifiMeasurementsWindow.WINDOW_SIZE; i++) {
