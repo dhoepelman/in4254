@@ -1,5 +1,9 @@
 package nl.tudelft.sps.app.localization;
 
+import com.google.common.collect.ImmutableList;
+
+import java.util.Collection;
+
 import nl.tudelft.sps.app.R;
 
 public enum Room {
@@ -21,18 +25,18 @@ public enum Room {
     C16_FLEX_BTM (R.id.c16_flex_btm),
     C17_FLEX_TOP (R.id.c17_flex_top),
     Unknown (0);
-
     private final int id;
+    private Collection<Room> adjacent;
+
+    // Unfortunatly you cannot do this in the constructors. See http://stackoverflow.com/a/5678375/572635
+    static {
+        C1_AISLE1.adjacent = ImmutableList.of(Room.C1_AISLE1, C11_CONF_BTM);
+        // TODO: Complete this list
+        // TODO: Check the map with the physical layout
+    }
 
     private Room (final int id) {
         this.id = id;
-    }
-
-    public int getIdentifier() {
-        if (id == 0) {
-            throw new RuntimeException("You're not supposed to call this method for enum " + String.valueOf(this));
-        }
-        return id;
     }
 
     public static Room getEnum(final int id) {
@@ -45,5 +49,16 @@ public enum Room {
             }
         }
         throw new RuntimeException("Invalid Room id");
+    }
+
+    public Collection<Room> getAdjacentRooms() {
+        return adjacent;
+    }
+
+    public int getIdentifier() {
+        if (id == 0) {
+            throw new RuntimeException("You're not supposed to call this method for enum " + String.valueOf(this));
+        }
+        return id;
     }
 }
