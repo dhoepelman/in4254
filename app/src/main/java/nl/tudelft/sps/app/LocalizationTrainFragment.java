@@ -69,7 +69,6 @@ public class LocalizationTrainFragment extends Fragment {
                 }
                 valueResults.setText(builder);
 
-
                 // Create a list of table rows so we can tell the user
                 // how many rows will be created
                 final List<WifiResult> tableRows = new ArrayList<WifiResult>();

@@ -8,6 +8,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A window containing WINDOW_SIZE WifiMeasurements. Each WifiMeasurement
+ * represents a scan for surrounding Wi-Fi access points.
+ *
+ * If you want to simply get a list of all the ScanResults, then you need
+ * to call getMeasurements() and iterate over it to get a list of
+ * WifiMeasurements. For each of these WifiMeasurements you need to call
+ * WifiMeasurement.getResults() to get a list of ScanResults that was
+ * collected during that particular measurement. For example:
+ *
+ * for (WifiMeasurement measurement : window.getMeasurements()) {
+ *     for (ScanResult accessPoint : measurement.getResults()) {
+ *         // Do something with accessPoint here
+ *     }
+ * }
+ *
+ * You can also get a list of measured levels (in dBm) per BSSID. For example:
+ *
+ * for (Entry<String, AccessPointLevels> entry : window.getAccessPointLevels().entrySet()) {
+ *     // Do something with entry.getKey() (which is the BSSID) here
+ *     for (Integer level : entry.getValue().getLevels()) {
+ *         // Do something with a measured level of the current BSSID here
+ *     }
+ * }
+ */
 public class WifiMeasurementsWindow {
 
     /**
@@ -44,6 +69,10 @@ public class WifiMeasurementsWindow {
         measurements.add(new WifiMeasurement(accessPoints));
     }
 
+    /**
+     * Return a list of WifiMeasurements. Each WifiMeasurements contains a
+     * timestamp and a list of ScanResults.
+     */
     public List<WifiMeasurement> getMeasurements() {
         return Collections.unmodifiableList(measurements);
     }
