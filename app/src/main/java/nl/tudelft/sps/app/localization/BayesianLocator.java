@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.lang.Math;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
 
@@ -27,11 +28,13 @@ import nl.tudelft.sps.app.activity.ACTIVITY;
  * Implements a Locator according using bayesian interference and a normally distributed RSS probability based on the training data
  */
 public class BayesianLocator implements ILocator {
+
     /**
      * Threshold for certainty when processing further scans is deemed useless.
      * Note: the strongest AP signal will always be processed
      */
     private static final double ACCURACY_THRESHOLD = 0.95;
+
     /**
      * The "zero" probability. We never want to remove a room completely so this is the smallest we'll multiply with
      */
@@ -83,7 +86,7 @@ public class BayesianLocator implements ILocator {
     @Override
     public Map<Room, Double> adjustLocation(Collection<ScanResult> currentScan) {
         // Sort the scanresults from strongest level to weakest
-        List<ScanResult> signals = new ArrayList<>(currentScan);
+        final List<ScanResult> signals = new ArrayList<>(currentScan);
         Collections.sort(signals, new Comparator<ScanResult>() {
             @Override
             public int compare(ScanResult o1, ScanResult o2) {
@@ -109,10 +112,7 @@ public class BayesianLocator implements ILocator {
                     p = PROBABILITY_EPSILON;
                 } else {
                     // Calculate the probability that for this level, the scan was done in the current room
-                    p = distribution.probability(scan.level - 0.5, scan.level + 0.5);
-                    if (p < PROBABILITY_EPSILON) {
-                        p = PROBABILITY_EPSILON;
-                    }
+                    p = Math.max(PROBABILITY_EPSILON, distribution.probability(scan.level - 0.5, scan.level + 0.5));
                 }
                 // Adjust the location estimate for this room according to the distribution
                 currentLocation.put(room, currentLocation.get(room) * p);
@@ -151,14 +151,9 @@ public class BayesianLocator implements ILocator {
             if (ignoreSSID(wifiResult.SSID)) {
                 continue;
             }
-            int level = wifiResult.level;
             // Normalize level between 0 and -100 dBm (although in practice values above -30 or below -90 dBm are rare)
-            if (wifiResult.level < 0) {
-                wifiResult.level = 0;
-            }
-            if (wifiResult.level > 100) {
-                wifiResult.level = 100;
-            }
+            // TODO original code modified wifiResult.level to be within 0 and 100 (yes, 100, not -100) and didn't touch level. Was that really how it was supposed to work?
+            final int level = Math.max(-100, Math.min(wifiResult.level, 0));
             SummaryStatistics cell = values.get(wifiResult.BSSID, wifiResult.room);
             // Cell doesn't exists, create it
             if (cell == null) {
@@ -184,9 +179,20 @@ public class BayesianLocator implements ILocator {
             case Running:
             case Stairs_Down:
             case Stairs_Up:
+                // TODO 1) We need to find out s
+                //      2) We need to know size of cell in aisle (and assume position in center)
+                //      3) Calculate cells that fall within the boundaries:
+                // s = number of steps
+                // Location distribution:
+                // -1.2s --- -0.5s   x   0.5s --- 1.2s
+                // ^^^^^^^^^^^^^^^       ^^^^^^^^^^^^^
+                //     uniform              uniform
+
                 // Give 10% of the current probability to each of the adjacent rooms
                 for (Map.Entry<Room, Double> locationProbability : previousLocation.entrySet()) {
                     for (Room room : locationProbability.getKey().getAdjacentRooms()) {
+                        // TODO the currentLocation.get(room) is updated in place + it uses addition
+                        // TODO bayesian-filter.py uses multiplication only and copies the new values to a 2nd data structure
                         currentLocation.put(room, currentLocation.get(room) + 0.1 * locationProbability.getValue());
                     }
                 }

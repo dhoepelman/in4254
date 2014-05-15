@@ -16,6 +16,8 @@ import com.j256.ormlite.android.apptools.OpenHelperManager;
 import nl.tudelft.sps.app.activity.IClassifier;
 import nl.tudelft.sps.app.activity.Measurement;
 import nl.tudelft.sps.app.activity.kNNClassifier;
+import nl.tudelft.sps.app.localization.BayesianLocator;
+import nl.tudelft.sps.app.localization.ILocator;
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -32,6 +34,7 @@ public class MainActivity extends ActionBarActivity
      */
     private CharSequence mTitle;
     private IClassifier classifier;
+    private ILocator locator;
     private DatabaseHelper databaseHelper = null;
 
     @Override
@@ -138,6 +141,17 @@ public class MainActivity extends ActionBarActivity
             resetClassifier();
         }
         return classifier;
+    }
+
+    public ILocator getLocator() {
+        if (locator == null) {
+            resetLocator();
+        }
+        return locator;
+    }
+
+    public void resetLocator() {
+        locator = new BayesianLocator();
     }
 
     public void resetClassifier() {
