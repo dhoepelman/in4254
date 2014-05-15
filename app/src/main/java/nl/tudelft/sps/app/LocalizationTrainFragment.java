@@ -122,6 +122,8 @@ public class LocalizationTrainFragment extends Fragment {
         return fragment;
     }
 
+    private Button selectedButton;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -145,6 +147,11 @@ public class LocalizationTrainFragment extends Fragment {
                     @Override
                     public void onClick(View view) {
                         selectedRoom = Room.getEnum(view.getId());
+                        if (selectedButton != null) {
+                            selectedButton.setEnabled(true);
+                        }
+                        selectedButton = (Button) view;
+                        selectedButton.setEnabled(false);
                         toastManager.showText(String.valueOf(selectedRoom), Toast.LENGTH_SHORT);
                     }
                 });
