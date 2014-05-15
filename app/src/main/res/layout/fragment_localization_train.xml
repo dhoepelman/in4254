@@ -232,10 +232,15 @@
         android:layout_marginBottom="6dp"
         android:indeterminate="false"/>
 
-    <TextView android:id="@+id/text_results"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scrollbars="vertical"
-        android:background="@android:drawable/editbox_background_normal"/>
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView android:id="@+id/text_results"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            android:background="@android:drawable/editbox_background_normal"/>
+    </ScrollView>
 
 </LinearLayout>

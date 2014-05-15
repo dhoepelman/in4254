@@ -135,11 +135,16 @@
         android:indeterminate="false"
         android:max="255"/>
 
-    <TextView
+    <ScrollView
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:id="@+id/val_testresults"
-        android:scrollbars="vertical"
-        android:background="@android:drawable/editbox_background_normal"/>
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/val_testresults"
+            android:scrollbars="vertical"
+            android:background="@android:drawable/editbox_background_normal"/>
+    </ScrollView>
 
 </LinearLayout>
