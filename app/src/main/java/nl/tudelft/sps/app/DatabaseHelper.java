@@ -2,6 +2,7 @@ package nl.tudelft.sps.app;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
 import android.util.Log;
 
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
@@ -9,6 +10,11 @@ import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.sql.SQLException;
 
 import nl.tudelft.sps.app.activity.Measurement;
@@ -97,8 +103,24 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         wifiResultDao = null;
     }
 
+    /**
+     * Export database file to sdcard
+     */
     public void exportDatabaseFile() {
-        // TODO: If neccesary make a method that copies the DB to an externally accesible directory
+        //http://stackoverflow.com/a/2661882/572635
+        try {
+            File sd = Environment.getExternalStorageDirectory();
+            File data = Environment.getDataDirectory();
+
+            String dbPath = "/data/nl.tudelft.sps.app/databases/" + DATABASE_NAME;
+            FileChannel src = new FileInputStream(new File(data, dbPath)).getChannel();
+            FileChannel dest = new FileOutputStream(new File(sd, DATABASE_NAME)).getChannel();
+            dest.transferFrom(src, 0, src.size());
+            src.close();
+            dest.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

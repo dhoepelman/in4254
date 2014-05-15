@@ -51,7 +51,7 @@ public class MainActivity extends ActionBarActivity
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
-        Fragment fragment = null;
+        Fragment fragment;
         switch (position) {
             default:
             case 0:
@@ -62,6 +62,9 @@ public class MainActivity extends ActionBarActivity
                 break;
             case 2:
                 fragment = LocalizationTrainFragment.newInstance(position);
+                break;
+            case 3:
+                fragment = MiscFragment.newInstance(position);
                 break;
         }
         if (fragment != null) {
@@ -88,6 +91,9 @@ public class MainActivity extends ActionBarActivity
                 break;
             case 2:
                 mTitle = getString(R.string.title_section_localization);
+                break;
+            case 3:
+                mTitle = getString(R.string.title_section_misc);
                 break;
         }
     }
