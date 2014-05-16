@@ -8,13 +8,18 @@
     android:orientation="vertical"
     android:layout_margin="6dp">
 
+    <LinearLayout android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_gravity="center_horizontal"
+                  android:orientation="vertical">
+
     <android.support.v7.widget.GridLayout
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:columnCount="3"
         android:rowCount="10"
-        app:columnCount="4"
-        app:rowCount="12">
+        app:columnCount="3"
+        app:rowCount="10">
 
         <Button
             style="?android:attr/buttonStyleSmall"
@@ -27,7 +32,7 @@
             android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_column="1"
-            app:layout_row="11"/>
+            app:layout_row="9"/>
 
         <Button
             style="?android:attr/buttonStyleSmall"
@@ -39,7 +44,7 @@
             android:layout_row="8"
             android:layout_margin="-4dp"
             app:layout_gravity="fill"
-            app:layout_row="10"
+            app:layout_row="8"
             app:layout_column="1"/>
 
         <Button
@@ -53,7 +58,7 @@
             android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_column="1"
-            app:layout_row="9"/>
+            app:layout_row="7"/>
 
         <Button
             style="?android:attr/buttonStyleSmall"
@@ -65,7 +70,7 @@
             android:layout_row="6"
             android:layout_margin="-4dp"
             app:layout_gravity="fill"
-            app:layout_row="8"
+            app:layout_row="6"
             app:layout_column="1"/>
 
         <Button
@@ -78,7 +83,20 @@
             android:layout_row="5"
             android:layout_margin="-4dp"
             app:layout_gravity="fill"
-            app:layout_row="7"
+            app:layout_row="5"
+            app:layout_column="1"/>
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aisle 6"
+            android:id="@+id/c7_a6"
+            android:layout_column="1"
+            android:layout_row="4"
+            android:layout_margin="-4dp"
+            app:layout_gravity="fill"
+            app:layout_row="4"
             app:layout_column="1"/>
 
         <Button
@@ -144,7 +162,7 @@
             android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_column="0"
-            app:layout_row="11"/>
+            app:layout_row="9"/>
 
         <Button
             style="?android:attr/buttonStyleSmall"
@@ -156,7 +174,7 @@
             android:layout_row="8"
             android:layout_margin="-4dp"
             app:layout_gravity="fill"
-            app:layout_row="10"
+            app:layout_row="8"
             app:layout_column="0"/>
 
         <Button
@@ -170,7 +188,7 @@
             android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_column="2"
-            app:layout_row="9"/>
+            app:layout_row="7"/>
 
         <Button
             style="?android:attr/buttonStyleSmall"
@@ -182,7 +200,7 @@
             android:layout_row="6"
             android:layout_margin="-4dp"
             app:layout_gravity="fill"
-            app:layout_row="8"
+            app:layout_row="6"
             app:layout_column="0"/>
 
         <Button
@@ -195,7 +213,7 @@
             android:layout_row="5"
             android:layout_margin="-4dp"
             app:layout_gravity="fill"
-            app:layout_row="7"
+            app:layout_row="5"
             app:layout_column="0"/>
 
         <Button
@@ -222,8 +240,9 @@
             android:layout_margin="-4dp"
             app:layout_gravity="fill"
             app:layout_column="2"
-            app:layout_row="1" />
+            app:layout_row="1"/>
     </android.support.v7.widget.GridLayout>
+    </LinearLayout>
 
     <ProgressBar
         style="?android:attr/progressBarStyleHorizontal"
