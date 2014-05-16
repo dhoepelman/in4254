@@ -152,7 +152,6 @@ public class BayesianLocator implements ILocator {
                 continue;
             }
             // Normalize level between 0 and -100 dBm (although in practice values above -30 or below -90 dBm are rare)
-            // TODO original code modified wifiResult.level to be within 0 and 100 (yes, 100, not -100) and didn't touch level. Was that really how it was supposed to work?
             final int level = Math.max(-100, Math.min(wifiResult.level, 0));
             SummaryStatistics cell = values.get(wifiResult.BSSID, wifiResult.room);
             // Cell doesn't exists, create it
@@ -191,8 +190,6 @@ public class BayesianLocator implements ILocator {
                 // Give 10% of the current probability to each of the adjacent rooms
                 for (Map.Entry<Room, Double> locationProbability : previousLocation.entrySet()) {
                     for (Room room : locationProbability.getKey().getAdjacentRooms()) {
-                        // TODO the currentLocation.get(room) is updated in place + it uses addition
-                        // TODO bayesian-filter.py uses multiplication only and copies the new values to a 2nd data structure
                         currentLocation.put(room, currentLocation.get(room) + 0.1 * locationProbability.getValue());
                     }
                 }
