@@ -6,10 +6,28 @@
     <string name="title_section_train_activity">Activity training</string>
     <string name="title_section_localization">Localization training</string>
     <string name="title_section_misc">Miscellaneous</string>
-    <string name="title_section_locator_test">Locator test</string>
+    <string name="title_section_locator_test">Localization testing</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_settings">Settings</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="label_c1_a1">Aisle 1</string>
+    <string name="label_c2_a2">Aisle 2</string>
+    <string name="label_c3_a3">Aisle 3</string>
+    <string name="label_c4_a4">Aisle 4</string>
+    <string name="label_c5_a5">Aisle 5</string>
+    <string name="label_c6_a6">Aisle 6</string>
+    <string name="label_c7_a7">Aisle 7</string>
+    <string name="label_c8_a8">Aisle 8</string>
+    <string name="label_c9_a9">Aisle 9</string>
+    <string name="label_c10_a10">Aisle 10</string>
+    <string name="label_c11_conf_btm">Conf Btm</string>
+    <string name="label_c12_conf_top">Conf Top</string>
+    <string name="label_c13_coffee">Coffee</string>
+    <string name="label_c14_plea">Plea</string>
+    <string name="label_c15_mtg">Mtg</string>
+    <string name="label_c16_flex_btm">Flex Btm</string>
+    <string name="label_c17_flex_top">Flex Top</string>
 
 </resources>

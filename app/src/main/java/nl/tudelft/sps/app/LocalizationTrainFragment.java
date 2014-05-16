@@ -34,7 +34,9 @@ import nl.tudelft.sps.app.localization.WifiScanTask;
 public class LocalizationTrainFragment extends Fragment {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
+
     private final AtomicInteger rowsCreated = new AtomicInteger();
+
     private final WifiScanTask.ProgressUpdater wifiScanProgressUpdater = new WifiScanTask.ProgressUpdater() {
         @Override
         public void update(Integer progress) {
@@ -43,6 +45,7 @@ public class LocalizationTrainFragment extends Fragment {
     };
     private TextView valueResults;
     private boolean firstResult;
+
     private final WifiScanTask.ResultProcessor wifiScanResultProcessor = new WifiScanTask.ResultProcessor() {
         @Override
         public void result(WifiMeasurementsWindow results) {
@@ -103,6 +106,7 @@ public class LocalizationTrainFragment extends Fragment {
             }
         }
     };
+
     private ProgressBar progressBarWindow;
     private ToastManager toastManager;
     private Room selectedRoom;
@@ -163,7 +167,7 @@ public class LocalizationTrainFragment extends Fragment {
         if (selectedRoom == null) {
             toastManager.showText("Select a room first", Toast.LENGTH_LONG);
         } else {
-            final WifiScanTask wifiScanTask = new WifiScanTask(wifiScanResultProcessor, wifiScanProgressUpdater, getActivity(), toastManager);
+            final WifiScanTask wifiScanTask = new WifiScanTask(wifiScanResultProcessor, wifiScanProgressUpdater, getActivity(), toastManager, true);
             wifiScanTask.execute(selectedRoom);
         }
         return super.onOptionsItemSelected(item);

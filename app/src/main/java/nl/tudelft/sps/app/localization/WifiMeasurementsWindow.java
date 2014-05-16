@@ -45,8 +45,11 @@ public class WifiMeasurementsWindow {
 
     private final Room measuredInRoom;
 
-    public WifiMeasurementsWindow(Room room) {
+    private final int windowSize;
+
+    public WifiMeasurementsWindow(int size, Room room) {
         measuredInRoom = room;
+        windowSize = size;
     }
 
     public Room getMeasuredInRoom() {
@@ -54,7 +57,7 @@ public class WifiMeasurementsWindow {
     }
 
     public boolean isCompleted() {
-        return getProgress() >= WINDOW_SIZE;
+        return getProgress() >= windowSize;
     }
 
     public int getProgress() {

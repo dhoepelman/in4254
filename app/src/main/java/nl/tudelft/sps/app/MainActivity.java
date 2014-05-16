@@ -74,10 +74,10 @@ public class MainActivity extends ActionBarActivity
                 fragment = LocalizationTrainFragment.newInstance(position);
                 break;
             case 3:
-                fragment = MiscFragment.newInstance(position);
+                fragment = LocatorTestFragment.newInstance(position);
                 break;
             case 4:
-                fragment = LocatorTestFragment.newInstance(position);
+                fragment = MiscFragment.newInstance(position);
                 break;
         }
         if (fragment != null) {

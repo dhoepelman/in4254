@@ -4,20 +4,26 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Map;
+import java.util.List;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
 import nl.tudelft.sps.app.localization.ILocator;
 import nl.tudelft.sps.app.localization.Room;
+import nl.tudelft.sps.app.localization.WifiMeasurementsWindow;
+import nl.tudelft.sps.app.localization.WifiScanTask;
 
 public class LocatorTestFragment extends Fragment {
 
@@ -77,6 +83,12 @@ public class LocatorTestFragment extends Fragment {
             }
         });
 
+        // Make buttons not clickable
+        for (Room room : Room.values()) {
+            final Button button = (Button) rootView.findViewById(room.getTestIdentifier());
+            button.setClickable(false);
+        }
+        updateLocationText();
 
         return rootView;
     }
@@ -87,18 +99,23 @@ public class LocatorTestFragment extends Fragment {
         toastManager.showText("Initial belief set", Toast.LENGTH_SHORT);
     }
 
-    private void doWifiScan() {
-
-        getActivity().registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                getActivity().unregisterReceiver(this);
-                WifiManager wifimanager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
-                locator.adjustLocation(wifimanager.getScanResults());
+    private final WifiScanTask.ResultProcessor wifiScanResultProcessor = new WifiScanTask.ResultProcessor() {
+        @Override
+        public void result(WifiMeasurementsWindow results) {
+            if (results != null) {
+                final List<ScanResult> scanResults = results.getMeasurements().get(0).getResults();
+                locator.adjustLocation(scanResults);
                 updateLocationText();
             }
-        }, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        ((WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE)).startScan();
+            else {
+                toastManager.showText("Something went horribly wrong", Toast.LENGTH_LONG);
+            }
+        }
+    };
+
+    private void doWifiScan() {
+        final WifiScanTask wifiScanTask = new WifiScanTask(wifiScanResultProcessor, null, getActivity(), toastManager, false);
+        wifiScanTask.execute(null);
     }
 
     private void doMovementDetection() {
@@ -111,15 +128,27 @@ public class LocatorTestFragment extends Fragment {
      * Format the current location nicely
      */
     private void updateLocationText() {
-        StringBuilder sb = new StringBuilder();
         final Map<Room, Double> location = locator.getLocation();
-        for (Room r : Room.values()) {
-            sb.append(r.name());
-            sb.append(" : ");
-            sb.append(Math.round(location.get(r) * 1000) / 1000.0);
-            sb.append("\n");
+
+        for (Room room : Room.values()) {
+            final long percent = Math.round(location.get(room) * 100L);
+            final Button button = (Button) rootView.findViewById(room.getTestIdentifier());
+
+            // Set text
+            final String label = getString(room.getLabelIdentifier());
+            button.setText(String.format("%s (%d%%)", label, percent));
+
+            // Set color
+            if (percent >= 50) {
+                button.setBackgroundColor(Color.GREEN);
+            }
+            else if (percent >= 20) {
+                button.setBackgroundColor(Color.YELLOW);
+            }
+            else {
+                button.setBackgroundColor(Color.LTGRAY);
+            }
         }
-        ((TextView) rootView.findViewById(R.id.txt_locator_test_results)).setText(sb.toString());
     }
 
 }

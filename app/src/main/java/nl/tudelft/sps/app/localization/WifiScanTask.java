@@ -36,10 +36,32 @@ public class WifiScanTask extends AsyncTask<Room, Integer, WifiMeasurementsWindo
      */
     private final Object gate = new Object();
 
-    public WifiScanTask(ResultProcessor processor, ProgressUpdater updater, Activity activity, ToastManager toastManager) {
+    private int numberOfMeasurements;
+
+    /**
+     * Creates a task that asynchronously performs one or more Wi-Fi
+     * measurements and returns the result via the given ResultProcessor.
+     * ProgressUpdater may be null if we are not interested in being
+     * kept up to date about the progress of the measuring.
+     *
+     * @param window True if the window needs to be filled completely
+     *               with multiple measurements, or false if just one
+     *               measurement is needed
+     */
+    public WifiScanTask(ResultProcessor processor, ProgressUpdater updater, Activity activity, ToastManager toastManager, boolean window) {
+        if (processor == null) {
+            throw new RuntimeException("ResultProcessor not allowed to be null");
+        }
         resultProcessor = processor;
         progressUpdater = updater;
         this.activity = activity;
+
+        if (window) {
+            numberOfMeasurements = WifiMeasurementsWindow.WINDOW_SIZE;
+        }
+        else {
+            numberOfMeasurements = 1;
+        }
 
         wifiManager = (WifiManager) activity.getSystemService(Context.WIFI_SERVICE);
 
@@ -68,10 +90,11 @@ public class WifiScanTask extends AsyncTask<Room, Integer, WifiMeasurementsWindo
         final ScanReceiver receiver = new ScanReceiver();
         activity.registerReceiver(receiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
-        final WifiMeasurementsWindow window = new WifiMeasurementsWindow(rooms[0]);
+        // rooms[0] might be null, but that is not this tasks' concern
+        final WifiMeasurementsWindow window = new WifiMeasurementsWindow(numberOfMeasurements, rooms[0]);
 
         try {
-            for (int i = 0; i < WifiMeasurementsWindow.WINDOW_SIZE; i++) {
+            for (int i = 0; i < numberOfMeasurements; i++) {
                 final long currentTimestamp = System.currentTimeMillis();
 
                 if (!wifiManager.startScan()) {

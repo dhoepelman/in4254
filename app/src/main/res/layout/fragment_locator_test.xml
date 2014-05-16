@@ -59,7 +59,7 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="9"
-                android:text="Aisle 1"
+                android:text="@+string/label_c1_a1"
                 app:layout_column="1"
                 app:layout_gravity="fill"
                 app:layout_row="9" />
@@ -72,7 +72,7 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="8"
-                android:text="Aisle 2"
+                android:text="@+string/label_c2_a2"
                 app:layout_column="1"
                 app:layout_gravity="fill"
                 app:layout_row="8" />
@@ -85,7 +85,7 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="7"
-                android:text="Aisle 3"
+                android:text="@+string/label_c3_a3"
                 app:layout_column="1"
                 app:layout_gravity="fill"
                 app:layout_row="7" />
@@ -98,7 +98,7 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="6"
-                android:text="Aisle 4"
+                android:text="@+string/label_c4_a4"
                 app:layout_column="1"
                 app:layout_gravity="fill"
                 app:layout_row="6" />
@@ -111,7 +111,7 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="5"
-                android:text="Aisle 5"
+                android:text="@+string/label_c5_a5"
                 app:layout_column="1"
                 app:layout_gravity="fill"
                 app:layout_row="5" />
@@ -124,7 +124,7 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="4"
-                android:text="Aisle 6"
+                android:text="@+string/label_c6_a6"
                 app:layout_column="1"
                 app:layout_gravity="fill"
                 app:layout_row="4" />
@@ -137,7 +137,7 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="3"
-                android:text="Aisle 7"
+                android:text="@+string/label_c7_a7"
                 app:layout_column="1"
                 app:layout_gravity="fill"
                 app:layout_row="3" />
@@ -150,7 +150,7 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="2"
-                android:text="Aisle 8"
+                android:text="@+string/label_c8_a8"
                 app:layout_column="1"
                 app:layout_gravity="fill"
                 app:layout_row="2" />
@@ -163,7 +163,7 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="1"
-                android:text="Aisle 9"
+                android:text="@+string/label_c9_a9"
                 app:layout_column="1"
                 app:layout_gravity="fill"
                 app:layout_row="1" />
@@ -176,7 +176,7 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="0"
-                android:text="Aisle 10"
+                android:text="@+string/label_c10_a10"
                 app:layout_column="1"
                 app:layout_gravity="fill"
                 app:layout_row="0" />
@@ -189,7 +189,7 @@
                 android:layout_column="0"
                 android:layout_margin="-4dp"
                 android:layout_row="9"
-                android:text="Conf. Bottom"
+                android:text="@+string/label_c11_conf_btm"
                 app:layout_column="0"
                 app:layout_gravity="fill"
                 app:layout_row="9" />
@@ -202,7 +202,7 @@
                 android:layout_column="0"
                 android:layout_margin="-4dp"
                 android:layout_row="8"
-                android:text="Conf. Top"
+                android:text="@+string/label_c12_conf_top"
                 app:layout_column="0"
                 app:layout_gravity="fill"
                 app:layout_row="8" />
@@ -215,7 +215,7 @@
                 android:layout_column="2"
                 android:layout_margin="-4dp"
                 android:layout_row="7"
-                android:text="Coffee"
+                android:text="@+string/label_c13_coffee"
                 app:layout_column="2"
                 app:layout_gravity="fill"
                 app:layout_row="7" />
@@ -228,7 +228,7 @@
                 android:layout_column="0"
                 android:layout_margin="-4dp"
                 android:layout_row="7"
-                android:text="Plea"
+                android:text="@+string/label_c14_plea"
                 app:layout_column="0"
                 app:layout_gravity="fill"
                 app:layout_row="7" />
@@ -241,7 +241,7 @@
                 android:layout_column="0"
                 android:layout_margin="-4dp"
                 android:layout_row="6"
-                android:text="Mtg"
+                android:text="@+string/label_c15_mtg"
                 app:layout_column="0"
                 app:layout_gravity="fill"
                 app:layout_row="6" />
@@ -254,7 +254,7 @@
                 android:layout_column="2"
                 android:layout_margin="-4dp"
                 android:layout_row="2"
-                android:text="Flex Bottom"
+                android:text="@+string/label_c16_flex_btm"
                 app:layout_column="2"
                 app:layout_gravity="fill"
                 app:layout_row="2"/>
@@ -267,14 +267,14 @@
                 android:layout_column="2"
                 android:layout_margin="-4dp"
                 android:layout_row="1"
-                android:text="Flex Top"
+                android:text="@+string/label_c17_flex_top"
                 app:layout_column="2"
                 app:layout_gravity="fill"
                 app:layout_row="1" />
         </android.support.v7.widget.GridLayout>
     </LinearLayout>
 
-    <ScrollView
+    <!-- <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_margin="6dp">
@@ -283,6 +283,6 @@
             android:id="@+id/txt_locator_test_results"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
-    </ScrollView>
+    </ScrollView> -->
 
 </LinearLayout>
