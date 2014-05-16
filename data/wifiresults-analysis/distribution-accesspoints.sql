@@ -1,0 +1,4 @@
+SELECT BSSID, SSID, room, AVG(level)
+FROM wifiresult
+GROUP BY BSSID, SSID, room
+ORDER BY BSSID, SSID,  AVG(level)
