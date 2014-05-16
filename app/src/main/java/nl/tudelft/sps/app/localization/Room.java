@@ -31,23 +31,22 @@ public enum Room {
 
     // Unfortunately you cannot do this in the constructors. See http://stackoverflow.com/a/5678375/572635
     static {
-        // TODO: Check the map with the physical layout
-        C1_AISLE1.adjacent = ImmutableList.of(C2_AISLE2, C11_CONF_BTM);
-        C2_AISLE2.adjacent = ImmutableList.of(C1_AISLE1, C3_AISLE3, C12_CONF_TOP);
-        C3_AISLE3.adjacent = ImmutableList.of(C2_AISLE2, C4_AISLE4, C13_COFFEE);
-        C4_AISLE4.adjacent = ImmutableList.of(C3_AISLE3, C5_AISLE5, C14_PLEA);
-        C5_AISLE5.adjacent = ImmutableList.of(C4_AISLE4, C6_AISLE6, C15_MTG);
+        C1_AISLE1.adjacent = ImmutableList.of(C2_AISLE2, C11_CONF_BTM, C12_CONF_TOP);
+        C2_AISLE2.adjacent = ImmutableList.of(C1_AISLE1, C3_AISLE3, C13_COFFEE, C14_PLEA);
+        C3_AISLE3.adjacent = ImmutableList.of(C2_AISLE2, C4_AISLE4, C14_PLEA);
+        C4_AISLE4.adjacent = ImmutableList.of(C3_AISLE3, C5_AISLE5);
+        C5_AISLE5.adjacent = ImmutableList.of(C4_AISLE4, C6_AISLE6);
         C6_AISLE6.adjacent = ImmutableList.of(C5_AISLE5, C7_AISLE7);
         C7_AISLE7.adjacent = ImmutableList.of(C6_AISLE6, C8_AISLE8);
         C8_AISLE8.adjacent = ImmutableList.of(C7_AISLE7, C9_AISLE9, C16_FLEX_BTM);
-        C9_AISLE9.adjacent = ImmutableList.of(C8_AISLE8, C10_AISLE10, C17_FLEX_TOP);
+        C9_AISLE9.adjacent = ImmutableList.of(C8_AISLE8, C10_AISLE10, C16_FLEX_BTM, C17_FLEX_TOP);
         C10_AISLE10.adjacent = ImmutableList.of(C9_AISLE9);
         C11_CONF_BTM.adjacent = ImmutableList.of(C1_AISLE1, C12_CONF_TOP);
-        C12_CONF_TOP.adjacent = ImmutableList.of(C2_AISLE2, C11_CONF_BTM);
-        C13_COFFEE.adjacent = ImmutableList.of(C3_AISLE3);
-        C14_PLEA.adjacent = ImmutableList.of(C4_AISLE4);
-        C15_MTG.adjacent = ImmutableList.of(C5_AISLE5);
-        C16_FLEX_BTM.adjacent = ImmutableList.of(C8_AISLE8);
+        C12_CONF_TOP.adjacent = ImmutableList.of(C1_AISLE1, C11_CONF_BTM);
+        C13_COFFEE.adjacent = ImmutableList.of(C2_AISLE2, C3_AISLE3);
+        C14_PLEA.adjacent = ImmutableList.of(C2_AISLE2);
+        C15_MTG.adjacent = ImmutableList.of(C3_AISLE3);
+        C16_FLEX_BTM.adjacent = ImmutableList.of(C8_AISLE8, C9_AISLE9);
         C17_FLEX_TOP.adjacent = ImmutableList.of(C9_AISLE9);
     }
 
