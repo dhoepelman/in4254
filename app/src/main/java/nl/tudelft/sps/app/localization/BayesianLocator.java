@@ -221,5 +221,4 @@ public class BayesianLocator implements ILocator {
         }
         normalize();
     }
-
 }

@@ -76,6 +76,9 @@ public class MainActivity extends ActionBarActivity
             case 3:
                 fragment = MiscFragment.newInstance(position);
                 break;
+            case 4:
+                fragment = LocatorTestFragment.newInstance(position);
+                break;
         }
         if (fragment != null) {
             getSupportFragmentManager()
@@ -104,6 +107,9 @@ public class MainActivity extends ActionBarActivity
                 break;
             case 3:
                 mTitle = getString(R.string.title_section_misc);
+                break;
+            case 4:
+                mTitle = getString(R.string.title_section_locator_test);
                 break;
         }
     }

@@ -6,6 +6,7 @@
     <string name="title_section_train_activity">Activity training</string>
     <string name="title_section_localization">Localization training</string>
     <string name="title_section_misc">Miscellaneous</string>
+    <string name="title_section_locator_test">Locator test</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_settings">Settings</string>
