@@ -2,6 +2,8 @@ package nl.tudelft.sps.app.localization;
 
 import android.net.wifi.ScanResult;
 
+import com.j256.ormlite.dao.CloseableIterator;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.SortedMap;
@@ -30,7 +32,7 @@ public interface ILocator {
      * Train the locator with collected scan results containing the room, bssid and level.
      * Must contain all the data points, previously trained ones will not be remembered
      */
-    public void train(Collection<WifiResult> trainingData);
+    public void train(CloseableIterator<WifiResult> trainingData);
 
     /**
      * Add a detected movement to the location

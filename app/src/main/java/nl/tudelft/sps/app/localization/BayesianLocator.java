@@ -5,9 +5,11 @@ import android.net.wifi.ScanResult;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Table;
+import com.j256.ormlite.dao.CloseableIterator;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -20,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import java.lang.Math;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
 
@@ -29,23 +30,21 @@ import nl.tudelft.sps.app.activity.ACTIVITY;
  */
 public class BayesianLocator implements ILocator {
 
+    public static final Collection<String> ignoredSSIDs = ImmutableSet.of("TUvisitor", "tudelft-dastud", "Conferentie-TUD");
     /**
      * Threshold for certainty when processing further scans is deemed useless.
      * Note: the strongest AP signal will always be processed
      */
     private static final double ACCURACY_THRESHOLD = 0.95;
-
     /**
      * The "zero" probability. We never want to remove a room completely so this is the smallest we'll multiply with
      */
     private static final double PROBABILITY_EPSILON = 0.001;
-
     /**
      * The current location as a map from Room to a probability that the user is in that room
      */
     private final Map<Room, Double> currentLocation = new HashMap<>();
     private final Map<Room, Double> currentLocationRO = Collections.unmodifiableMap(currentLocation);
-
     /**
      * Contains the trainingsdata as a table.
      * Each BSSID (row) and Room (column) combination has a probability distribution.
@@ -143,11 +142,11 @@ public class BayesianLocator implements ILocator {
     }
 
     @Override
-    public void train(Collection<WifiResult> trainingData) {
+    public void train(CloseableIterator<WifiResult> trainingData) {
         Table<String, Room, SummaryStatistics> values = HashBasedTable.create();
-
         // Go through all of the wifiResults and group them by BSSID and Room
-        for (WifiResult wifiResult : trainingData) {
+        while (trainingData.hasNext()) {
+            final WifiResult wifiResult = trainingData.next();
             if (ignoreSSID(wifiResult.SSID)) {
                 continue;
             }
@@ -161,6 +160,7 @@ public class BayesianLocator implements ILocator {
             }
             cell.addValue(level);
         }
+        trainingData.closeQuietly();
 
         // Calculate the distributions from the lists of measurements
         trainingsData = HashBasedTable.create(values.rowKeySet().size(), Room.values().length);
@@ -210,7 +210,7 @@ public class BayesianLocator implements ILocator {
      * // TODO: More elegant way to do this, maybe somewhere else?
      */
     private boolean ignoreSSID(String SSID) {
-        return SSID.equals("TUvisitor") || SSID.equals("tudelft-dastud") || SSID.equals("Conferentie-TUD");
+        return ignoredSSIDs.contains(SSID);
     }
 
     @Override

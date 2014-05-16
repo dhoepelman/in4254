@@ -1,14 +1,12 @@
 package nl.tudelft.sps.app.localization;
 
 import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
 
 /**
  * A simple data structure that represents one Wi-Fi scan of a particular
  * access point. Instances of this class are stored to a SQL database by
  * ORMLite or created by reading from it.
  */
-// TODO uncomment this line when it's safe to do so @DatabaseTable(tableName = "wifi_results")
 public class WifiResult {
 
     @DatabaseField(generatedId = true)

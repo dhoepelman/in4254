@@ -12,12 +12,19 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
+import com.j256.ormlite.dao.CloseableIterator;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.stmt.PreparedQuery;
+import com.j256.ormlite.stmt.QueryBuilder;
+
+import java.sql.SQLException;
 
 import nl.tudelft.sps.app.activity.IClassifier;
 import nl.tudelft.sps.app.activity.Measurement;
 import nl.tudelft.sps.app.activity.kNNClassifier;
 import nl.tudelft.sps.app.localization.BayesianLocator;
 import nl.tudelft.sps.app.localization.ILocator;
+import nl.tudelft.sps.app.localization.WifiResult;
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -152,6 +159,17 @@ public class MainActivity extends ActionBarActivity
 
     public void resetLocator() {
         locator = new BayesianLocator();
+        RuntimeExceptionDao<WifiResult, Long> dao = getDatabaseHelper().getWifiResultDao();
+        // Build a query that does not return the ignored SSIDs
+        PreparedQuery<WifiResult> q;
+        try {
+            QueryBuilder<WifiResult, Long> queryBuilder = dao.queryBuilder();
+            queryBuilder.where().notIn("SSID", BayesianLocator.ignoredSSIDs);
+            q = queryBuilder.prepare();
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not build the query to retrieve stored wifi data");
+        }
+        locator.train(dao.iterator(q));
     }
 
     public void resetClassifier() {
@@ -164,9 +182,12 @@ public class MainActivity extends ActionBarActivity
      * use them to train the classifier.
      */
     private void readTrainingData() {
-        for (Measurement m : getDatabaseHelper().getMeasurementDao().queryForAll()) {
+        CloseableIterator<Measurement> measurementIt = getDatabaseHelper().getMeasurementDao().iterator();
+        while (measurementIt.hasNext()) {
+            Measurement m = measurementIt.next();
             classifier.train(m.getActivity(), m);
         }
+        measurementIt.closeQuietly();
     }
 
     @Override
