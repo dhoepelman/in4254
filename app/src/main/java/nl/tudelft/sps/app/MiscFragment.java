@@ -49,6 +49,13 @@ public class MiscFragment extends Fragment {
             }
         });
 
+        (rootView.findViewById(R.id.but_quit)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().finish();
+            }
+        });
+
         return rootView;
     }
 
