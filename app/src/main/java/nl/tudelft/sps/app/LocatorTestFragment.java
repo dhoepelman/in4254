@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import java.util.Map;
 
+import nl.tudelft.sps.app.activity.ACTIVITY;
 import nl.tudelft.sps.app.localization.ILocator;
 import nl.tudelft.sps.app.localization.Room;
 
@@ -49,7 +50,7 @@ public class LocatorTestFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_misc, container, false);
+        rootView = inflater.inflate(R.layout.fragment_locator_test, container, false);
         assert rootView != null;
 
         locator = ((MainActivity) getActivity()).getLocator();
@@ -83,7 +84,7 @@ public class LocatorTestFragment extends Fragment {
     private void setInitialLocation() {
         locator.initialLocation();
         updateLocationText();
-        toastManager.showText("Initial belief set", Toast.LENGTH_LONG);
+        toastManager.showText("Initial belief set", Toast.LENGTH_SHORT);
     }
 
     private void doWifiScan() {
@@ -97,12 +98,12 @@ public class LocatorTestFragment extends Fragment {
                 updateLocationText();
             }
         }, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-
-
+        ((WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE)).startScan();
     }
 
     private void doMovementDetection() {
         // TODO: Implement
+        locator.addMovement(ACTIVITY.Walking);
         updateLocationText();
     }
 
@@ -115,7 +116,7 @@ public class LocatorTestFragment extends Fragment {
         for (Room r : Room.values()) {
             sb.append(r.name());
             sb.append(" : ");
-            sb.append(Math.round(location.get(r) * 1000) / 1000);
+            sb.append(Math.round(location.get(r) * 1000) / 1000.0);
             sb.append("\n");
         }
         ((TextView) rootView.findViewById(R.id.txt_locator_test_results)).setText(sb.toString());

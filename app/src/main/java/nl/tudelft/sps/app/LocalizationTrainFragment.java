@@ -1,6 +1,7 @@
 package nl.tudelft.sps.app;
 
 import android.app.Activity;
+import android.net.wifi.ScanResult;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -14,10 +15,8 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.net.wifi.ScanResult;
 
 import com.j256.ormlite.dao.RuntimeExceptionDao;
-import com.j256.ormlite.misc.TransactionManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,24 +25,24 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import nl.tudelft.sps.app.localization.AccessPointLevels;
+import nl.tudelft.sps.app.localization.Room;
 import nl.tudelft.sps.app.localization.WifiMeasurement;
 import nl.tudelft.sps.app.localization.WifiMeasurementsWindow;
 import nl.tudelft.sps.app.localization.WifiResult;
 import nl.tudelft.sps.app.localization.WifiScanTask;
-import nl.tudelft.sps.app.localization.Room;
 
 public class LocalizationTrainFragment extends Fragment {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
-
+    private final AtomicInteger rowsCreated = new AtomicInteger();
+    private final WifiScanTask.ProgressUpdater wifiScanProgressUpdater = new WifiScanTask.ProgressUpdater() {
+        @Override
+        public void update(Integer progress) {
+            progressBarWindow.setProgress(progress);
+        }
+    };
     private TextView valueResults;
     private boolean firstResult;
-    private ProgressBar progressBarWindow;
-
-    private ToastManager toastManager;
-
-    private Room selectedRoom;
-
     private final WifiScanTask.ResultProcessor wifiScanResultProcessor = new WifiScanTask.ResultProcessor() {
         @Override
         public void result(WifiMeasurementsWindow results) {
@@ -56,8 +55,7 @@ public class LocalizationTrainFragment extends Fragment {
 
                     if (firstResult) {
                         firstResult = false;
-                    }
-                    else {
+                    } else {
                         builder.append("\n");
                     }
                     builder.append(String.format("%s %s\n%.2f dBm (%d samples)", apLevels.SSID, apLevels.BSSID, meanAndStdDev[0], apLevels.getLevels().size()));
@@ -100,21 +98,15 @@ public class LocalizationTrainFragment extends Fragment {
 
                 toastManager.showText(String.format("%d results written to database", rowsCreated.get()), Toast.LENGTH_LONG);
                 Log.w(getClass().getName(), String.format("WIFI DB CREATED ROWS %d", rowsCreated.get()));
-            }
-            else {
+            } else {
                 valueResults.setText("Error :(");
             }
         }
     };
-
-    private final AtomicInteger rowsCreated = new AtomicInteger();
-
-    private final WifiScanTask.ProgressUpdater wifiScanProgressUpdater = new WifiScanTask.ProgressUpdater() {
-        @Override
-        public void update(Integer progress) {
-            progressBarWindow.setProgress(progress);
-        }
-    };
+    private ProgressBar progressBarWindow;
+    private ToastManager toastManager;
+    private Room selectedRoom;
+    private Button selectedButton;
 
     public static LocalizationTrainFragment newInstance(int sectionNumber) {
         final Bundle args = new Bundle();
@@ -124,8 +116,6 @@ public class LocalizationTrainFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
-
-    private Button selectedButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -144,21 +134,19 @@ public class LocalizationTrainFragment extends Fragment {
 
         // Connect click listener to buttons
         for (Room room : Room.values()) {
-            if (!Room.Unknown.equals(room)) {
-                final Button button = (Button) rootView.findViewById(room.getIdentifier());
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        selectedRoom = Room.getEnum(view.getId());
-                        if (selectedButton != null) {
-                            selectedButton.setEnabled(true);
-                        }
-                        selectedButton = (Button) view;
-                        selectedButton.setEnabled(false);
-                        toastManager.showText(String.valueOf(selectedRoom), Toast.LENGTH_SHORT);
+            final Button button = (Button) rootView.findViewById(room.getIdentifier());
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    selectedRoom = Room.getEnum(view.getId());
+                    if (selectedButton != null) {
+                        selectedButton.setEnabled(true);
                     }
-                });
-            }
+                    selectedButton = (Button) view;
+                    selectedButton.setEnabled(false);
+                    toastManager.showText(String.valueOf(selectedRoom), Toast.LENGTH_SHORT);
+                }
+            });
         }
 
         return rootView;
@@ -174,8 +162,7 @@ public class LocalizationTrainFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (selectedRoom == null) {
             toastManager.showText("Select a room first", Toast.LENGTH_LONG);
-        }
-        else {
+        } else {
             final WifiScanTask wifiScanTask = new WifiScanTask(wifiScanResultProcessor, wifiScanProgressUpdater, getActivity(), toastManager);
             wifiScanTask.execute(selectedRoom);
         }

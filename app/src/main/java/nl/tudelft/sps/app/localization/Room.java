@@ -24,7 +24,7 @@ public enum Room {
     C15_MTG (R.id.c15_mtg),
     C16_FLEX_BTM (R.id.c16_flex_btm),
     C17_FLEX_TOP (R.id.c17_flex_top),
-    Unknown (0);
+    ;
 
     private final int id;
     private Collection<Room> adjacent;

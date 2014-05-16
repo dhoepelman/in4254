@@ -12,7 +12,7 @@ public class WifiResult {
     @DatabaseField(generatedId = true)
     long id;
 
-    @DatabaseField(unknownEnumName = "Unknown")
+    @DatabaseField
     Room room;
 
     @DatabaseField

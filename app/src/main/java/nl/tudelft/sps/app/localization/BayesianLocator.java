@@ -41,6 +41,10 @@ public class BayesianLocator implements ILocator {
      */
     private static final double PROBABILITY_EPSILON = 0.001;
     /**
+     * The minimum stddev of a probability distribution, so the distribution doesn't become too narrow
+     */
+    public static final double MINIMUM_DEVIATION = 1.0;
+    /**
      * The current location as a map from Room to a probability that the user is in that room
      */
     private final Map<Room, Double> currentLocation = new HashMap<>();
@@ -165,7 +169,9 @@ public class BayesianLocator implements ILocator {
         // Calculate the distributions from the lists of measurements
         trainingsData = HashBasedTable.create(values.rowKeySet().size(), Room.values().length);
         for (Table.Cell<String, Room, SummaryStatistics> cell : values.cellSet()) {
-            trainingsData.put(cell.getRowKey(), cell.getColumnKey(), new NormalDistribution(cell.getValue().getMean(), cell.getValue().getStandardDeviation()));
+            final double mean = cell.getValue().getMean();
+            final double standardDeviation = Math.max(MINIMUM_DEVIATION, cell.getValue().getStandardDeviation());
+            trainingsData.put(cell.getRowKey(), cell.getColumnKey(), new NormalDistribution(mean, standardDeviation));
         }
     }
 
