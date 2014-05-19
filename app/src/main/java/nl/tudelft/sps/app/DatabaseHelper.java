@@ -37,7 +37,33 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         // TODO: Optimize database initialization speed. See http://ormlite.com/javadoc/ormlite-core/doc-files/ormlite_4.html#Config-Optimization
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.context = context;
-        tryImportDatabaseFile();
+    }
+
+    /**
+     * Import DATABASE_NAME.import file if it is on the SD card
+     * From: http://stackoverflow.com/a/6542214/572635
+     */
+    public static void tryImportDatabaseFile() {
+        try {
+            File importDB = new File(Environment.getExternalStorageDirectory(), DATABASE_NAME + ".import");
+            if (importDB.exists()) {
+                File dbFile = new File(Environment.getDataDirectory(), "/data/nl.tudelft.sps.app/databases/" + DATABASE_NAME);
+
+                FileChannel src = new FileOutputStream(importDB).getChannel();
+                FileChannel dest = new FileInputStream(dbFile).getChannel();
+
+                src.transferTo(0, src.size(), dest);
+                src.close();
+                dest.close();
+
+                importDB.delete();
+
+                Log.i(DatabaseHelper.class.getName(), "Successfully imported database");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(DatabaseHelper.class.getName(), "Failed importing database");
+        }
     }
 
     public RuntimeExceptionDao<Measurement, Long> getMeasurementDao() {
@@ -152,30 +178,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
             intent.setData(Uri.fromFile(outputfile));
             context.sendBroadcast(intent);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Import DATABASE_NAME.import file if it is on the SD card
-     */
-    public void tryImportDatabaseFile() {
-        try {
-            File importDB = new File(Environment.getExternalStorageDirectory(), DATABASE_NAME + ".import");
-            if (importDB.exists()) {
-                File data = Environment.getDataDirectory();
-                String dbPath = "/data/nl.tudelft.sps.app/databases/" + DATABASE_NAME;
-
-                FileChannel src = new FileOutputStream(importDB).getChannel();
-                FileChannel dest = new FileInputStream(new File(data, dbPath)).getChannel();
-
-                dest.transferFrom(src, 0, src.size());
-                src.close();
-                dest.close();
-
-                importDB.delete();
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }

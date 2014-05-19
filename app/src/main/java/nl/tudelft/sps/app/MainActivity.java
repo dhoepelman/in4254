@@ -207,6 +207,7 @@ public class MainActivity extends ActionBarActivity
 
     public DatabaseHelper getDatabaseHelper() {
         if (databaseHelper == null) {
+            DatabaseHelper.tryImportDatabaseFile();
             databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
         }
         return databaseHelper;
