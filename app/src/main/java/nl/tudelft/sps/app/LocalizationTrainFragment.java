@@ -29,6 +29,7 @@ import nl.tudelft.sps.app.localization.Room;
 import nl.tudelft.sps.app.localization.WifiMeasurement;
 import nl.tudelft.sps.app.localization.WifiMeasurementsWindow;
 import nl.tudelft.sps.app.localization.WifiResult;
+import nl.tudelft.sps.app.localization.WifiResultCollection;
 import nl.tudelft.sps.app.localization.WifiScanTask;
 
 public class LocalizationTrainFragment extends Fragment {
@@ -67,13 +68,18 @@ public class LocalizationTrainFragment extends Fragment {
 
                 // Create a list of table rows so we can tell the user
                 // how many rows will be created
-                final List<WifiResult> tableRows = new ArrayList<WifiResult>();
+                final List<WifiResult> tableRows = new ArrayList<>();
+                final List<WifiResultCollection> scans = new ArrayList<>();
 
                 final Room measuredInRoom = results.getMeasuredInRoom();
                 for (WifiMeasurement measurement : results.getMeasurements()) {
                     final long timestamp = measurement.getTimestamp();
+                    final WifiResultCollection scan = new WifiResultCollection(timestamp, measuredInRoom);
+                    scans.add(scan);
                     for (ScanResult scanResult : measurement.getResults()) {
-                        tableRows.add(new WifiResult(measuredInRoom, scanResult.BSSID, scanResult.SSID, scanResult.level, timestamp));
+
+                        final WifiResult wifiResult = new WifiResult(scan, measuredInRoom, scanResult.BSSID, scanResult.SSID, scanResult.level, timestamp);
+                        tableRows.add(wifiResult);
                     }
                 }
 
@@ -83,6 +89,7 @@ public class LocalizationTrainFragment extends Fragment {
                 // Log raw results to database
                 final MainActivity mainActivity = (MainActivity) getActivity();
                 final RuntimeExceptionDao<WifiResult, Long> dao = mainActivity.getDatabaseHelper().getWifiResultDao();
+                final RuntimeExceptionDao<WifiResultCollection, Long> dao2 = mainActivity.getDatabaseHelper().getWifiResultCollectionDao();
 
                 dao.callBatchTasks(new Callable<Void>() {
                     @Override
@@ -93,6 +100,9 @@ public class LocalizationTrainFragment extends Fragment {
                             if (createResult == 1) {
                                 created++;
                             }
+                        }
+                        for (WifiResultCollection scan : scans) {
+                            dao2.create(scan);
                         }
                         rowsCreated.set(created);
                         return null;

@@ -11,28 +11,26 @@ public class WifiResult {
 
     @DatabaseField(generatedId = true)
     long id;
-
     @DatabaseField
     Room room;
-
     @DatabaseField
     String BSSID;
-
     @DatabaseField
     String SSID;
-
     @DatabaseField
     int level;
-
     @DatabaseField
     long timestamp;
+    @DatabaseField(foreign = true, canBeNull = true)
+    private WifiResultCollection scan;
 
-    public WifiResult(Room room, String BSSID, String SSID, int level, long timestamp) {
+    public WifiResult(WifiResultCollection scan, Room room, String BSSID, String SSID, int level, long timestamp) {
         this.room = room;
         this.BSSID = BSSID;
         this.SSID = SSID;
         this.level = level;
         this.timestamp = timestamp;
+        this.scan = scan;
     }
 
     public WifiResult() {
