@@ -35,6 +35,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     public DatabaseHelper(Context context) {
         // TODO: Optimize database initialization speed. See http://ormlite.com/javadoc/ormlite-core/doc-files/ormlite_4.html#Config-Optimization
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        tryImportDatabaseFile();
     }
 
     public RuntimeExceptionDao<Measurement, Long> getMeasurementDao() {
@@ -142,6 +143,30 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             dest.transferFrom(src, 0, src.size());
             src.close();
             dest.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Import DATABASE_NAME.import file if it is on the SD card
+     */
+    public void tryImportDatabaseFile() {
+        try {
+            File importDB = new File(Environment.getExternalStorageDirectory(), DATABASE_NAME + ".import");
+            if (importDB.exists()) {
+                File data = Environment.getDataDirectory();
+                String dbPath = "/data/nl.tudelft.sps.app/databases/" + DATABASE_NAME;
+
+                FileChannel src = new FileOutputStream(importDB).getChannel();
+                FileChannel dest = new FileInputStream(new File(data, dbPath)).getChannel();
+
+                dest.transferFrom(src, 0, src.size());
+                src.close();
+                dest.close();
+
+                importDB.delete();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
