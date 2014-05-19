@@ -21,7 +21,7 @@ public class WifiResult {
     int level;
     @DatabaseField
     long timestamp;
-    @DatabaseField(foreign = true, canBeNull = true)
+    @DatabaseField(foreign = true, canBeNull = true, columnName = "scan")
     private WifiResultCollection scan;
 
     public WifiResult(WifiResultCollection scan, Room room, String BSSID, String SSID, int level, long timestamp) {
