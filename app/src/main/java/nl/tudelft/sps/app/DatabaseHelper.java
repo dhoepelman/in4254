@@ -1,7 +1,9 @@
 package nl.tudelft.sps.app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
@@ -25,16 +27,16 @@ import nl.tudelft.sps.app.localization.WifiResultCollection;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private static final String DATABASE_NAME = "sps.db";
     private static final int DATABASE_VERSION = 3;
-
+    final Context context;
     public RuntimeExceptionDao<Measurement, Long> measurementDao;
     public RuntimeExceptionDao<Sample, Void> sampleDao;
-
     private RuntimeExceptionDao<WifiResult, Long> wifiResultDao;
     private RuntimeExceptionDao<WifiResultCollection, Long> wifiResultCollectionDao;
 
     public DatabaseHelper(Context context) {
         // TODO: Optimize database initialization speed. See http://ormlite.com/javadoc/ormlite-core/doc-files/ormlite_4.html#Config-Optimization
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context;
         tryImportDatabaseFile();
     }
 
@@ -139,10 +141,17 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
             String dbPath = "/data/nl.tudelft.sps.app/databases/" + filename;
             FileChannel src = new FileInputStream(new File(data, dbPath)).getChannel();
-            FileChannel dest = new FileOutputStream(new File(sd, DATABASE_NAME)).getChannel();
+            final File outputfile = new File(sd, DATABASE_NAME);
+            FileChannel dest = new FileOutputStream(outputfile).getChannel();
             dest.transferFrom(src, 0, src.size());
             src.close();
             dest.close();
+
+            // Make the file known to android so it'll show it to the computer
+            // http://www.grokkingandroid.com/adding-files-to-androids-media-library-using-the-mediascanner/
+            Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            intent.setData(Uri.fromFile(outputfile));
+            context.sendBroadcast(intent);
         } catch (IOException e) {
             e.printStackTrace();
         }
