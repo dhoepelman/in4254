@@ -1,28 +1,28 @@
 package nl.tudelft.sps.app;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Map;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
 import nl.tudelft.sps.app.localization.ILocator;
 import nl.tudelft.sps.app.localization.Room;
 import nl.tudelft.sps.app.localization.WifiMeasurementsWindow;
+import nl.tudelft.sps.app.localization.WifiResult;
+import nl.tudelft.sps.app.localization.WifiResultCollection;
 import nl.tudelft.sps.app.localization.WifiScanTask;
 
 public class LocatorTestFragment extends Fragment {
@@ -33,6 +33,18 @@ public class LocatorTestFragment extends Fragment {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
+    private final WifiScanTask.ResultProcessor wifiScanResultProcessor = new WifiScanTask.ResultProcessor() {
+        @Override
+        public void result(WifiMeasurementsWindow results) {
+            if (results != null) {
+                final List<ScanResult> scanResults = results.getMeasurements().get(0).getResults();
+                locator.adjustLocation(scanResults);
+                updateLocationText();
+            } else {
+                toastManager.showText("Something went horribly wrong", Toast.LENGTH_LONG);
+            }
+        }
+    };
     ToastManager toastManager;
     View rootView;
     private ILocator locator;
@@ -82,6 +94,12 @@ public class LocatorTestFragment extends Fragment {
                 doMovementDetection();
             }
         });
+        (rootView.findViewById(R.id.but_fakescan)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                doFakeScan();
+            }
+        });
 
         // Make buttons not clickable
         for (Room room : Room.values()) {
@@ -99,23 +117,26 @@ public class LocatorTestFragment extends Fragment {
         toastManager.showText("Initial belief set", Toast.LENGTH_SHORT);
     }
 
-    private final WifiScanTask.ResultProcessor wifiScanResultProcessor = new WifiScanTask.ResultProcessor() {
-        @Override
-        public void result(WifiMeasurementsWindow results) {
-            if (results != null) {
-                final List<ScanResult> scanResults = results.getMeasurements().get(0).getResults();
-                locator.adjustLocation(scanResults);
-                updateLocationText();
-            }
-            else {
-                toastManager.showText("Something went horribly wrong", Toast.LENGTH_LONG);
-            }
+    private void doFakeScan() {
+        // Select a random scan from the database
+        final RuntimeExceptionDao<WifiResultCollection, Long> dao = ((MainActivity) getActivity()).getDatabaseHelper().getWifiResultCollectionDao();
+        try {
+            final WifiResultCollection scan = dao.queryBuilder().orderByRaw("RANDOM()").limit(1L).queryForFirst();
+            // TODO: Figure out how to get ForeignCollection to work properly
+            //locator.adjustLocation(scan.getWifiResults());
+            List<WifiResult> blah = ((MainActivity) getActivity()).getDatabaseHelper().getWifiResultDao().queryForEq("scan", scan.getId());
+            locator.adjustLocation(blah);
+            toastManager.showText(scan.getRoom().name(), Toast.LENGTH_LONG);
+            updateLocationText();
+        } catch (SQLException e) {
+            toastManager.showText("Something went wrong while querying the database", Toast.LENGTH_SHORT);
+            Log.e(LocatorTestFragment.class.getName(), "Error while querying database", e);
         }
-    };
+    }
 
     private void doWifiScan() {
         final WifiScanTask wifiScanTask = new WifiScanTask(wifiScanResultProcessor, null, getActivity(), toastManager, false);
-        wifiScanTask.execute(null);
+        wifiScanTask.execute((Room) null);
     }
 
     private void doMovementDetection() {

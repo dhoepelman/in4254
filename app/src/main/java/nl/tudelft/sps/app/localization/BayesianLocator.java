@@ -2,6 +2,7 @@ package nl.tudelft.sps.app.localization;
 
 
 import android.net.wifi.ScanResult;
+import android.util.Log;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.HashBasedTable;
@@ -32,6 +33,10 @@ public class BayesianLocator implements ILocator {
 
     public static final Collection<String> ignoredSSIDs = ImmutableSet.of("TUvisitor", "tudelft-dastud", "Conferentie-TUD");
     /**
+     * The minimum stddev of a probability distribution, so the distribution doesn't become too narrow
+     */
+    public static final double MINIMUM_DEVIATION = 1.0;
+    /**
      * Threshold for certainty when processing further scans is deemed useless.
      * Note: the strongest AP signal will always be processed
      */
@@ -40,10 +45,6 @@ public class BayesianLocator implements ILocator {
      * The "zero" probability. We never want to remove a room completely so this is the smallest we'll multiply with
      */
     private static final double PROBABILITY_EPSILON = 0.001;
-    /**
-     * The minimum stddev of a probability distribution, so the distribution doesn't become too narrow
-     */
-    public static final double MINIMUM_DEVIATION = 1.0;
     /**
      * The current location as a map from Room to a probability that the user is in that room
      */
@@ -86,36 +87,39 @@ public class BayesianLocator implements ILocator {
         return ImmutableSortedMap.copyOf(currentLocation, Ordering.natural().onResultOf(Functions.forMap(currentLocation)));
     }
 
-    @Override
-    public Map<Room, Double> adjustLocation(Collection<ScanResult> currentScan) {
+    public Map<Room, Double> adjustLocation(Iterable<? extends Object> currentScan) {
         // Sort the scanresults from strongest level to weakest
-        final List<ScanResult> signals = new ArrayList<>(currentScan);
-        Collections.sort(signals, new Comparator<ScanResult>() {
+        final List<Scan> signals = new ArrayList<>();
+        for (Object entry : currentScan) {
+            signals.add(new Scan(entry));
+        }
+        Collections.sort(signals, new Comparator<Scan>() {
             @Override
-            public int compare(ScanResult o1, ScanResult o2) {
+            public int compare(Scan o1, Scan o2) {
                 // Integer.compare doesn't exists in Java6 / Android API < 17 yet :(
-                return (o1.level < o2.level) ? -1 : (o1.level == o2.level ? 0 : 1);
+                return (o1.level() < o2.level()) ? -1 : (o1.level() == o2.level() ? 0 : 1);
             }
         });
         // Go through all the scans and calculate the new probability
-        for (ScanResult scan : signals) {
-            if (ignoreSSID(scan.SSID)) {
+        for (Scan scan : signals) {
+            if (ignoreSSID(scan.SSID())) {
                 continue;
             }
             // Check if we know this AP. If we do not, ignore it
-            if (!trainingsData.containsColumn(scan.BSSID)) {
+            if (!trainingsData.containsRow(scan.BSSID())) {
+                Log.d(BayesianLocator.class.getName(), String.format("Skipping BSSID %s", scan.BSSID()));
                 continue;
             }
             // Adjust the probability of each room
             for (Room room : Room.values()) {
-                NormalDistribution distribution = trainingsData.get(room, scan.BSSID);
+                NormalDistribution distribution = trainingsData.get(scan.BSSID(), room);
                 double p;
                 if (distribution == null) {
                     // BSSID was never measured in this room, multiply its probability to something very small
                     p = PROBABILITY_EPSILON;
                 } else {
                     // Calculate the probability that for this level, the scan was done in the current room
-                    p = Math.max(PROBABILITY_EPSILON, distribution.probability(scan.level - 0.5, scan.level + 0.5));
+                    p = Math.max(PROBABILITY_EPSILON, distribution.probability(scan.level() - 0.5, scan.level() + 0.5));
                 }
                 // Adjust the location estimate for this room according to the distribution
                 currentLocation.put(room, currentLocation.get(room) * p);
@@ -226,5 +230,30 @@ public class BayesianLocator implements ILocator {
             currentLocation.put(room, 1.0);
         }
         normalize();
+    }
+
+    private class Scan {
+        private final ScanResult a;
+        private final WifiResult b;
+
+        public Scan(Object unknown) {
+            this.a = (unknown instanceof ScanResult) ? (ScanResult) unknown : null;
+            this.b = (unknown instanceof WifiResult) ? (WifiResult) unknown : null;
+            if (a == null && b == null) {
+                throw new IllegalArgumentException("Illegal type");
+            }
+        }
+
+        public String SSID() {
+            return (a != null ? a.SSID : b.SSID);
+        }
+
+        public String BSSID() {
+            return (a != null ? a.BSSID : b.BSSID);
+        }
+
+        public int level() {
+            return (a != null ? a.level : b.level);
+        }
     }
 }

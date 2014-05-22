@@ -4,23 +4,20 @@ import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.Arrays;
 
 /**
  * Exists solely to group wifiresults
  */
-public class WifiResultCollection implements Collection<WifiResult> {
+public class WifiResultCollection {
 
     @DatabaseField(generatedId = true)
     long id;
 
     @ForeignCollectionField(eager = true)
     ForeignCollection<WifiResult> wifiResults;
-
     @DatabaseField
     Room room;
-
     @DatabaseField
     long timestamp;
 
@@ -33,68 +30,30 @@ public class WifiResultCollection implements Collection<WifiResult> {
         // ORMlite
     }
 
-    @Override
-    public boolean add(WifiResult object) {
-        return wifiResults.add(object);
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public Room getRoom() {
+        return room;
+    }
+
+    public ForeignCollection<WifiResult> getWifiResults() {
+        return wifiResults;
+    }
+
+    public long getId() {
+        return id;
     }
 
     @Override
-    public boolean addAll(Collection<? extends WifiResult> collection) {
-        return wifiResults.addAll(collection);
-    }
+    public String toString() {
+        return "WifiResultCollection{" +
+                "id=" + id +
+                ", wifiResults=" + Arrays.toString(wifiResults.toArray()) +
 
-    @Override
-    public void clear() {
-        wifiResults.clear();
-    }
-
-    @Override
-    public boolean contains(Object object) {
-        return wifiResults.contains(object);
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> collection) {
-        return wifiResults.containsAll(collection);
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return wifiResults.isEmpty();
-    }
-
-    @Override
-    public Iterator<WifiResult> iterator() {
-        return wifiResults.iterator();
-    }
-
-    @Override
-    public boolean remove(Object object) {
-        return wifiResults.remove(object);
-    }
-
-    @Override
-    public boolean removeAll(Collection<?> collection) {
-        return wifiResults.retainAll(collection);
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> collection) {
-        return wifiResults.retainAll(collection);
-    }
-
-    @Override
-    public int size() {
-        return wifiResults.size();
-    }
-
-    @Override
-    public Object[] toArray() {
-        return wifiResults.toArray();
-    }
-
-    @Override
-    public <T> T[] toArray(T[] array) {
-        return wifiResults.toArray(array);
+                ", room=" + room +
+                ", timestamp=" + timestamp +
+                '}';
     }
 }
