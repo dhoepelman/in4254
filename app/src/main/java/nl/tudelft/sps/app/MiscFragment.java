@@ -2,10 +2,13 @@ package nl.tudelft.sps.app;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import java.io.IOException;
 
 public class MiscFragment extends Fragment {
 
@@ -40,11 +43,31 @@ public class MiscFragment extends Fragment {
 
         final ToastManager toastManager = new ToastManager(getActivity());
 
-        // Connect click listener to start button
+        // Connect click listeners to buttons
+
+        (rootView.findViewById(R.id.but_importdb)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final MainActivity activity = (MainActivity) getActivity();
+                boolean wasopen = activity.isDatabaseOpen();
+                if (wasopen) {
+                    activity.getDatabaseHelper().close();
+                }
+                try {
+                    DatabaseHelper.backupDatabaseFile(getActivity().getBaseContext());
+                    DatabaseHelper.importDatabase();
+                    toastManager.showText("Database imported succesfully." + (wasopen ? "Please restart application" : ""), Toast.LENGTH_LONG);
+                } catch (IOException e) {
+                    toastManager.showText(String.format("Something went wrong while importing the database :(\n%s", e.getMessage()), Toast.LENGTH_LONG);
+                    Log.e(MiscFragment.class.getName(), "Error importing database file", e);
+                }
+            }
+        });
+
         (rootView.findViewById(R.id.but_exportdb)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ((MainActivity) getActivity()).getDatabaseHelper().exportDatabaseFile();
+                DatabaseHelper.exportDatabaseFile(getActivity().getBaseContext());
                 toastManager.showText("Database exported to SD card", Toast.LENGTH_LONG);
             }
         });
@@ -55,6 +78,7 @@ public class MiscFragment extends Fragment {
                 getActivity().finish();
             }
         });
+
 
         return rootView;
     }

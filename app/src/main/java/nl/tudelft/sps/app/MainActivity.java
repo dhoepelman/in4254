@@ -205,9 +205,12 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+    public boolean isDatabaseOpen() {
+        return databaseHelper != null && !databaseHelper.isOpen();
+    }
+
     public DatabaseHelper getDatabaseHelper() {
-        if (databaseHelper == null) {
-            DatabaseHelper.tryImportDatabaseFile();
+        if (!isDatabaseOpen()) {
             databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
         }
         return databaseHelper;
