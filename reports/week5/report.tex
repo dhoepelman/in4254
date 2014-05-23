@@ -1,6 +1,5 @@
-\documentclass[a4paper,10pt,twoside]{report}
+\documentclass[a4paper,10pt,twoside]{IEEEtran}
 
-\usepackage{abstract}
 \usepackage{graphicx}
 \usepackage{placeins}
 \usepackage{hyperref}
@@ -18,7 +17,7 @@
 \usepackage{mathtools}
 \usepackage{fancyhdr}
 \usepackage{tikz}
-\usepackage{gnuplot-lua-tikz}
+%\usepackage{gnuplot-lua-tikz}
 \usetikzlibrary{calc,intersections}
 \usepackage{amssymb}
 
@@ -32,14 +31,6 @@
 \setlength{\parskip}{2ex}
 
 \usepackage[utf8]{inputenc}
-
-% Tex Live 2012 Qrazy Qwartel PPA for Preppy Pangolin:
-% sudo apt-add-repository ppa:texlive-backports/ppa
-% sudo apt-get update
-% sudo apt-get install texlive texlive-latex-extra texlive-fonts-extra
-
-% \usepackage{PTSans}
-% \renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
 \usepackage[T1]{fontenc}
 
 \newcommand{\axis}[1]{$#1$\nobreakdash-axis}
@@ -54,11 +45,9 @@
 %\addtolength{\textheight}{-20pt} % more space between text and empty footer
 
 \pagestyle{fancy}
-\renewcommand{\chaptermark}[1]{\markboth{Chapter\ \thechapter\ #1}{}}
-\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}{}}
  
 \fancyhf{}
-\fancyhead[LE,RO]{\thepage}
+\fancyhead[LE,RO]{thepage}
 \fancyhead[RE]{\textit{\nouppercase{\leftmark}}}
 \fancyhead[LO]{\textit{\nouppercase{\rightmark}}}
  
@@ -71,23 +60,50 @@
 
 \maketitle
 
+\section{Technical methods and data collection}
+\label{sec:localization-method}
+
+We chose to use \textbf{Bayesian Filters} for our localization method. We used the provided 17 cells, which we call rooms.
+%TODO: Add GUI figure
+A rough not-to-scale map can be seen in our GUI (Figure X).
+
+%TODO: fill in X
+On average we collected \textbf{X} scans for WiFi access points for each cell, both on 2.4Ghz and 5Ghz.
+The collected scans were evenly divided among the cell area and among 3 different dates. Each scan contains a list of $(BSSID, SSID, level)$ tuples where $level$ was expressed in dBm and was in $[-30,-100]$. From here on out we will call such a tuple a \emph{signal}.
+
+We uniquely identify an \emph{access point} (AP) using the $BSSID$, which is guaranteed globally unique.
+We ignore a signal if it had the $SSID$ (network name) "TUvisitor", "tudelft-dastud" or "Conferentie-TUD".
+This is because most of the TU Delft access points sent out 4 different $SSID$'s (the other is "eduroam") with different $BSSID$'s.
+As these signals come from the same physical location and have the same frequency (and probably the same radio hardware) we did not think they would add more information, and at worst might make our results more inaccurate (by processing essentially the same signal 4 times, thus biasing the results heavily on those AP's).
+%TODO: fill in X
+On average each scan contained X unique $BSSID$'s, although this greatly differed per cell.
+
+For our Bayesian calculations we group the signals on $BSSID$ and $Room$ and calculate the normal distribution $N_{BSSID,Room}(\mu_{BSSID,Room}, \sigma^2_{BSSID,Room})$.
+The (relative) probability that a given signal is in a given room can then be acquired by calculating the probability of $\left[level - 0.5, level + 0.5\right)$ in $N_{BSSID,Room}$.
+Doing this for every room yields a vector, which we then normalize into a probability vector by adjusting the elements so they sum to 1.
+
+
+
+
+\section{Data analysis}
+\label{sec:data}
+
+TODO
+
+\section{Evaluation}
+\label{sec:evaluation}
+
+TODO
+
+\section{Discussion}
+\label{sec:discussion}
+
+TODO
+
+
+
 \newpage
-\pagenumbering{roman}
 
-%\input{preface.tex}
-
-% 1: up to sections; 2: up to subsections
-%\setcounter{tocdepth}{1}
-%\tableofcontents
-
-\newpage
-\pagenumbering{arabic}
-
-\setcounter{chapter}{1}
-\input{content.tex}
-
-\clearpage
-\phantomsection
 \addcontentsline{toc}{chapter}{Bibliography}
 % styles: abbrv, ieeetr, plain
 \bibliographystyle{abbrv}
@@ -96,6 +112,6 @@
 \newpage
 \appendix
 
-\input{appendix-visualization-training.tex}
+
 
 \end{document}
