@@ -64,7 +64,7 @@ public class BayesianLocator implements ILocator {
     /**
      * Normalize the probabilities of the current location so that they add up to 1
      */
-    private void normalize() {
+    private synchronized void normalize() {
         Double sum = 0.0;
         // Add from smallest to largest to prevent floating-point errors
         List<Double> values = new ArrayList<>(currentLocation.values());
@@ -82,6 +82,12 @@ public class BayesianLocator implements ILocator {
                 entry.setValue(PROBABILITY_EPSILON);
                 // We added (PROBABILITY_EPSILON-value) to the secondsum
                 secondSum += PROBABILITY_EPSILON - value;
+            }
+        }
+        // Normalize to exactly 1
+        if (secondSum != 1.0) {
+            for (Map.Entry<Room, Double> entry : currentLocation.entrySet()) {
+                entry.setValue(entry.getValue() / secondSum);
             }
         }
         // Really normalize to 1
