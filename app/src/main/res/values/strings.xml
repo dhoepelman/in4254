@@ -11,6 +11,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_settings">Settings</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="pick_room">Pick a room</string>
 
     <string name="label_c1_a1">Aisle 1</string>
     <string name="label_c2_a2">Aisle 2</string>

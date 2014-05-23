@@ -97,7 +97,12 @@ public class LocatorTestFragment extends Fragment {
         (rootView.findViewById(R.id.but_fakescan)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                doFakeScan();
+                new RoomChoiceDialog(new RoomChoiceDialog.ChoiceListener() {
+                    @Override
+                    public void onChosen(Room r) {
+                        doFakeScan(r);
+                    }
+                }).show(getFragmentManager(), "roomchoise");
             }
         });
 
@@ -117,11 +122,11 @@ public class LocatorTestFragment extends Fragment {
         toastManager.showText("Initial belief set", Toast.LENGTH_SHORT);
     }
 
-    private void doFakeScan() {
+    private void doFakeScan(Room r) {
         // Select a random scan from the database
         final RuntimeExceptionDao<WifiResultCollection, Long> dao = ((MainActivity) getActivity()).getDatabaseHelper().getWifiResultCollectionDao();
         try {
-            final WifiResultCollection scan = dao.queryBuilder().orderByRaw("RANDOM()").limit(1L).queryForFirst();
+            final WifiResultCollection scan = dao.queryBuilder().orderByRaw("RANDOM()").limit(1L).where().eq("room", r).queryForFirst();
             // TODO: Figure out how to get ForeignCollection to work properly
             //locator.adjustLocation(scan.getWifiResults());
             List<WifiResult> blah = ((MainActivity) getActivity()).getDatabaseHelper().getWifiResultDao().queryForEq("scan", scan.getId());
