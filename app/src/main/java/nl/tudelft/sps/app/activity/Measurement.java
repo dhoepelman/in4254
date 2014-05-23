@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.google.common.primitives.Doubles;
 import com.j256.ormlite.dao.ForeignCollection;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 
@@ -13,6 +14,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import nl.tudelft.sps.app.DatabaseHelper;
 
@@ -366,9 +368,16 @@ public class Measurement implements IMeasurement {
         private void persistCurrentMeasurement() {
             current.calculateFeatureVector();
             databaseHelper.getMeasurementDao().create(current);
-            for (Sample s : currentSamples) {
-                databaseHelper.getSampleDao().create(s);
-            }
+            final RuntimeExceptionDao<Sample, Void> sampleDao = databaseHelper.getSampleDao();
+            sampleDao.callBatchTasks(new Callable<Void>() {
+                @Override
+                public Void call() {
+                    for (Sample s : currentSamples) {
+                        sampleDao.create(s);
+                    }
+                    return null;
+                }
+            });
         }
     }
 }
