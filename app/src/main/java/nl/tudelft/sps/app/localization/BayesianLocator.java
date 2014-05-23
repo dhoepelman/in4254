@@ -98,7 +98,7 @@ public class BayesianLocator implements ILocator {
         return ImmutableSortedMap.copyOf(currentLocation, Ordering.natural().onResultOf(Functions.forMap(currentLocation)));
     }
 
-    public Map<Room, Double> adjustLocation(Iterable<? extends Object> currentScan) {
+    public synchronized Map<Room, Double> adjustLocation(Iterable<? extends Object> currentScan) {
         // Sort the scanresults from strongest level to weakest
         final List<Scan> signals = new ArrayList<>();
         for (Object entry : currentScan) {
@@ -112,7 +112,6 @@ public class BayesianLocator implements ILocator {
             }
         });
         // Go through all the scans and calculate the new probability
-        synchronized (this) {
             for (Scan scan : signals) {
                 if (ignoreSSID(scan.SSID())) {
                     continue;
@@ -141,7 +140,6 @@ public class BayesianLocator implements ILocator {
                     break;
                 }
                 // TODO: Add detection of "osscilization" (i.e. new AP's not adding any more value) so that we can stop if that occurs
-            }
         }
         return getLocation();
     }
@@ -192,7 +190,7 @@ public class BayesianLocator implements ILocator {
     }
 
     @Override
-    public void addMovement(ACTIVITY currentActivity) {
+    public synchronized void addMovement(ACTIVITY currentActivity) {
         Map<Room, Double> previousLocation = new HashMap<>(currentLocation);
         // TODO: Improve movement model, I just made something up
         switch (currentActivity) {
@@ -200,7 +198,6 @@ public class BayesianLocator implements ILocator {
             case Running:
             case Stairs_Down:
             case Stairs_Up:
-                synchronized (this) {
                     // TODO 1) We need to find out s
                     //      2) We need to know size of cell in aisle (and assume position in center)
                     //      3) Calculate cells that fall within the boundaries:
@@ -217,7 +214,6 @@ public class BayesianLocator implements ILocator {
                         }
                     }
                     normalize();
-                }
                 break;
             case Sitting:
             default:
