@@ -44,7 +44,7 @@ public class BayesianLocator implements ILocator {
     /**
      * The "zero" probability. We never want to remove a room completely so this is the smallest we'll multiply with
      */
-    private static final double PROBABILITY_EPSILON = 0.001;
+    private static final double PROBABILITY_EPSILON = 0.002;
     /**
      * The current location as a map from Room to a probability that the user is in that room
      */
@@ -65,14 +65,20 @@ public class BayesianLocator implements ILocator {
      * Normalize the probabilities of the current location so that they add up to 1
      */
     private void normalize() {
+        // Make sure that a room never dissapears completely
         Double sum = 0.0;
         // Adding from smallest to greatest would be best, but I don't think it's going to be a problem
         for (Double p : currentLocation.values()) {
             sum += p;
         }
-        // Normalize them to 1
+        // Normalize them to (almost) 1
         for (Map.Entry<Room, Double> entry : currentLocation.entrySet()) {
-            entry.setValue(entry.getValue() / sum);
+            final double value = entry.getValue() / sum;
+            if (value >= PROBABILITY_EPSILON) {
+                entry.setValue(value);
+            } else {
+                entry.setValue(PROBABILITY_EPSILON);
+            }
         }
     }
 
@@ -115,11 +121,10 @@ public class BayesianLocator implements ILocator {
                 NormalDistribution distribution = trainingsData.get(scan.BSSID(), room);
                 double p;
                 if (distribution == null) {
-                    // BSSID was never measured in this room, multiply its probability to something very small
-                    p = PROBABILITY_EPSILON;
+                    p = 0;
                 } else {
                     // Calculate the probability that for this level, the scan was done in the current room
-                    p = Math.max(PROBABILITY_EPSILON, distribution.probability(scan.level() - 0.5, scan.level() + 0.5));
+                    p = Math.max(0, distribution.probability(scan.level() - 0.5, scan.level() + 0.5));
                 }
                 // Adjust the location estimate for this room according to the distribution
                 currentLocation.put(room, currentLocation.get(room) * p);
