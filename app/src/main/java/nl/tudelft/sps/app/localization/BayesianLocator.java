@@ -73,7 +73,7 @@ public class BayesianLocator implements ILocator {
             sum += p;
         }
         // Normalize them to (almost) 1, while preventing entries from going lower than PROBABILITY_EPSILON
-        double secondSum = 1.0;
+        double secondSum = 0.0;
         for (Map.Entry<Room, Double> entry : currentLocation.entrySet()) {
             final double value = entry.getValue() / sum;
             if (value >= PROBABILITY_EPSILON) {
@@ -84,8 +84,9 @@ public class BayesianLocator implements ILocator {
                 secondSum += PROBABILITY_EPSILON - value;
             }
         }
-        // Normalize to exactly 1
-        if (secondSum != 1.0) {
+        // Normalize to exactly 1 (excluding floating point rounding errors)
+        if (secondSum > 0.0) {
+            secondSum += 1.0;
             for (Map.Entry<Room, Double> entry : currentLocation.entrySet()) {
                 entry.setValue(entry.getValue() / secondSum);
             }
