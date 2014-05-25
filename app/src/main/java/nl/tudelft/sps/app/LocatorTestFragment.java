@@ -138,6 +138,9 @@ public class LocatorTestFragment extends Fragment {
         final RuntimeExceptionDao<WifiResultCollection, Long> dao = ((MainActivity) getActivity()).getDatabaseHelper().getWifiResultCollectionDao();
         try {
             final WifiResultCollection scan = dao.queryBuilder().orderByRaw("RANDOM()").limit(1L).where().eq("room", r).queryForFirst();
+            if (scan == null) {
+                throw new SQLException("Could not find random room " + r + " in database");
+            }
             // TODO: Figure out how to get ForeignCollection to work properly
             //locator.adjustLocation(scan.getWifiResults());
             List<WifiResult> blah = ((MainActivity) getActivity()).getDatabaseHelper().getWifiResultDao().queryForEq("scan", scan.getId());
