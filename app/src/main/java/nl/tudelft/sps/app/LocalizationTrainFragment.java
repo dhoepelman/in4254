@@ -95,15 +95,16 @@ public class LocalizationTrainFragment extends Fragment {
                     @Override
                     public Void call() throws Exception {
                         int created = 0;
+                        for (WifiResultCollection scan : scans) {
+                            dao2.create(scan);
+                        }
                         for (WifiResult resultRow : tableRows) {
                             final int createResult = dao.create(resultRow);
                             if (createResult == 1) {
                                 created++;
                             }
                         }
-                        for (WifiResultCollection scan : scans) {
-                            dao2.create(scan);
-                        }
+
                         rowsCreated.set(created);
                         return null;
                     }

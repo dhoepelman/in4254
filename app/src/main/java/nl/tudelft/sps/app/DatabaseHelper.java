@@ -28,7 +28,7 @@ import nl.tudelft.sps.app.localization.WifiResultCollection;
 
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private static final String DATABASE_NAME = "sps.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
     public RuntimeExceptionDao<Measurement, Long> measurementDao;
     public RuntimeExceptionDao<Sample, Void> sampleDao;
     private RuntimeExceptionDao<WifiResult, Long> wifiResultDao;
@@ -165,8 +165,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         // Check for compatibility
         if (oldVersion == 2 && newVersion == 3) {
             getWifiResultDao().executeRawNoArgs("ALTER TABLE wifiresult ADD COLUMN scan");
-        } else if (oldVersion == 3 && newVersion == 4) {
-
+        } else if ((oldVersion == 3 || oldVersion == 4) && newVersion == 5) {
+            if (oldVersion == 4) {
+                getLocalizationOfflineProcessingResultDao().executeRawNoArgs("ALTER TABLE localizationofflineprocessingresult ADD COLUMN scan");
+            }
         } else {
             //throw new RuntimeException("Old database version detected. Please manually delete the old database (sps.db) to avoid loss of data.");
             try {

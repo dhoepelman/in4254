@@ -44,7 +44,7 @@ public class LocalizationOfflineProcessor extends Fragment {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private static final int RUN_ID = 1;
+    private static final int RUN_ID = 2;
 
     View rootView;
     TextView output;
@@ -132,6 +132,7 @@ public class LocalizationOfflineProcessor extends Fragment {
 
     @DatabaseTable
     public static class LocalizationOfflineProcessingResult {
+        public static final String COLUMN_SCAN = "scan";
         @DatabaseField
         private Room expected;
         @DatabaseField
@@ -144,18 +145,21 @@ public class LocalizationOfflineProcessor extends Fragment {
         private int iterations;
         @DatabaseField
         private int process_id;
+        @DatabaseField(foreign = true, canBeNull = true, columnName = COLUMN_SCAN)
+        private WifiResultCollection scan;
 
         public LocalizationOfflineProcessingResult() {
             // ORMlite
         }
 
-        public LocalizationOfflineProcessingResult(Room expected, Room found, double certainty, int numAPs, int iterations, int process_id) {
+        public LocalizationOfflineProcessingResult(Room expected, Room found, double certainty, int numAPs, int iterations, int process_id, WifiResultCollection scan) {
             this.expected = expected;
             this.found = found;
             this.certainty = certainty;
             this.numAPs = numAPs;
             this.iterations = iterations;
             this.process_id = process_id;
+            this.scan = scan;
         }
 
         @Override
@@ -239,7 +243,7 @@ public class LocalizationOfflineProcessor extends Fragment {
                     locator.initialLocation();
                     int iterations = locator.adjustLocation(scanAPs);
                     final Room found = locator.getMostLikelyRoom();
-                    final LocalizationOfflineProcessingResult result = new LocalizationOfflineProcessingResult(scan.getRoom(), found, locator.getProbability(found), scanAPs.size(), iterations, RUN_ID);
+                    final LocalizationOfflineProcessingResult result = new LocalizationOfflineProcessingResult(scan.getRoom(), found, locator.getProbability(found), scanAPs.size(), iterations, RUN_ID, scan);
                     results.add(result);
                     //Log.i(LocalizationOfflineProcessor.class.getName(), result.toString()+"\n");
                     addProgress(1);
