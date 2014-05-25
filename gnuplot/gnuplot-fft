@@ -1,0 +1,19 @@
+#!/usr/bin/env gnuplot
+set terminal png size 2024,512
+set output "fft.png"
+
+set key off
+set border 3
+
+set yzeroaxis
+
+bin_width = 0.0000001
+
+#set xrange [0:0.0002]
+set boxwidth bin_width absolute 
+set style fill solid 1.0 noborder
+
+bin_number(x) = floor(x/bin_width)
+rounded(x) = bin_width * (bin_number(x) + 0.5)
+
+plot "fft-plot" using (rounded($1)):(1) smooth frequency with boxes

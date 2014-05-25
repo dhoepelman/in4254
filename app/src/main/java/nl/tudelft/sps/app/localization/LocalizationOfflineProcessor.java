@@ -1,5 +1,6 @@
 package nl.tudelft.sps.app.localization;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -110,6 +111,14 @@ public class LocalizationOfflineProcessor extends Fragment {
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // Update title in navigation bar
+        ((MainActivity) activity).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
     }
 
     private synchronized void output(String msg) {

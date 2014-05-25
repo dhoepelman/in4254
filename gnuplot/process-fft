@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# How to use: ./process-fft fft
+# It will read file fft and write output to fft-plot
+
+cut -d " " -f 9 $1 | sed "s/,/./g" > $1-plot
