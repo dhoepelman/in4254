@@ -12,11 +12,11 @@
             android:id="@+id/lblPartitions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Partitions:"
+            android:text="Partitions: "
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
-            android:id="@+id/valPartitions"
+            android:id="@+id/valNumberPartitions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium" />
@@ -25,21 +25,34 @@
             android:id="@+id/lblNumberPartitions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=" #Test partitions"
+            android:text=" #Test partitions: "
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
-            android:id="@+id/valNumberPartitions"
+            android:id="@+id/valNumberTestPartitions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/but_offlineproc_start"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Start processing" />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/but_offlineproc_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start processing" />
+
+        <Button
+            android:id="@+id/but_offlineproc_abort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Abort processing" />
+    </LinearLayout>
 
     <ProgressBar
         android:id="@+id/progressBar_processing"
