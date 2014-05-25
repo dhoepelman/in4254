@@ -1,0 +1,5 @@
+#!/usr/bin/env gnuplot
+set terminal png
+set output "fft-lines.png"
+
+plot "fft-plot" with line

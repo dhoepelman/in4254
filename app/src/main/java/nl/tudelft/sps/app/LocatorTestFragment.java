@@ -1,5 +1,6 @@
 package nl.tudelft.sps.app;
 
+import android.app.Activity;
 import android.graphics.Color;
 import android.net.wifi.ScanResult;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
+import nl.tudelft.sps.app.activity.StepsCounter;
 import nl.tudelft.sps.app.localization.ILocator;
 import nl.tudelft.sps.app.localization.Room;
 import nl.tudelft.sps.app.localization.WifiMeasurementsWindow;
@@ -27,12 +29,15 @@ import nl.tudelft.sps.app.localization.WifiScanTask;
 
 public class LocatorTestFragment extends Fragment {
 
+    private StepsCounter stepsCounter;
+    private Thread stepsCounterThread;
 
     /**
      * The fragment argument representing the section number for this
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
+
     private final WifiScanTask.ResultProcessor wifiScanResultProcessor = new WifiScanTask.ResultProcessor() {
         @Override
         public void result(WifiMeasurementsWindow results) {
@@ -113,6 +118,10 @@ public class LocatorTestFragment extends Fragment {
         }
         updateLocationText();
 
+        stepsCounter = new StepsCounter(getActivity());
+        stepsCounterThread = new Thread(stepsCounter);
+        stepsCounterThread.start();
+
         return rootView;
     }
 
@@ -177,4 +186,21 @@ public class LocatorTestFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // Update title in navigation bar
+        ((MainActivity) activity).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
+
+        if (stepsCounterThread != null && stepsCounterThread.isAlive()) {
+            stepsCounter.stopMeasuring();
+        }
+
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
 }
