@@ -44,7 +44,7 @@ public class LocalizationOfflineProcessor extends Fragment {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private static final int RUN_ID = 2;
+    private static final int RUN_ID = 3;
 
     View rootView;
     TextView output;
