@@ -7,6 +7,7 @@ import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
+import com.j256.ormlite.table.DatabaseTable;
 
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -22,6 +23,7 @@ import nl.tudelft.sps.app.DatabaseHelper;
  * [1] Ravi, Nishkam, et al. "Activity recognition from accelerometer data." AAAI. Vol. 5. 2005.
  */
 
+@DatabaseTable()
 public class Measurement implements IMeasurement {
 
     /**

@@ -38,7 +38,8 @@ public class LocatorTestFragment extends Fragment {
         public void result(WifiMeasurementsWindow results) {
             if (results != null) {
                 final List<ScanResult> scanResults = results.getMeasurements().get(0).getResults();
-                locator.adjustLocation(scanResults);
+                int iterations = locator.adjustLocation(scanResults);
+                toastManager.showText(String.format("Used %d out of %d AP's", iterations, scanResults.size()), Toast.LENGTH_SHORT);
                 updateLocationText();
             } else {
                 toastManager.showText("Something went horribly wrong", Toast.LENGTH_LONG);
@@ -130,8 +131,8 @@ public class LocatorTestFragment extends Fragment {
             // TODO: Figure out how to get ForeignCollection to work properly
             //locator.adjustLocation(scan.getWifiResults());
             List<WifiResult> blah = ((MainActivity) getActivity()).getDatabaseHelper().getWifiResultDao().queryForEq("scan", scan.getId());
-            locator.adjustLocation(blah);
-            toastManager.showText(scan.getRoom().name(), Toast.LENGTH_LONG);
+            int iterations = locator.adjustLocation(blah);
+            toastManager.showText(String.format("Fake scan for %s took %d AP's into account", scan.getRoom().name(), iterations), Toast.LENGTH_LONG);
             updateLocationText();
         } catch (SQLException e) {
             toastManager.showText("Something went wrong while querying the database", Toast.LENGTH_SHORT);
@@ -167,11 +168,9 @@ public class LocatorTestFragment extends Fragment {
             // Set color
             if (percent >= 50) {
                 button.setBackgroundColor(Color.GREEN);
-            }
-            else if (percent >= 20) {
+            } else if (percent >= 20) {
                 button.setBackgroundColor(Color.YELLOW);
-            }
-            else {
+            } else {
                 button.setBackgroundColor(Color.LTGRAY);
             }
         }

@@ -4,11 +4,8 @@ package nl.tudelft.sps.app.localization;
 import android.net.wifi.ScanResult;
 import android.util.Log;
 
-import com.google.common.base.Functions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Ordering;
 import com.google.common.collect.Table;
 import com.j256.ormlite.dao.CloseableIterator;
 
@@ -20,9 +17,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
 
@@ -100,12 +97,28 @@ public class BayesianLocator implements ILocator {
     }
 
     @Override
-    public SortedMap<Room, Double> getSortedLocation() {
-        // Nicked from http://stackoverflow.com/a/3420912/572635
-        return ImmutableSortedMap.copyOf(currentLocation, Ordering.natural().onResultOf(Functions.forMap(currentLocation)));
+    public List<Room> getSortedLocation() {
+        List<Room> ret = new ArrayList<>(getLocation().keySet());
+        Collections.sort(ret, new Comparator<Room>() {
+            @Override
+            public int compare(Room lhs, Room rhs) {
+                return getLocation().get(rhs).compareTo(getLocation().get(lhs));
+            }
+        });
+        return ret;
     }
 
-    public synchronized Map<Room, Double> adjustLocation(Iterable<? extends Object> currentScan) {
+    @Override
+    public Room getMostLikelyRoom() {
+        return getSortedLocation().get(0);
+    }
+
+    @Override
+    public Double getProbability(Room room) {
+        return getLocation().get(room);
+    }
+
+    public synchronized int adjustLocation(Iterable<?> currentScan) {
         // Sort the scanresults from strongest level to weakest
         final List<Scan> signals = new ArrayList<>();
         for (Object entry : currentScan) {
@@ -118,37 +131,39 @@ public class BayesianLocator implements ILocator {
                 return (o1.level() < o2.level()) ? -1 : (o1.level() == o2.level() ? 0 : 1);
             }
         });
+        int iterations = 0;
         // Go through all the scans and calculate the new probability
-            for (Scan scan : signals) {
-                if (ignoreSSID(scan.SSID())) {
-                    continue;
+        for (Scan scan : signals) {
+            iterations++;
+            if (ignoreSSID(scan.SSID())) {
+                continue;
+            }
+            // Check if we know this AP. If we do not, ignore it
+            if (!trainingsData.containsRow(scan.BSSID())) {
+                Log.d(BayesianLocator.class.getName(), String.format("Skipping BSSID %s", scan.BSSID()));
+                continue;
+            }
+            // Adjust the probability of each room
+            for (Room room : Room.values()) {
+                NormalDistribution distribution = trainingsData.get(scan.BSSID(), room);
+                double p;
+                if (distribution == null) {
+                    p = 0;
+                } else {
+                    // Calculate the probability that for this level, the scan was done in the current room
+                    p = Math.max(0, distribution.probability(scan.level() - 0.5, scan.level() + 0.5));
                 }
-                // Check if we know this AP. If we do not, ignore it
-                if (!trainingsData.containsRow(scan.BSSID())) {
-                    Log.d(BayesianLocator.class.getName(), String.format("Skipping BSSID %s", scan.BSSID()));
-                    continue;
-                }
-                // Adjust the probability of each room
-                for (Room room : Room.values()) {
-                    NormalDistribution distribution = trainingsData.get(scan.BSSID(), room);
-                    double p;
-                    if (distribution == null) {
-                        p = 0;
-                    } else {
-                        // Calculate the probability that for this level, the scan was done in the current room
-                        p = Math.max(0, distribution.probability(scan.level() - 0.5, scan.level() + 0.5));
-                    }
-                    // Adjust the location estimate for this room according to the distribution
-                    currentLocation.put(room, currentLocation.get(room) * p);
-                }
-                // Normalize the probabilities
-                normalize();
-                if (isLocationCertain()) {
-                    break;
-                }
-                // TODO: Add detection of "osscilization" (i.e. new AP's not adding any more value) so that we can stop if that occurs
+                // Adjust the location estimate for this room according to the distribution
+                currentLocation.put(room, currentLocation.get(room) * p);
+            }
+            // Normalize the probabilities
+            normalize();
+            if (isLocationCertain()) {
+                break;
+            }
+            // TODO: Add detection of "osscilization" (i.e. new AP's not adding any more value) so that we can stop if that occurs
         }
-        return getLocation();
+        return iterations;
     }
 
     /**
@@ -167,7 +182,7 @@ public class BayesianLocator implements ILocator {
     }
 
     @Override
-    public void train(CloseableIterator<WifiResult> trainingData) {
+    public void train(Iterator<WifiResult> trainingData) {
         Table<String, Room, SummaryStatistics> values = HashBasedTable.create();
         // Go through all of the wifiResults and group them by BSSID and Room
         while (trainingData.hasNext()) {
@@ -185,7 +200,9 @@ public class BayesianLocator implements ILocator {
             }
             cell.addValue(level);
         }
-        trainingData.closeQuietly();
+        if (trainingData instanceof CloseableIterator) {
+            ((CloseableIterator) trainingData).closeQuietly();
+        }
 
         // Calculate the distributions from the lists of measurements
         trainingsData = HashBasedTable.create(values.rowKeySet().size(), Room.values().length);
@@ -205,22 +222,22 @@ public class BayesianLocator implements ILocator {
             case Running:
             case Stairs_Down:
             case Stairs_Up:
-                    // TODO 1) We need to find out s
-                    //      2) We need to know size of cell in aisle (and assume position in center)
-                    //      3) Calculate cells that fall within the boundaries:
-                    // s = number of steps
-                    // Location distribution:
-                    // -1.2s --- -0.5s   x   0.5s --- 1.2s
-                    // ^^^^^^^^^^^^^^^       ^^^^^^^^^^^^^
-                    //     uniform              uniform
+                // TODO 1) We need to find out s
+                //      2) We need to know size of cell in aisle (and assume position in center)
+                //      3) Calculate cells that fall within the boundaries:
+                // s = number of steps
+                // Location distribution:
+                // -1.2s --- -0.5s   x   0.5s --- 1.2s
+                // ^^^^^^^^^^^^^^^       ^^^^^^^^^^^^^
+                //     uniform              uniform
 
-                    // Give 10% of the current probability to each of the adjacent rooms
-                    for (Map.Entry<Room, Double> locationProbability : previousLocation.entrySet()) {
-                        for (Room room : locationProbability.getKey().getAdjacentRooms()) {
-                            currentLocation.put(room, currentLocation.get(room) + 0.1 * locationProbability.getValue());
-                        }
+                // Give 10% of the current probability to each of the adjacent rooms
+                for (Map.Entry<Room, Double> locationProbability : previousLocation.entrySet()) {
+                    for (Room room : locationProbability.getKey().getAdjacentRooms()) {
+                        currentLocation.put(room, currentLocation.get(room) + 0.1 * locationProbability.getValue());
                     }
-                    normalize();
+                }
+                normalize();
                 break;
             case Sitting:
             default:

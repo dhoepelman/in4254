@@ -3,18 +3,20 @@ package nl.tudelft.sps.app.localization;
 import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
+import com.j256.ormlite.table.DatabaseTable;
 
 import java.util.Arrays;
 
 /**
  * Exists solely to group wifiresults
  */
+@DatabaseTable
 public class WifiResultCollection {
 
     @DatabaseField(generatedId = true)
     long id;
 
-    @ForeignCollectionField(eager = true)
+    @ForeignCollectionField
     ForeignCollection<WifiResult> wifiResults;
     @DatabaseField
     Room room;

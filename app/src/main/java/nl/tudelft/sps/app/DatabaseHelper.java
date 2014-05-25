@@ -22,16 +22,18 @@ import java.sql.SQLException;
 
 import nl.tudelft.sps.app.activity.Measurement;
 import nl.tudelft.sps.app.activity.Sample;
+import nl.tudelft.sps.app.localization.LocalizationOfflineProcessor;
 import nl.tudelft.sps.app.localization.WifiResult;
 import nl.tudelft.sps.app.localization.WifiResultCollection;
 
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private static final String DATABASE_NAME = "sps.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     public RuntimeExceptionDao<Measurement, Long> measurementDao;
     public RuntimeExceptionDao<Sample, Void> sampleDao;
     private RuntimeExceptionDao<WifiResult, Long> wifiResultDao;
     private RuntimeExceptionDao<WifiResultCollection, Long> wifiResultCollectionDao;
+    private RuntimeExceptionDao<LocalizationOfflineProcessor.LocalizationOfflineProcessingResult, Void> localizationOfflineProcessingResultDao;
 
     public DatabaseHelper(Context context) {
         // TODO: Optimize database initialization speed. See http://ormlite.com/javadoc/ormlite-core/doc-files/ormlite_4.html#Config-Optimization
@@ -133,6 +135,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         return wifiResultCollectionDao;
     }
 
+    public RuntimeExceptionDao<LocalizationOfflineProcessor.LocalizationOfflineProcessingResult, Void> getLocalizationOfflineProcessingResultDao() {
+        if (localizationOfflineProcessingResultDao == null) {
+            localizationOfflineProcessingResultDao = getRuntimeExceptionDao(LocalizationOfflineProcessor.LocalizationOfflineProcessingResult.class);
+        }
+        return localizationOfflineProcessingResultDao;
+    }
+
     @Override
     public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {
         try {
@@ -140,11 +149,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             TableUtils.createTableIfNotExists(connectionSource, Sample.class);
             TableUtils.createTableIfNotExists(connectionSource, WifiResult.class);
             TableUtils.createTableIfNotExists(connectionSource, WifiResultCollection.class);
+            TableUtils.createTableIfNotExists(connectionSource, LocalizationOfflineProcessor.LocalizationOfflineProcessingResult.class);
         } catch (SQLException e) {
             Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
             throw new RuntimeException(e);
         }
-        Log.i(DatabaseHelper.class.getName(), "Database successfully created");
+        Log.i(DatabaseHelper.class.getName(), "Database successfully created/updated");
     }
 
     @Override
@@ -155,6 +165,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         // Check for compatibility
         if (oldVersion == 2 && newVersion == 3) {
             getWifiResultDao().executeRawNoArgs("ALTER TABLE wifiresult ADD COLUMN scan");
+        } else if (oldVersion == 3 && newVersion == 4) {
+
         } else {
             //throw new RuntimeException("Old database version detected. Please manually delete the old database (sps.db) to avoid loss of data.");
             try {
@@ -162,6 +174,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
                 TableUtils.dropTable(connectionSource, Sample.class, true);
                 TableUtils.dropTable(connectionSource, WifiResult.class, true);
                 TableUtils.dropTable(connectionSource, WifiResultCollection.class, true);
+                TableUtils.dropTable(connectionSource, LocalizationOfflineProcessor.LocalizationOfflineProcessingResult.class, true);
             } catch (SQLException e) {
                 Log.e(DatabaseHelper.class.getName(), "Couldn't upgrade database");
                 throw new RuntimeException(e);
