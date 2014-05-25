@@ -1,0 +1,7 @@
+2731 goed
+569 fout
+=3300 totaal (83%)
+
+Waarvan 193 (5,8%) coffiekamer
+
+Conclusie: aantal AP's toevoegen kan zeker helpen
