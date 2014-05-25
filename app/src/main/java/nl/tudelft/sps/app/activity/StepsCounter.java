@@ -100,8 +100,11 @@ public class StepsCounter implements Runnable, SensorEventListener {
                     System.err.println("FOURIER START");
                     for (int i = 0; i < magnitudeTransforms.length; i++) {
                         System.err.println(String.format("%d %f", i, magnitudeTransforms[i]));
+                        // TODO Perhaps add the data to the database so you don have to be connected to the debugger
                     }
                     System.err.println("FOURIER END");
+
+                    // TODO Perhaps use SummaryStatistics to make a detect a step or idleness
 
                     // TODO For reach window, determine the user is idle or took a
                     // TODO step by looking at the frequencies in magnitudeTransforms
@@ -116,7 +119,6 @@ public class StepsCounter implements Runnable, SensorEventListener {
         }
         finally {
             sensorManager.unregisterListener(this);
-            throw new ThreadDeath();
         }
     }
 

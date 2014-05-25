@@ -119,6 +119,7 @@ public class LocatorTestFragment extends Fragment {
         }
         updateLocationText();
 
+        // Start the steps counter
         stepsCounter = new StepsCounter(getActivity());
         stepsCounterThread = new Thread(stepsCounter);
         stepsCounterThread.start();
@@ -191,15 +192,15 @@ public class LocatorTestFragment extends Fragment {
 
         // Update title in navigation bar
         ((MainActivity) activity).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
-
-        if (stepsCounterThread != null && stepsCounterThread.isAlive()) {
-            stepsCounter.stopMeasuring();
-        }
-
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
+        // Kill the steps counter if it is running
+        if (stepsCounterThread != null && stepsCounterThread.isAlive()) {
+            stepsCounter.stopMeasuring();
+        }
     }
 }
