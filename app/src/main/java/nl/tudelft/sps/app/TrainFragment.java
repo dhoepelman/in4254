@@ -8,7 +8,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,10 +26,6 @@ import nl.tudelft.sps.app.activity.Measurement;
  */
 public class TrainFragment extends Fragment implements SensorEventListener {
 
-    /**
-     * File to which the measured acceleration values are written
-     */
-    public static final String RESULTS_FILE_PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/features.csv";
     /**
      * The fragment argument representing the section number for this
      * fragment.
@@ -154,7 +149,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         }
         measurementHelper.removeIncompleteMeasurements();
         writeBuffer();
-        ((MainActivity)getActivity()).resetClassifier();
+        ((MainActivity) getActivity()).resetClassifier();
     }
 
     private void writeBuffer() {
@@ -171,8 +166,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     public void onStartTrainingButtonClick(final View view) {
         if (selectedActivity == null) {
             Toast.makeText(getActivity(), "Select an activity first", Toast.LENGTH_SHORT).show();
-        }
-        else {
+        } else {
             // Disable the start button
             view.setEnabled(false);
 
