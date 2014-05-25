@@ -22,6 +22,7 @@ import java.sql.SQLException;
 
 import nl.tudelft.sps.app.activity.Measurement;
 import nl.tudelft.sps.app.activity.Sample;
+import nl.tudelft.sps.app.localization.FFTResult;
 import nl.tudelft.sps.app.localization.LocalizationOfflineProcessor;
 import nl.tudelft.sps.app.localization.WifiResult;
 import nl.tudelft.sps.app.localization.WifiResultCollection;
@@ -33,6 +34,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     public RuntimeExceptionDao<Sample, Void> sampleDao;
     private RuntimeExceptionDao<WifiResult, Long> wifiResultDao;
     private RuntimeExceptionDao<WifiResultCollection, Long> wifiResultCollectionDao;
+    private RuntimeExceptionDao<FFTResult, Long> FFTResultDao;
     private RuntimeExceptionDao<LocalizationOfflineProcessor.LocalizationOfflineProcessingResult, Void> localizationOfflineProcessingResultDao;
 
     public DatabaseHelper(Context context) {
@@ -121,6 +123,20 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         return wifiResultDao;
     }
 
+    public RuntimeExceptionDao<FFTResult, Long> getFFTResultDao() {
+        if (FFTResultDao == null) {
+            FFTResultDao = getRuntimeExceptionDao(FFTResult.class);
+
+            try {
+                TableUtils.createTableIfNotExists(FFTResultDao.getConnectionSource(), FFTResult.class);
+                Log.i(DatabaseHelper.class.getName(), "Table for " + String.valueOf(FFTResult.class) + " succesfully created");
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+        return FFTResultDao;
+    }
+
     public RuntimeExceptionDao<Sample, Void> getSampleDao() {
         if (sampleDao == null) {
             sampleDao = getRuntimeExceptionDao(Sample.class);
@@ -149,6 +165,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             TableUtils.createTableIfNotExists(connectionSource, Sample.class);
             TableUtils.createTableIfNotExists(connectionSource, WifiResult.class);
             TableUtils.createTableIfNotExists(connectionSource, WifiResultCollection.class);
+            TableUtils.createTableIfNotExists(connectionSource, FFTResult.class);
             TableUtils.createTableIfNotExists(connectionSource, LocalizationOfflineProcessor.LocalizationOfflineProcessingResult.class);
         } catch (SQLException e) {
             Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
@@ -174,6 +191,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
                 TableUtils.dropTable(connectionSource, Sample.class, true);
                 TableUtils.dropTable(connectionSource, WifiResult.class, true);
                 TableUtils.dropTable(connectionSource, WifiResultCollection.class, true);
+                TableUtils.dropTable(connectionSource, FFTResult.class, true);
                 TableUtils.dropTable(connectionSource, LocalizationOfflineProcessor.LocalizationOfflineProcessingResult.class, true);
             } catch (SQLException e) {
                 Log.e(DatabaseHelper.class.getName(), "Couldn't upgrade database");
@@ -194,6 +212,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         measurementDao = null;
         wifiResultDao = null;
         wifiResultCollectionDao = null;
+        FFTResultDao = null;
     }
 
 }

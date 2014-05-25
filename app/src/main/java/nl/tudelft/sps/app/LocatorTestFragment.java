@@ -120,7 +120,7 @@ public class LocatorTestFragment extends Fragment {
         updateLocationText();
 
         // Start the steps counter
-        stepsCounter = new StepsCounter(getActivity());
+        stepsCounter = new StepsCounter((MainActivity) getActivity());
         stepsCounterThread = new Thread(stepsCounter);
         stepsCounterThread.start();
 
