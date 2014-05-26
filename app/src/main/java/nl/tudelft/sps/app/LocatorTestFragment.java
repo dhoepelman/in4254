@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.j256.ormlite.dao.RuntimeExceptionDao;
@@ -43,9 +44,8 @@ public class LocatorTestFragment extends Fragment {
         public void result(WifiMeasurementsWindow results) {
             if (results != null) {
                 final List<ScanResult> scanResults = results.getMeasurements().get(0).getResults();
-                int iterations = locator.adjustLocation(scanResults);
-                toastManager.showText(String.format("Used %d out of %d AP's", iterations, scanResults.size()), Toast.LENGTH_SHORT);
-                updateLocationText();
+                final int iterations = locator.adjustLocation(scanResults);
+                updateLocationText(iterations, scanResults.size());
             } else {
                 toastManager.showText("Something went horribly wrong", Toast.LENGTH_LONG);
             }
@@ -162,6 +162,16 @@ public class LocatorTestFragment extends Fragment {
         // TODO: Implement
         locator.addMovement(ACTIVITY.Walking);
         updateLocationText();
+    }
+
+    private void updateLocationText(int iterations, int aps) {
+        updateLocationText();
+
+        final TextView valueIter = (TextView) rootView.findViewById(R.id.val_num_iter);
+        valueIter.setText(String.format("%d", iterations));
+
+        final TextView valueAPs = (TextView) rootView.findViewById(R.id.val_num_aps);
+        valueAPs.setText(String.format("%d", aps));
     }
 
     /**
