@@ -10,10 +10,18 @@ public class FFTResult {
     private long id;
 
     @DatabaseField
-    private double value;
+    private double valueX;
 
-    public FFTResult(double value) {
-        this.value = value;
+    @DatabaseField
+    private double valueY;
+
+    @DatabaseField
+    private double valueZ;
+
+    public FFTResult(double[] value) {
+        this.valueX = value[0];
+        this.valueY = value[1];
+        this.valueZ = value[2];
     }
 
     public FFTResult() {
@@ -23,7 +31,9 @@ public class FFTResult {
     @Override
     public String toString() {
         return "FFTResult{" +
-               "value=" + value +
+               "valueX=" + valueX +
+               "valueY=" + valueY +
+               "valueZ=" + valueZ +
                "}";
     }
 

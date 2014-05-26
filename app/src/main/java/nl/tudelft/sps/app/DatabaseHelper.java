@@ -29,7 +29,7 @@ import nl.tudelft.sps.app.localization.WifiResultCollection;
 
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private static final String DATABASE_NAME = "sps.db";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
     public RuntimeExceptionDao<Measurement, Long> measurementDao;
     public RuntimeExceptionDao<Sample, Void> sampleDao;
     private RuntimeExceptionDao<WifiResult, Long> wifiResultDao;
@@ -189,6 +189,15 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         }
         if (oldVersion == 5) {
             getWifiResultCollectionDao().executeRawNoArgs("ALTER TABLE wifiresultcollection ADD COLUMN numap INTEGER");
+        }
+        if (oldVersion == 7) {
+            getFFTResultDao().executeRawNoArgs("DROP TABLE fftresult"); // SQLite cannot remove/rename column
+            try {
+                TableUtils.createTableIfNotExists(connectionSource, FFTResult.class);
+            }
+            catch (SQLException exception) {
+                // We're screwed if upgrade fails halfway
+            }
         }
         /*{
             //throw new RuntimeException("Old database version detected. Please manually delete the old database (sps.db) to avoid loss of data.");
