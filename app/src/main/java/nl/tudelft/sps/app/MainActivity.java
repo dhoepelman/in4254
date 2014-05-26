@@ -183,6 +183,8 @@ public class MainActivity extends ActionBarActivity
             throw new RuntimeException("Could not build the query to retrieve stored wifi data");
         }
         locator.train(dao.iterator(q));
+        // Now train the number of APs
+        locator.trainNumberAPs(getDatabaseHelper().getWifiResultCollectionDao().iterator());
     }
 
     public void resetClassifier() {

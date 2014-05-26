@@ -14,22 +14,30 @@ import java.util.Arrays;
 public class WifiResultCollection {
 
     @DatabaseField(generatedId = true)
-    long id;
+    private long id;
 
     @ForeignCollectionField
-    ForeignCollection<WifiResult> wifiResults;
+    private ForeignCollection<WifiResult> wifiResults;
     @DatabaseField
-    Room room;
+    private Room room;
     @DatabaseField
-    long timestamp;
+    private long timestamp;
+    @DatabaseField(columnName = "numap")
+    private int numAP;
 
-    public WifiResultCollection(long timestamp, Room room) {
+    public WifiResultCollection(long timestamp, Room room, int numAP) {
         this.timestamp = timestamp;
         this.room = room;
+
+        this.numAP = numAP;
     }
 
     public WifiResultCollection() {
         // ORMlite
+    }
+
+    public int getNumAP() {
+        return numAP;
     }
 
     public long getTimestamp() {

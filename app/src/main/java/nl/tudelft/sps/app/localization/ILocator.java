@@ -18,6 +18,7 @@ public interface ILocator {
      */
     public List<Room> getSortedLocation();
 
+
     /**
      * Get the most likely Room
      */
@@ -41,6 +42,11 @@ public interface ILocator {
      * Must contain all the data points, previously trained ones will not be remembered
      */
     public void train(Iterator<WifiResult> trainingData);
+
+    /**
+     * Train the number of AP's found in a scan. Optional
+     */
+    public void trainNumberAPs(Iterator<WifiResultCollection> trainingsData);
 
     /**
      * Add a detected movement to the location

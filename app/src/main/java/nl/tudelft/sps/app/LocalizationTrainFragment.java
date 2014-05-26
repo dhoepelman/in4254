@@ -74,7 +74,7 @@ public class LocalizationTrainFragment extends Fragment {
                 final Room measuredInRoom = results.getMeasuredInRoom();
                 for (WifiMeasurement measurement : results.getMeasurements()) {
                     final long timestamp = measurement.getTimestamp();
-                    final WifiResultCollection scan = new WifiResultCollection(timestamp, measuredInRoom);
+                    final WifiResultCollection scan = new WifiResultCollection(timestamp, measuredInRoom, measurement.getResults().size());
                     scans.add(scan);
                     for (ScanResult scanResult : measurement.getResults()) {
 

@@ -53,6 +53,10 @@ public class BayesianLocator implements ILocator {
      * If the value is null then no probability distribution is available
      */
     private Table<String, Room, NormalDistribution> trainingsData;
+    /**
+     * Map with the distribution of number of APs visible in every Room.
+     */
+    private Map<Room, NormalDistribution> numberAPdistribution;
 
     public BayesianLocator() {
         initialLocation();
@@ -163,6 +167,15 @@ public class BayesianLocator implements ILocator {
             }
             // TODO: Add detection of "osscilization" (i.e. new AP's not adding any more value) so that we can stop if that occurs
         }
+        // If we're not certain, take the number of AP's into account
+        if (numberAPdistribution != null && !isLocationCertain()) {
+            for (Room room : Room.values()) {
+                NormalDistribution distribution = numberAPdistribution.get(room);
+                currentLocation.put(room, currentLocation.get(room) * distribution.probability(iterations - 0.5, iterations + 0.5));
+            }
+            normalize();
+            iterations++;
+        }
         return iterations;
     }
 
@@ -181,9 +194,38 @@ public class BayesianLocator implements ILocator {
         return answer;
     }
 
+    public void trainNumberAPs(Iterator<WifiResultCollection> trainingData) {
+        Map<Room, SummaryStatistics> numberAP = new HashMap<>();
+
+        // Count the number of Access Points in every scan
+        while (trainingData.hasNext()) {
+            WifiResultCollection scan = trainingData.next();
+
+            SummaryStatistics stats = numberAP.get(scan.getRoom());
+            if (stats == null) {
+                stats = new SummaryStatistics();
+                numberAP.put(scan.getRoom(), stats);
+            }
+            stats.addValue(scan.getNumAP());
+        }
+        if (trainingData instanceof CloseableIterator) {
+            ((CloseableIterator) trainingData).closeQuietly();
+        }
+        numberAPdistribution = new HashMap<>();
+        // Transform the counts into a normal distribution
+        for (Room room : Room.values()) {
+            SummaryStatistics stats = numberAP.get(room);
+            if (stats == null) {
+                stats = new SummaryStatistics();
+            }
+            numberAPdistribution.put(room, new NormalDistribution(stats.getMean(), Math.max(1, stats.getStandardDeviation())));
+        }
+    }
+
     @Override
     public void train(Iterator<WifiResult> trainingData) {
         Table<String, Room, SummaryStatistics> values = HashBasedTable.create();
+
         // Go through all of the wifiResults and group them by BSSID and Room
         while (trainingData.hasNext()) {
             final WifiResult wifiResult = trainingData.next();
@@ -203,6 +245,7 @@ public class BayesianLocator implements ILocator {
         if (trainingData instanceof CloseableIterator) {
             ((CloseableIterator) trainingData).closeQuietly();
         }
+
 
         // Calculate the distributions from the lists of measurements
         trainingsData = HashBasedTable.create(values.rowKeySet().size(), Room.values().length);

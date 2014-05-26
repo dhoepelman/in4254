@@ -44,7 +44,7 @@ public class LocalizationOfflineProcessor extends Fragment {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private static final int RUN_ID = 3;
+    private static final int RUN_ID = 4;
 
     View rootView;
     TextView output;
@@ -224,6 +224,7 @@ public class LocalizationOfflineProcessor extends Fragment {
             try {
                 output("Now training locator");
                 locator.train(activity.getDatabaseHelper().getWifiResultDao().queryBuilder().where().in(WifiResult.COLUMN_SCAN, trainingsdata).iterator());
+                locator.trainNumberAPs(trainingsdata.iterator());
                 addProgress(numTests);
                 output("Trained locator, now testing");
             } catch (SQLException e) {
