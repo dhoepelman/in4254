@@ -5,3 +5,15 @@
 Waarvan 193 (5,8%) coffiekamer
 
 Conclusie: aantal AP's toevoegen kan zeker helpen
+
+Met number AP meegenomen:
+2945 goed
+355 fout
+= 3300 totaal (89% goed)
+
+Waarvan maar 34 (1%) niet direct naast elkaar liggen :)
+
+Number AP meenemen heeft 268 tests "verbeterd"
+Number verbeterde de zekerheid van goede resultaten in 75% van de gevallen
+
+Errors in trainingsdata nagaan? Niet te doen waarschijnlijk
