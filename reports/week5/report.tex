@@ -16,6 +16,8 @@
 \usepackage{subcaption}
 \usepackage{mathtools}
 \usepackage{fancyhdr}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
 \usepackage{tikz}
 %\usepackage{gnuplot-lua-tikz}
 \usetikzlibrary{calc,intersections}
@@ -60,37 +62,69 @@
 
 \maketitle
 
-\section{Technical methods and data collection}
+\section{Data collection}
 \label{sec:localization-method}
 
-We chose to use \textbf{Bayesian Filters} for our localization method. We used the provided 17 cells, which we call rooms.
+We collected WiFi data for the mandated 17 cells, which we call rooms.
 %TODO: Add GUI figure
 A rough not-to-scale map can be seen in our GUI (Figure X).
 
-%TODO: fill in X
-On average we collected \textbf{X} scans for WiFi access points for each cell, both on 2.4Ghz and 5Ghz.
-The collected scans were evenly divided among the cell area and among 3 different dates. Each scan contains a list of $(BSSID, SSID, level)$ tuples where $level$ was expressed in dBm and was in $[-30,-100]$. From here on out we will call such a tuple a \emph{signal}.
+In total we collected \textbf{3300} scans for WiFi access points on 3 different dates.
+A scan lists all detectable \emph{access points} (APs) on both 2.4Ghz and 5Ghz frequencies.
+Most rooms have 180 or 240 scans, depending on which days they were accessible.
+The collected scans inside a room were evenly divided among the room area.
+Each scan contains a list of $(BSSID, SSID, level)$ tuples where $level$ was expressed in dBm and was in $[-30,-100]$.
+From here on out we will call such a tuple a \emph{signal}.
 
-We uniquely identify an \emph{access point} (AP) using the $BSSID$, which is guaranteed globally unique.
+On average each scan contained 20.0 $BSSID$'s, although the number varied per cell.
+
+\section{Localization method}
+\label{sec:data}
+
+We chose to use \textbf{Bayesian Filters} for our localization method. We uniquely identify an AP using the $BSSID$, which is guaranteed globally unique.
+
+For our calculations we group the the training data on $BSSID$ and $Room$ and calculate the normal distribution $N_{BSSID,Room}(\mu_{BSSID,Room}, \sigma^2_{BSSID,Room})$.
+
 We ignore a signal if it had the $SSID$ (network name) "TUvisitor", "tudelft-dastud" or "Conferentie-TUD".
 This is because most of the TU Delft access points sent out 4 different $SSID$'s (the other is "eduroam") with different $BSSID$'s.
 As these signals come from the same physical location and have the same frequency (and probably the same radio hardware) we did not think they would add more information, and at worst might make our results more inaccurate (by processing essentially the same signal 4 times, thus biasing the results heavily on those AP's).
-%TODO: fill in X
-On average each scan contained X unique $BSSID$'s, although this greatly differed per cell.
 
-For our Bayesian calculations we group the signals on $BSSID$ and $Room$ and calculate the normal distribution $N_{BSSID,Room}(\mu_{BSSID,Room}, \sigma^2_{BSSID,Room})$.
-The (relative) probability that a given signal is in a given room can then be acquired by calculating the probability of $\left[level - 0.5, level + 0.5\right)$ in $N_{BSSID,Room}$.
-Doing this for every room yields a vector, which we then normalize into a probability vector by adjusting the elements so they sum to 1.
+For localization we express the location as a probability vector $\mathbf{l}$, with $\mathbf{l}_{r}$ being the probability that we are in room $r$. 
+We initially start with each location having even probability: $\mathbf{l}_r = \frac{1}{|\mathbf{l}|}$.
+We then do a WiFi scan which gives a list of signals.
+We sort this list on level, with strongest level first.
+As long as the largest probability is under a threshold $0.95$ we then iterate the list, while adjusting the location each instance.
+The location is adjusted by getting for each room the chance of that signal level and multiplying it with the existing probability.
+In pseudocode:
+\begin{algorithmic}
+	\State $scan \gets \text{list of } (BSSID, SSID, level) \text{ sorted on level}$
+	\While {$\max{\mathbf{l}} < 0.95$}
+		\State $signal \gets \text{next } scan$
+		\ForAll{$Room$}
+			\State $p \gets N_{BSSID,Room}(level-0.5,level+0.5)$
+			\State $\mathbf{l}_{Room} \gets \mathbf{l}_{Room} \cdot p $
+		\EndFor
+		\State \text{normalize} $\mathbf{l}$
+	\EndWhile
+\end{algorithmic}
+
+We retain $\mathbf{l}$ between scans, unless the locator is reset to its initial belief.
+
+While we achieved a pretty good accuracy with this (see performance evaluation section) we later added another probability based on the number of access points that was visible.
+For this we created the normal distribution $N_{\#,Room}$ from the training data, which gives the distribution of number of APs in a scan based on the $\mu$ and $\sigma$ of the number of APs per room in the training data.
+This helped in rooms were not a lot of signals were measurable. Thus we appended to the previous algorithm:
+\begin{algorithmic}
+	\If {$\max{\mathbf{l}} < 0.95$}
+		\ForAll{$Room$}
+			\State $p \gets N_{\#,Room}(|scan|-0.5,|scan|+0.5)$
+			\State $\mathbf{l}_{Room} \gets \mathbf{l}_{Room} \cdot p $
+		\EndFor
+		\State \text{normalize} $\mathbf{l}$
+	\EndIf
+\end{algorithmic}
 
 
-
-
-\section{Data analysis}
-\label{sec:data}
-
-TODO
-
-\section{Evaluation}
+\section{Performance evaluation}
 \label{sec:evaluation}
 
 TODO
