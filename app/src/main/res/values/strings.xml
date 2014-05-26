@@ -32,4 +32,7 @@
     <string name="label_c16_flex_btm">Flex Btm</string>
     <string name="label_c17_flex_top">Flex Top</string>
 
+    <string name="label_num_iter">Iterations:</string>
+    <string name="label_num_aps">AP\'s:</string>
+
 </resources>

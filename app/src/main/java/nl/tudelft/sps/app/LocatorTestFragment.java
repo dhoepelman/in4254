@@ -7,9 +7,13 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.j256.ormlite.dao.RuntimeExceptionDao;
@@ -32,6 +36,8 @@ public class LocatorTestFragment extends Fragment {
     private StepsCounter stepsCounter;
     private Thread stepsCounterThread;
 
+    private MenuItem stepsCounterMenuItem;
+
     /**
      * The fragment argument representing the section number for this
      * fragment.
@@ -43,9 +49,8 @@ public class LocatorTestFragment extends Fragment {
         public void result(WifiMeasurementsWindow results) {
             if (results != null) {
                 final List<ScanResult> scanResults = results.getMeasurements().get(0).getResults();
-                int iterations = locator.adjustLocation(scanResults);
-                toastManager.showText(String.format("Used %d out of %d AP's", iterations, scanResults.size()), Toast.LENGTH_SHORT);
-                updateLocationText();
+                final int iterations = locator.adjustLocation(scanResults);
+                updateLocationText(iterations, scanResults.size());
             } else {
                 toastManager.showText("Something went horribly wrong", Toast.LENGTH_LONG);
             }
@@ -119,10 +124,7 @@ public class LocatorTestFragment extends Fragment {
         }
         updateLocationText();
 
-        // Start the steps counter
-        stepsCounter = new StepsCounter((MainActivity) getActivity());
-        stepsCounterThread = new Thread(stepsCounter);
-        stepsCounterThread.start();
+        setHasOptionsMenu(true);
 
         return rootView;
     }
@@ -164,6 +166,16 @@ public class LocatorTestFragment extends Fragment {
         updateLocationText();
     }
 
+    private void updateLocationText(int iterations, int aps) {
+        updateLocationText();
+
+        final TextView valueIter = (TextView) rootView.findViewById(R.id.val_num_iter);
+        valueIter.setText(String.format("%d", iterations));
+
+        final TextView valueAPs = (TextView) rootView.findViewById(R.id.val_num_aps);
+        valueAPs.setText(String.format("%d", aps));
+    }
+
     /**
      * Format the current location nicely
      */
@@ -202,8 +214,44 @@ public class LocatorTestFragment extends Fragment {
         super.onDestroyView();
 
         // Kill the steps counter if it is running
+        stopStepsCounter();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        stepsCounterMenuItem = menu.add(0, 0, 0, "Start steps counter");
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.equals(stepsCounterMenuItem)) {
+            if (stepsCounterThread == null || !stepsCounterThread.isAlive()) {
+                // Start the steps counter
+                startStepsCounter();
+            }
+            else {
+                stopStepsCounter();
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void startStepsCounter() {
+        stepsCounter = new StepsCounter((MainActivity) getActivity());
+        stepsCounterThread = new Thread(stepsCounter);
+        stepsCounterThread.start();
+
+        stepsCounterMenuItem.setTitle("Stop steps counter");
+        toastManager.showText("Started steps counter", Toast.LENGTH_SHORT);
+    }
+
+    private void stopStepsCounter() {
         if (stepsCounterThread != null && stepsCounterThread.isAlive()) {
             stepsCounter.stopMeasuring();
+
+            stepsCounterMenuItem.setTitle("Start steps counter");
+            toastManager.showText("Stopped steps counter", Toast.LENGTH_SHORT);
         }
     }
 }
