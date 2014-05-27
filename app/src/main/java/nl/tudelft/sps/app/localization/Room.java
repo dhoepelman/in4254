@@ -34,7 +34,7 @@ public enum Room {
     static {
         C1_AISLE1.adjacent = ImmutableList.of(C2_AISLE2, C11_CONF_BTM, C12_CONF_TOP);
         C2_AISLE2.adjacent = ImmutableList.of(C1_AISLE1, C3_AISLE3, C13_COFFEE, C14_PLEA);
-        C3_AISLE3.adjacent = ImmutableList.of(C2_AISLE2, C4_AISLE4, C14_PLEA);
+        C3_AISLE3.adjacent = ImmutableList.of(C2_AISLE2, C4_AISLE4, C15_MTG);
         C4_AISLE4.adjacent = ImmutableList.of(C3_AISLE3, C5_AISLE5);
         C5_AISLE5.adjacent = ImmutableList.of(C4_AISLE4, C6_AISLE6);
         C6_AISLE6.adjacent = ImmutableList.of(C5_AISLE5, C7_AISLE7);
