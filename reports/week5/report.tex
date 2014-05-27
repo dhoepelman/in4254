@@ -82,7 +82,11 @@ Most rooms have 180 or 240 scans, depending on which days they were accessible.
 The collected scans inside a room were evenly divided among the room area.
 
 On average each scan contained 20.0 $BSSID$'s, although the number varied per room.
+We did a fixed number of scans per room on every day, but this does not translate well into a sampling time per cell.
+The reason for this is that the time for a signal scan differed greatly depending on the number of APs visible.
+
 \newpage
+
 \section{Localization method}
 \label{sec:data}
 
@@ -94,30 +98,33 @@ We ignore a signal if it had the $SSID$ (network name) "TUvisitor", "tudelft-das
 This is because most of the TU Delft access points sent out 4 different $SSID$'s (the other is "eduroam") with different $BSSID$'s.
 As these signals come from the same physical location and have the same frequency (and probably the same radio hardware) we did not think they would add more information, and at worst might make our results more inaccurate (by processing essentially the same signal 4 times, thus biasing the results heavily on those AP's).
 
-For localization we express the location as a probability vector $\mathbf{l}$, with $\mathbf{l}_{r}$ being the probability that we are in room $r$. 
-We initially start with each location having even probability: $\mathbf{l}_r = \frac{1}{|\mathbf{l}|}$.
+For localization we express the location as a probability vector $\mathbf{loc}$, with $\mathbf{loc}_{r}$ being the probability that we are in room $r$. 
+We initially start with the \emph{intial belief}: where each location has even probability $\mathbf{loc}_r = \frac{1}{|\mathbf{loc}|}$.
 We then do a WiFi scan which gives a list of signals.
 We sort this list on level, with strongest level first.
-As long as the largest probability is under a threshold $0.95$ we then iterate the list, while adjusting the location each instance.
-The location is adjusted by getting for each room the chance of that signal level and multiplying it with the existing probability.
-In pseudocode:
+As long as the largest probability is under a threshold $0.95$ we then iterate the list, while adjusting the location each iteration.
+The location is adjusted by getting for each room the chance of that signal level and multiplying it with the existing probability. After each iteration we normalize $loc$ by making it sum to 1.
+\\
 \begin{algorithmic}
-	\State $scan \gets \text{list of } (BSSID, SSID, level) \text{ sorted on level}$
-	\While {$\max{\mathbf{l}} < 0.95$}
+	\State $scan \gets \text{list of } (BSSID, SSID, level) \text{ sorted on }level$
+	\While {$\max{\mathbf{loc}} < 0.95$}
 		\State $signal \gets \text{next } scan$
 		\ForAll{$Room$}
 			\State $p \gets N_{BSSID,Room}(level-0.5,level+0.5)$
-			\State $\mathbf{l}_{Room} \gets \mathbf{l}_{Room} \cdot p $
+			\State $\mathbf{loc}_{Room} \gets \mathbf{loc}_{Room} \cdot p $
 		\EndFor
-		\State \text{normalize} $\mathbf{l}$
+		\State \text{normalize} $\mathbf{loc}$
 	\EndWhile
 \end{algorithmic}
 
-We retain $\mathbf{l}$ between scans, unless the locator is reset to its initial belief.
+We retain $\mathbf{loc}$ between scans, unless the locator is reset to its initial belief.
 
-While we achieved a pretty good accuracy with this (see performance evaluation section) we later added another probability based on the number of access points that was visible.
+\subsection{Number of access points}
+\label{subsec:numap}
+
+While we achieved a pretty good accuracy with pure bayesian filters (see performance evaluation section) we later added another probability based on the number of access points that was visible.
 For this we created the normal distribution $N_{\#,Room}$ from the training data, which gives the distribution of number of APs in a scan based on the $\mu$ and $\sigma$ of the number of APs per room in the training data.
-This helped in rooms were not a lot of signals were measurable. Thus we appended to the previous algorithm:
+This helped in rooms where not a lot of signals were measurable. Thus we appended to the previous algorithm:
 \begin{algorithmic}
 	\If {$\max{\mathbf{l}} < 0.95$}
 		\ForAll{$Room$}
@@ -132,12 +139,30 @@ This helped in rooms were not a lot of signals were measurable. Thus we appended
 \section{Performance evaluation}
 \label{sec:evaluation}
 
-TODO
+For our performance evaluation we used off-line processing. We divided the scans of our training data into 10 random partitions, and tested every partition while using the other partitions as training data for the locator.
+
+Using this method we achieved an accuracy of \textbf{83\%} (2731 of 3300).
+While analyzing the data we saw that a lot of mis-classified scans were done in the \emph{Coffee} room.
+We determined that this was because the scans in that room usually contained only 0-3 signals.
+This is not enough for the bayesian filter.
+
+To alleviate this problem we altered our code to take the number of visible signals into account.
+This improved our accuracy to \textbf{89\%} (2945 of 3300).
+The technical implementation for this is specified in section \ref{subsec:numap}.
+If we mark adjacent rooms as correct too, which is not unreasonable as some training scans were taken on the border between rooms, our accuracy improves to \textbf{95\%} (3132 of 3300).
+
+\newpage
 
 \section{Discussion}
 \label{sec:discussion}
-
 TODO
+
+Bayesian filters are not useful if you have cells where a low number of access points is visible.
+Our trick to take the number of APs into accounts work well when the number of cells without much APs visible is low.
+However if there are more cells like these, this approach will likely fail.
+Another possibility we contemplated was to create a bitstring of present/not-present $BSSID's$ for the current scan and all training data.
+By then computing the hamming distance to the training data points we can get more information which we can add to the probability filter.
+This will more likely work in the general case.
 
 
 
