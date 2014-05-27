@@ -71,13 +71,6 @@ of the user for each of the rooms is drawn as a rough not-to-scale map,
 which is shown on the screen as part of the GUI of the Android application.
 See \autoref{fig:screenshot}.
 
-\begin{figure}
-  \centering
-    \includegraphics[width=0.36\textwidth]{screenshot}
-    \caption{GUI showing successful localization}
-    \label{fig:screenshot}
-\end{figure}
-
 In total we have collected \textbf{3300} scans for the WiFi access points on three different days.
 A scan list contains the \emph{access points} (AP's) that were detected as a list of $signal = (BSSID, SSID, level)$ tuples where $level$ is expressed in dBm with a range of $[-30,-100]$.
 Both 2.4~Ghz and 5~Ghz access points were detected and stored in the database.
@@ -182,5 +175,40 @@ This will more likely work in the general case.
 
 \newpage
 \appendix
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.36\textwidth]{screenshot}
+    \caption{GUI showing successful localization.}
+    \label{fig:screenshot}
+\end{figure}
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.36\textwidth]{correctness_perroom}
+    \caption{Correct localizations per room.}
+    \label{fig:correctness-perroom}
+\end{figure}
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.36\textwidth]{iterations_needed}
+    \caption{Total amount of correct and certain results per number of iterations performed.}
+    \label{fig:iterations-needed}
+\end{figure}
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.36\textwidth]{distribution}
+    \caption{Distribution of two BSSID's in two adjacent aisles.}
+    \label{fig:distribution}
+\end{figure}
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.36\textwidth]{graph-numberAPperRoom}
+    \caption{Number of access points per room.}
+    \label{fig:graph-numberAPperRoom}
+\end{figure}
 
 \end{document}
