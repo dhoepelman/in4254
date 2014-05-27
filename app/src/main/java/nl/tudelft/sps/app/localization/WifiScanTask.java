@@ -23,6 +23,7 @@ public class WifiScanTask extends AsyncTask<Room, Integer, WifiMeasurementsWindo
     private final ProgressUpdater progressUpdater;
     private final WifiManager wifiManager;
     private final Activity activity;
+    private final ToastManager toastManager;
 
     /**
      * Last list of measured AP's. It is considered to be one measurement
@@ -55,6 +56,7 @@ public class WifiScanTask extends AsyncTask<Room, Integer, WifiMeasurementsWindo
         resultProcessor = processor;
         progressUpdater = updater;
         this.activity = activity;
+        this.toastManager = toastManager;
 
         if (window) {
             numberOfMeasurements = WifiMeasurementsWindow.WINDOW_SIZE;
@@ -98,7 +100,9 @@ public class WifiScanTask extends AsyncTask<Room, Integer, WifiMeasurementsWindo
                 final long currentTimestamp = System.currentTimeMillis();
 
                 if (!wifiManager.startScan()) {
-                    Log.w(getClass().getName(), "Scan not started");
+                    final String message = "Scan not started";
+                    Log.w(getClass().getName(), message);
+                    toastManager.showText(message, Toast.LENGTH_LONG);
                     return null;
                 }
 
@@ -114,7 +118,9 @@ public class WifiScanTask extends AsyncTask<Room, Integer, WifiMeasurementsWindo
                     Log.w(getClass().getName(), "WIFI SCAN FINISHED");
                 }
                 else {
-                    Log.w(getClass().getName(), "Scan went horribly wrong");
+                    final String message = "Scan went horribly wrong";
+                    Log.w(getClass().getName(), message);
+                    toastManager.showText(message, Toast.LENGTH_LONG);
                     return null;
                 }
 
@@ -131,7 +137,9 @@ public class WifiScanTask extends AsyncTask<Room, Integer, WifiMeasurementsWindo
             return window;
         }
         catch (InterruptedException exception) {
-            Log.w(getClass().getName(), "Window scan was interrupted");
+            final String message = "Window scan was interrupted";
+            Log.w(getClass().getName(), message);
+            toastManager.showText(message, Toast.LENGTH_LONG);
             return null;
         }
         finally {
