@@ -49,7 +49,7 @@
 \pagestyle{fancy}
  
 \fancyhf{}
-\fancyhead[LE,RO]{thepage}
+\fancyhead[LE,RO]{\thepage}
 \fancyhead[RE]{\textit{\nouppercase{\leftmark}}}
 \fancyhead[LO]{\textit{\nouppercase{\rightmark}}}
  
@@ -68,12 +68,12 @@
 \begin{figure}
   \centering
     \includegraphics[width=0.36\textwidth]{screenshot}
-    \label{fig:screenshot}
     \caption{GUI showing successful localization}
+    \label{fig:screenshot}
 \end{figure}
 
 We collected WiFi data for the mandated 17 cells, which we call rooms.
-A rough not-to-scale map can be seen in our GUI (Figure \ref{fig:screenshot}).
+A rough not-to-scale map can be seen in our GUI (\autoref{fig:screenshot}).
 
 In total we collected \textbf{3300} scans for WiFi access points on 3 different dates.
 A scan lists all detectable \emph{access points} (APs) as a list of $signal=(BSSID, SSID, level)$ tuples where $level$ was expressed in dBm and was in $[-30,-100]$.
@@ -166,12 +166,12 @@ This will more likely work in the general case.
 
 
 
-\newpage
+%\newpage
 
-\addcontentsline{toc}{chapter}{Bibliography}
+%\addcontentsline{toc}{chapter}{Bibliography}
 % styles: abbrv, ieeetr, plain
-\bibliographystyle{abbrv}
-\bibliography{report}
+%\bibliographystyle{abbrv}
+%\bibliography{report}
 
 \newpage
 \appendix
