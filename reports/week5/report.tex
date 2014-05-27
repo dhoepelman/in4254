@@ -65,6 +65,12 @@
 \section{Data collection}
 \label{sec:localization-method}
 
+For each of the 17 rooms, we have collected the Wi-Fi signal strengths
+of all the access points. The rooms and the location probability
+of the user for each of the rooms is drawn as a rough not-to-scale map,
+which is shown on the screen as part of the GUI of the Android application.
+See \autoref{fig:screenshot}.
+
 \begin{figure}
   \centering
     \includegraphics[width=0.36\textwidth]{screenshot}
@@ -72,99 +78,100 @@
     \label{fig:screenshot}
 \end{figure}
 
-We collected WiFi data for the mandated 17 cells, which we call rooms.
-A rough not-to-scale map can be seen in our GUI (\autoref{fig:screenshot}).
-
-In total we collected \textbf{3300} scans for WiFi access points on 3 different dates.
-A scan lists all detectable \emph{access points} (APs) as a list of $signal=(BSSID, SSID, level)$ tuples where $level$ was expressed in dBm and was in $[-30,-100]$.
-Both 2.4Ghz and 5Ghz access points were detected.
-Most rooms have 180 or 240 scans, depending on which days they were accessible.
+In total we have collected \textbf{3300} scans for the WiFi access points on three different days.
+A scan list contains the \emph{access points} (AP's) that were detected as a list of $signal = (BSSID, SSID, level)$ tuples where $level$ is expressed in dBm with a range of $[-30,-100]$.
+Both 2.4~Ghz and 5~Ghz access points were detected and stored in the database.
+Most rooms have either 180 or 240 scans, depending on which days they were accessible.
 The collected scans inside a room were evenly divided among the room area.
 
-On average each scan contained 20.0 $BSSID$'s, although the number varied per room.
+On average each scan contains 20~$BSSID$'s, although the number varies per room.
 We did a fixed number of scans per room on every day, but this does not translate well into a sampling time per cell.
-The reason for this is that the time for a signal scan differed greatly depending on the number of APs visible.
-
-\newpage
+The reason for this is that the time required to perform a signal scan
+differs greatly depending on the number of AP's that are visible in a room.
 
 \section{Localization method}
 \label{sec:data}
 
 We chose to use \textbf{Bayesian Filters} for our localization method. We uniquely identify an AP using the $BSSID$, which is guaranteed globally unique.
 
-For our calculations we group the the training data on $BSSID$ and $Room$ and calculate the normal distribution $N_{BSSID,Room}(\mu_{BSSID,Room}, \sigma^2_{BSSID,Room})$.
+For our calculations we group the training data on $BSSID$ and $Room$ and calculate the normal distribution $N_{BSSID,Room}(\mu_{BSSID,Room}, \sigma^2_{BSSID,Room})$ using the measured signal strengths.
 
-We ignore a signal if it had the $SSID$ (network name) "TUvisitor", "tudelft-dastud" or "Conferentie-TUD".
-This is because most of the TU Delft access points sent out 4 different $SSID$'s (the other is "eduroam") with different $BSSID$'s.
-As these signals come from the same physical location and have the same frequency (and probably the same radio hardware) we did not think they would add more information, and at worst might make our results more inaccurate (by processing essentially the same signal 4 times, thus biasing the results heavily on those AP's).
+Wi-Fi signals whose $SSID$ is either ``TUvisitor'', ``tudelft-dastud'',
+or ``Conferentie-TUD'' are ignored.
+This is because most access points of the TU Delft sent out four different
+$SSID$'s (the fourth is ``eduroam'') with different $BSSID$'s.
+As these signals come from the same physical location and have the same
+frequency (and probably the same radio's) we did not think they would add more
+information, and at worst might make our results less accurate (by processing
+essentially the same signal 4 times, thus biasing the results heavily on those AP's).
 
 For localization we express the location as a probability vector $\mathbf{loc}$, with $\mathbf{loc}_{r}$ being the probability that we are in room $r$. 
-We initially start with the \emph{intial belief}: where each location has even probability $\mathbf{loc}_r = \frac{1}{|\mathbf{loc}|}$.
+We initially start with the \emph{intial belief} where all locations have the same probability $\mathbf{loc}_r = \frac{1}{|\mathbf{loc}|}$.
 We then do a WiFi scan which gives a list of signals.
 We sort this list on level, with strongest level first.
 As long as the largest probability is under a threshold $0.95$ we then iterate the list, while adjusting the location each iteration.
-The location is adjusted by getting for each room the chance of that signal level and multiplying it with the existing probability. After each iteration we normalize $loc$ by making it sum to 1.
+The location is adjusted by getting for each room the chance of that signal level and multiplying it with the existing probability. After each iteration we normalize $\mathbf{loc}$ by making it sum to 1.
 \\
 \begin{algorithmic}
 	\State $scan \gets \text{list of } (BSSID, SSID, level) \text{ sorted on }level$
-	\While {$\max{\mathbf{loc}} < 0.95$}
-		\State $signal \gets \text{next } scan$
+	\While {$\max\left(\mathbf{loc}\right) < 0.95$}
+		\State $signal \gets \text{next}\left(scan\right)$
 		\ForAll{$Room$}
 			\State $p \gets N_{BSSID,Room}(level-0.5,level+0.5)$
 			\State $\mathbf{loc}_{Room} \gets \mathbf{loc}_{Room} \cdot p $
 		\EndFor
-		\State \text{normalize} $\mathbf{loc}$
+		\State $\text{normalize}\left(\mathbf{loc}\right)$
 	\EndWhile
 \end{algorithmic}
 
-We retain $\mathbf{loc}$ between scans, unless the locator is reset to its initial belief.
+$\mathbf{loc}$ is retained between scans until the locator is reset by the user to its initial belief.
 
 \subsection{Number of access points}
 \label{subsec:numap}
 
-While we achieved a pretty good accuracy with pure bayesian filters (see performance evaluation section) we later added another probability based on the number of access points that was visible.
-For this we created the normal distribution $N_{\#,Room}$ from the training data, which gives the distribution of number of APs in a scan based on the $\mu$ and $\sigma$ of the number of APs per room in the training data.
-This helped in rooms where not a lot of signals were measurable. Thus we appended to the previous algorithm:
+While we achieved a pretty good accuracy with pure bayesian filters (see performance evaluation section),
+the \emph{Coffee} room suggested that we could improve the accuracy by taking the probability based on the
+number of access points that are visible in a room into account.
+The normal distribution $N_{\#,Room}$ is constructed using the previously collected training data.
+This gives the distribution of number of AP's in a scan based on the $\mu$ and $\sigma$ of the number of AP's per room in the training data.
+This helped in rooms where not a lot of signals were measurable, such as the Coffee room. Thus we can append the following to the previous algorithm:
+\\
 \begin{algorithmic}
-	\If {$\max{\mathbf{l}} < 0.95$}
+	\If {$\max\left(\mathbf{loc}\right) < 0.95$}
 		\ForAll{$Room$}
 			\State $p \gets N_{\#,Room}(|scan|-0.5,|scan|+0.5)$
-			\State $\mathbf{l}_{Room} \gets \mathbf{l}_{Room} \cdot p $
+			\State $\mathbf{loc}_{Room} \gets \mathbf{loc}_{Room} \cdot p $
 		\EndFor
-		\State \text{normalize} $\mathbf{l}$
+		\State $\text{normalize}\left(\mathbf{loc}\right)$
 	\EndIf
 \end{algorithmic}
-
 
 \section{Performance evaluation}
 \label{sec:evaluation}
 
 For our performance evaluation we used off-line processing. We divided the scans of our training data into 10 random partitions, and tested every partition while using the other partitions as training data for the locator.
 
-Using this method we achieved an accuracy of \textbf{83\%} (2731 of 3300).
-While analyzing the data we saw that a lot of mis-classified scans were done in the \emph{Coffee} room.
-We determined that this was because the scans in that room usually contained only 0-3 signals.
-This is not enough for the bayesian filter.
+Using this method we achieved an accuracy of \textbf{83\%} (2731 correct out of 3300).
+While analyzing the data we saw that a lot of the mis-classified scans occurred in the Coffee room,
+where a scan usually contains at most three signals. This is not enough for the bayesian filter.
 
 To alleviate this problem we altered our code to take the number of visible signals into account.
 This improved our accuracy to \textbf{89\%} (2945 of 3300).
 The technical implementation for this is specified in section \ref{subsec:numap}.
-If we mark adjacent rooms as correct too, which is not unreasonable as some training scans were taken on the border between rooms, our accuracy improves to \textbf{95\%} (3132 of 3300).
-
-\newpage
+If we mark adjacent rooms as correct too, which is not unreasonable as some training scans were taken on the border between rooms, the accuracy increases to \textbf{95\%} (3132 of 3300).
 
 \section{Discussion}
 \label{sec:discussion}
 TODO
 
-Bayesian filters are not useful if you have cells where a low number of access points is visible.
-Our trick to take the number of APs into accounts work well when the number of cells without much APs visible is low.
-However if there are more cells like these, this approach will likely fail.
-Another possibility we contemplated was to create a bitstring of present/not-present $BSSID's$ for the current scan and all training data.
-By then computing the hamming distance to the training data points we can get more information which we can add to the probability filter.
+Bayesian filters are not that useful if you have rooms with only a low number of visible access points.
+Our trick to take the number of AP's into accounts works well when there
+are not too many rooms with few visible AP's.
+However, if there are more rooms like the Coffee room, this approach will likely fail.
+Another possibility we contemplated was to create a bitstring of present/not-present $BSSID$'s for the current scan and the training data.
+Computing the hamming distances to the training data points increases the amount of information that
+is available to the filter, thus possibly increasing the accuracy.
 This will more likely work in the general case.
-
-
 
 %\newpage
 
@@ -175,7 +182,5 @@ This will more likely work in the general case.
 
 \newpage
 \appendix
-
-
 
 \end{document}
