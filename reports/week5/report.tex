@@ -86,6 +86,12 @@ We chose to use \textbf{Bayesian Filters} for our localization method. We unique
 
 For our calculations we group the training data on $BSSID$ and $Room$ and calculate the normal distribution $N_{BSSID,Room}(\mu_{BSSID,Room}, \sigma^2_{BSSID,Room})$ using the measured signal strengths.
 
+We provide an example with 2 BSSID's and two Rooms, pulled from our collected data.
+You can see the histogram of the 4 $(BSSID, Room)$ combination in \autoref{fig:histogram}.
+Their respective normal distributions can be seen in \autoref{fig:distribution}.
+ You can clearly see that there is a difference in the distributions of the received signal strengths, even though these rooms are next to each other and not separated by a wall.
+ This gives high hopes for the effectiveness of the Bayesian filter approach
+
 Signals whose $SSID$ is either ``TUvisitor'', ``tudelft-dastud'',
 or ``Conferentie-TUD'' are ignored.
 This is because most access points of the TU Delft sent out four different $SSID$'s (the fourth is ``eduroam'') with different $BSSID$'s.
@@ -187,20 +193,6 @@ This will more likely work in the general case.
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.5\textwidth]{correctness_perroom}
-    \caption{Correct localizations per room.}
-    \label{fig:correctness-perroom}
-\end{figure}
-
-\begin{figure}[h!]
-  \centering
-    \includegraphics[width=0.5\textwidth]{iterations_needed}
-    \caption{Percentage of results that will evantually be correct and certain after a specific number of iterations.}
-    \label{fig:iterations-needed}
-\end{figure}
-
-\begin{figure}[h!]
-  \centering
     \includegraphics[width=0.5\textwidth]{histogram}
     \caption{Histogram of two BSSID's in two adjacent aisles.}
     \label{fig:histogram}
@@ -218,6 +210,20 @@ This will more likely work in the general case.
     \includegraphics[width=0.5\textwidth]{graph-numberAPperRoom}
     \caption{Number of access points per room.}
     \label{fig:graph-numberAPperRoom}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.5\textwidth]{iterations_needed}
+    \caption{Percentage of results that will evantually be correct and certain after a specific number of iterations.}
+    \label{fig:iterations-needed}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.5\textwidth]{correctness_perroom}
+    \caption{Correct localizations per room.}
+    \label{fig:correctness-perroom}
 \end{figure}
 
 \end{document}
