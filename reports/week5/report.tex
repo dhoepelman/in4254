@@ -25,7 +25,7 @@
 
 \hypersetup{
     colorlinks,
-    pdftitle={Evaluation Report Localization Option 1 IN4254 Smart Phone Sensing},
+    pdftitle={Report Localization Option 1 IN4254 Smart Phone Sensing},
     pdfauthor={in4254-dhoepelman-mprovokluit},
 }
 
@@ -38,7 +38,7 @@
 \newcommand{\axis}[1]{$#1$\nobreakdash-axis}
 \newcommand{\plane}[2]{$#1#2$\nobreakdash-plane}
 
-\title{\huge{\textbf{Evaluation Report\\Localization\\Option 1}\\IN4254 Smart Phone Sensing}}
+\title{\huge{\textbf{Report Localization Option 1}\\IN4254 Smart Phone Sensing}}
 \date{\today}
 \author{David Hoepelman (1521969) \and Mark Provo Kluit (1263099)}
 
@@ -65,19 +65,24 @@
 \section{Data collection}
 \label{sec:localization-method}
 
+\begin{figure}
+  \centering
+    \includegraphics[width=0.36\textwidth]{screenshot}
+    \label{fig:screenshot}
+    \caption{GUI showing successful localization}
+\end{figure}
+
 We collected WiFi data for the mandated 17 cells, which we call rooms.
-%TODO: Add GUI figure
-A rough not-to-scale map can be seen in our GUI (Figure X).
+A rough not-to-scale map can be seen in our GUI (Figure \ref{fig:screenshot}).
 
 In total we collected \textbf{3300} scans for WiFi access points on 3 different dates.
-A scan lists all detectable \emph{access points} (APs) on both 2.4Ghz and 5Ghz frequencies.
+A scan lists all detectable \emph{access points} (APs) as a list of $signal=(BSSID, SSID, level)$ tuples where $level$ was expressed in dBm and was in $[-30,-100]$.
+Both 2.4Ghz and 5Ghz access points were detected.
 Most rooms have 180 or 240 scans, depending on which days they were accessible.
 The collected scans inside a room were evenly divided among the room area.
-Each scan contains a list of $(BSSID, SSID, level)$ tuples where $level$ was expressed in dBm and was in $[-30,-100]$.
-From here on out we will call such a tuple a \emph{signal}.
 
-On average each scan contained 20.0 $BSSID$'s, although the number varied per cell.
-
+On average each scan contained 20.0 $BSSID$'s, although the number varied per room.
+\newpage
 \section{Localization method}
 \label{sec:data}
 
