@@ -7,35 +7,18 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-import com.j256.ormlite.dao.RuntimeExceptionDao;
-
-import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.transform.DftNormalization;
-import org.apache.commons.math3.transform.FastFourierTransformer;
-import org.apache.commons.math3.ml.distance.DistanceMeasure;
-import org.apache.commons.math3.ml.distance.EuclideanDistance;
-import org.apache.commons.math3.transform.TransformType;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Semaphore;
 
 import nl.tudelft.sps.app.MainActivity;
-import nl.tudelft.sps.app.localization.FFTResult;
+import nl.tudelft.sps.app.localization.ILocator;
 
 public class StepsCounter implements Runnable, SensorEventListener {
 
-    public static final int WINDOW_SIZE = 128;
-
-    private final FastFourierTransformer transformer = new FastFourierTransformer(DftNormalization.STANDARD);
-    private final DistanceMeasure distance = new EuclideanDistance();
-
     private final SensorManager sensorManager;
     private final Sensor accelerometer;
-
-    private final List<SensorEvent> samples = new ArrayList<SensorEvent>();
 
     /**
      * A lock used by onSensorChanged() to signal to run() that a window
@@ -43,7 +26,7 @@ public class StepsCounter implements Runnable, SensorEventListener {
      */
     private final Object gate = new Object();
 
-    private final Semaphore samplesSem = new Semaphore(1, true);
+    private final Measurement.MonitorHelper measurement;
 
     /**
      * A variable used to indicate that the thread should stop running
@@ -51,11 +34,14 @@ public class StepsCounter implements Runnable, SensorEventListener {
     private boolean keepRunning = true;
 
     private final MainActivity activity;
+    private final ILocator locator;
 
     public StepsCounter(MainActivity activity) {
         super();
 
         this.activity = activity;
+        this.locator = activity.getLocator();
+        measurement = new Measurement.MonitorHelper();
 
         // Set-up sensor manager
         sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
@@ -68,85 +54,45 @@ public class StepsCounter implements Runnable, SensorEventListener {
     }
 
     public void run() {
+        int steps = 0;
+
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
 
         // Loop to collect windows
         try {
             while (keepRunning) {
                 try {
-                    samples.clear();
-
-                    final List<SensorEvent> samplesCopy = new ArrayList<SensorEvent>(WINDOW_SIZE);
-
                     // Collecting a window should be done in less than a second
                     synchronized (gate) {
-                        gate.wait(10 * 1000L);
-
-                        // Collections.copy() refused to work
-                        for (SensorEvent event : samples) {
-                            samplesCopy.add(event);
-                        }
-                        samplesSem.release();
+                        gate.wait(5 * 1000L);
                     }
 
-                    if (samplesCopy.size() != WINDOW_SIZE) {
-                        throw new RuntimeException(String.format("Samples size (%d) not equal to WINDOW_SIZE", samplesCopy.size()));
+                    if (!keepRunning) {
+                        break;
                     }
 
-                    final double[][] magnitudeTransforms = new double[samplesCopy.size()][3];
-                    for (int j = 0; j < 3; j++) {
-                        final double[] samplesArray = new double[samplesCopy.size()];
+                    // Quickly get the current window and then make a new one to make
+                    // onSensorChanged() happy
+                    final IMeasurement result = measurement.getCurrentWindow();
+                    measurement.addNewWindowIfFull();
 
-                        for (int i = 0; i < samplesArray.length; i++) {
-                            samplesArray[i] = samplesCopy.get(i).values[j];
-                        }
+                    // For reach window, determine the user is idle or took a
+                    final ACTIVITY actualActivity = activity.getClassifier().classify(result);
 
-                        System.err.println(String.format("%d", samplesArray.length));
+                    if (ACTIVITY.Sitting.equals(actualActivity)) {
+                        System.err.println(String.format("Steps: %d", steps));
+                        // TODO locator.addMovement(steps); or call LocatorTestFragment.doMovementDetection() so that GUI can be updated
 
-                        // Transform the acceleration magnitudes to complex transforms
-                        final Complex[] complexTransforms = transformer.transform(samplesArray, TransformType.FORWARD);
-
-                        // Collect the magnitudes of the complex transforms
-                        for (int i = 0; i < complexTransforms.length; i++) {
-                            final double realPart = complexTransforms[i].getReal();
-                            final double imagPart = complexTransforms[i].getImaginary();
-
-                            magnitudeTransforms[i][j] = Math.sqrt(realPart * realPart + imagPart * imagPart);
-                        }
+                        steps = 0;
                     }
-
-                    System.err.println("FOURIER START");
-                    final RuntimeExceptionDao<FFTResult, Long> dao = activity.getDatabaseHelper().getFFTResultDao();
-                    dao.callBatchTasks(new Callable<Object>() {
-                        @Override
-                        public Object call() throws Exception {
-                            // Image generated by gnuplot-fft-lines gives:
-                            //     index as x-coordinate
-                            //     frequency as y-coordinate
-                            // Image generated by gnuplot-fft gives:
-                            //     frequency as x-coordinate
-                            //     size of adjacent frequencies as y-coordinate
-                            //     (adjacent frequencies are grouped together in a box,
-                            //     each box is painted as a red line)
-                            for (double[] value : magnitudeTransforms) {
-                                dao.create(new FFTResult(value));
-                            }
-
-                            return null;
-                        }
-                    });
-                    System.err.println("FOURIER END");
-
-                    // TODO Perhaps use SummaryStatistics to make a detect a step or idleness
-
-                    // TODO For reach window, determine the user is idle or took a
-                    // TODO step by looking at the frequencies in magnitudeTransforms
-
-                    // TODO If the user took a step, increment the step counter
-                    // TODO If the user is idle, call locator.addMovement()
+                    else {
+                        // If the user took a step, increment the step counter
+                        steps++;
+                    }
                 }
                 catch (InterruptedException exception) {
                     // Do nothing if we got interrupted while waiting for the gate lock
+                    keepRunning = false;
                 }
             }
         }
@@ -157,23 +103,15 @@ public class StepsCounter implements Runnable, SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        try {
-            samplesSem.acquire();
-            samples.add(event);
-            samplesSem.release();
-
-            if (samples.size() == WINDOW_SIZE) {
-                synchronized (gate) {
-                    // Acquire semaphore so that next onSensorChanged cannot
-                    // sneakily add extra SensorEvents to samples
-                    samplesSem.acquire();
-
-                    gate.notify();
-                }
-            }
+        // The first time, the classifier takes a long time (no overlapping windows yet),
+        // which causes a lot of events to be dropped on the floor
+        if (!measurement.isCompleted() && keepRunning) {
+            measurement.addToMeasurement(event.values);
         }
-        catch (InterruptedException exception) {
-            // All is lost!
+        else {
+            synchronized (gate) {
+                gate.notify();
+            }
         }
     }
 
