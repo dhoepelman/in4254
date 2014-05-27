@@ -70,7 +70,7 @@ We have drawn a rough not-to-scale map of the rooms, and show it to the user as 
 
 In total we have collected \textbf{3300} scans on three different days.
 A scan list contains the \emph{access points} (AP's) that were detected as a list of $signal = (BSSID, SSID, level)$ tuples where $level$ is expressed in dBm with a range of $[-30,-100]$.
-Both 2.4~Ghz and 5~Ghz access points were detected and stored in the database.
+Both 2.4~GHz and 5~GHz access points were detected and stored in the database.
 Most rooms have either 180 or 240 scans, depending on which days they were accessible.
 The collected scans inside a room were evenly divided among the room area.
 
@@ -101,7 +101,7 @@ information, and at worst might make our results less accurate (by processing
 essentially the same signal 4 times, thus biasing the results heavily on those AP's).
 
 For localization we express the location as a probability vector $\mathbf{loc}$, with $\mathbf{loc}_{r}$ being the probability that we are in room $r$. 
-We initially start with the \emph{intial belief} where all locations have the same probability $\mathbf{loc}_r = \frac{1}{|\mathbf{loc}|}$.
+We initially start with the \emph{initial belief} where all locations have the same probability $\mathbf{loc}_r = \frac{1}{|\mathbf{loc}|}$.
 We then do a WiFi scan which gives a list of signals.
 We sort this list on level, with strongest level first.
 As long as the largest probability is under a threshold $0.95$ we then iterate the list, while adjusting the location each iteration.
@@ -124,7 +124,7 @@ $\mathbf{loc}$ is retained between scans until the locator is reset by the user 
 \subsection{Number of access points}
 \label{subsec:numap}
 
-While we achieved a pretty good accuracy with pure bayesian filters (see performance evaluation section), we had trouble in the \emph{Coffee} room which did not have a large number of APs visibile, thus providing too little information for our bayesian filter.
+While we achieved a pretty good accuracy with pure Bayesian filters (see performance evaluation section), we had trouble in the \emph{Coffee} room which did not have a large number of APs visible, thus providing too little information for our Bayesian filter.
 We solved this problem by constructing $N_{\#,Room}$ distributions.
 This distribution gives the probability for number of AP's in a scan based on the $\mu$ and $\sigma$ of the number of AP's per room in the training data.
 Thus we append the following to the previous algorithm:
@@ -145,8 +145,8 @@ Thus we append the following to the previous algorithm:
 For our performance evaluation we used off-line processing. We divided the scans of our training data into 10 random partitions, and tested every partition while using the other partitions as training data for the locator.
 
 Using this method we achieved an accuracy of \textbf{83\%} (2731 correct out of 3300).
-While analyzing the data we saw that a lot of the mis-classified scans occurred in the Coffee room,
-where a scan usually contains at most three signals. This is not enough for the bayesian filter.
+While analyzing the data we saw that a lot of the misclassified scans occurred in the Coffee room,
+where a scan usually contains at most three signals. This is not enough for the Bayesian filter.
 
 To alleviate this problem we altered our code to take the number of visible signals into account.
 This improved our accuracy to \textbf{89\%} (2945 of 3300).
@@ -217,7 +217,7 @@ This will more likely work in the general case.
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.5\textwidth]{iterations_needed}
-    \caption{Percentage of results that will evantually be correct and certain after a specific number of iterations.}
+    \caption{Percentage of results that will eventually be correct and certain after a specific number of iterations.}
     \label{fig:iterations-needed}
 \end{figure}
 
