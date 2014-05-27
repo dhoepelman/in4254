@@ -127,7 +127,10 @@ $\mathbf{loc}$ is retained between scans until the locator is reset by the user 
 While we achieved a pretty good accuracy with pure bayesian filters (see performance evaluation section), we had trouble in the \emph{Coffee} room which did not have a large number of APs visibile, thus providing too little information for our bayesian filter.
 We solved this problem by constructing $N_{\#,Room}$ distributions.
 This distribution gives the probability for number of AP's in a scan based on the $\mu$ and $\sigma$ of the number of AP's per room in the training data.
-Thus we append the following to the previous algorithm:
+
+As can be seen from the average number of APs visible in a room in \autoref{fig:graph-numberAPperRoom} this varies between rooms, and thus can provide extra information for our localization.
+
+We append the following to the previous algorithm:
 \\
 \begin{algorithmic}
 	\If {$\max\left(\mathbf{loc}\right) < 0.95$}
@@ -146,12 +149,17 @@ For our performance evaluation we used off-line processing. We divided the scans
 
 Using this method we achieved an accuracy of \textbf{83\%} (2731 correct out of 3300).
 While analyzing the data we saw that a lot of the mis-classified scans occurred in the Coffee room,
-where a scan usually contains at most three signals. This is not enough for the bayesian filter.
+where a scan usually contains at most three signals. This is not enough for the Bayesian filter.
 
 To alleviate this problem we altered our code to take the number of visible signals into account.
 This improved our accuracy to \textbf{89\%} (2945 of 3300).
 The technical implementation for this is specified in section \ref{subsec:numap}.
 If we mark adjacent rooms as correct too, which is not unreasonable as some training scans were taken on the border between rooms, the accuracy increases to \textbf{95\%} (3132 of 3300).
+
+In \autoref{fig:iterations-needed} the number of iterations that is needed for a certain (95\% certainty) localization is needed.
+We see that almost all signals are used, and only after about 23 signals the information is not useful anymore.
+We do note that this is purely for the 95\% certainty threshold.
+We have not tested how less data or a lower iterations cap would influence the number of correct (but less certain) localizations.
 
 \section{Discussion}
 \label{sec:discussion}
