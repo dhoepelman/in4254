@@ -52,7 +52,7 @@ public class LocatorTestFragment extends Fragment {
                 final int iterations = locator.adjustLocation(scanResults);
                 updateLocationText(iterations, scanResults.size());
             } else {
-                toastManager.showText("Something went horribly wrong", Toast.LENGTH_LONG);
+                toastManager.showText("Error: received null wifi scan from Android", Toast.LENGTH_LONG);
             }
         }
     };
