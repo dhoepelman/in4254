@@ -82,7 +82,7 @@ differs greatly depending on the number of AP's that are visible in a room.
 \section{Localization method}
 \label{sec:data}
 
-We chose to use \textbf{Bayesian Filters} for our localization method. We uniquely identify an AP using the $BSSID$, which is guaranteed globally unique.
+We chose to use \textbf{Bayesian Filters} for our localization method. We identify an AP using the $BSSID$, which is guaranteed globally unique.
 
 For our calculations we group the training data on $BSSID$ and $Room$ and calculate the normal distribution $N_{BSSID,Room}(\mu_{BSSID,Room}, \sigma^2_{BSSID,Room})$ using the measured signal strengths.
 
