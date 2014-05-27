@@ -152,10 +152,12 @@ If we mark adjacent rooms as correct too, which is not unreasonable as some trai
 
 \subsection{Difficulties}
 
-We did not have mayor difficulties with implementing the localization part of the .
+We did not have major difficulties with implementing the localization.
 We were actually surprised at the relative easy and relative good accuracy our Bayesian filter provided.
 
-We did have a lot of problems with implementing our movement model, but did not address them in this report as we were told the movement model should not be in this report. 
+We did have a lot of problems with implementing our movement model, but did not address them in this report as we were told the movement model should not be in this report.
+
+\autoref{fig:correctness-perroom} shows that room \text{C4\_AISLE4} has an unusually low percentage of correct localizations. Our database shows that in this room \text{C7\_AISLE7} has a 15~\% probability of getting chosen. The timestamps show this to be a measurement error on our part during the training.
 
 \subsection{Ideas for improvement}
 
@@ -188,7 +190,7 @@ This will more likely work in the general case.
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.5\textwidth]{correctness_perroom}
-    \caption{Correct localizations per room.}
+    \caption{Correct localizations per room when taking the probability of number of AP's per room into account.}
     \label{fig:correctness-perroom}
 \end{figure}
 
