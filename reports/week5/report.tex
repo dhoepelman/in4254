@@ -65,11 +65,8 @@
 \section{Data collection}
 \label{sec:localization-method}
 
-For each of the 17 rooms, we have collected the Wi-Fi signal strengths
-of all the access points. The rooms and the location probability
-of the user for each of the rooms is drawn as a rough not-to-scale map,
-which is shown on the screen as part of the GUI of the Android application.
-See \autoref{fig:screenshot}.
+For each of the available 17 rooms on the 9$^{\text{th}}$ floor of EWI, we have collected Wi-Fi signal strengths of all the access points our mobile phone could find.
+We have drawn a rough not-to-scale map of the rooms, and show it to the user as part of our GUI. See \autoref{fig:screenshot}.
 
 \begin{figure}
   \centering
@@ -78,7 +75,7 @@ See \autoref{fig:screenshot}.
     \label{fig:screenshot}
 \end{figure}
 
-In total we have collected \textbf{3300} scans for the WiFi access points on three different days.
+In total we have collected \textbf{3300} scans on three different days.
 A scan list contains the \emph{access points} (AP's) that were detected as a list of $signal = (BSSID, SSID, level)$ tuples where $level$ is expressed in dBm with a range of $[-30,-100]$.
 Both 2.4~Ghz and 5~Ghz access points were detected and stored in the database.
 Most rooms have either 180 or 240 scans, depending on which days they were accessible.
@@ -96,10 +93,9 @@ We chose to use \textbf{Bayesian Filters} for our localization method. We unique
 
 For our calculations we group the training data on $BSSID$ and $Room$ and calculate the normal distribution $N_{BSSID,Room}(\mu_{BSSID,Room}, \sigma^2_{BSSID,Room})$ using the measured signal strengths.
 
-Wi-Fi signals whose $SSID$ is either ``TUvisitor'', ``tudelft-dastud'',
+Signals whose $SSID$ is either ``TUvisitor'', ``tudelft-dastud'',
 or ``Conferentie-TUD'' are ignored.
-This is because most access points of the TU Delft sent out four different
-$SSID$'s (the fourth is ``eduroam'') with different $BSSID$'s.
+This is because most access points of the TU Delft sent out four different $SSID$'s (the fourth is ``eduroam'') with different $BSSID$'s.
 As these signals come from the same physical location and have the same
 frequency (and probably the same radio's) we did not think they would add more
 information, and at worst might make our results less accurate (by processing
@@ -129,12 +125,10 @@ $\mathbf{loc}$ is retained between scans until the locator is reset by the user 
 \subsection{Number of access points}
 \label{subsec:numap}
 
-While we achieved a pretty good accuracy with pure bayesian filters (see performance evaluation section),
-the \emph{Coffee} room suggested that we could improve the accuracy by taking the probability based on the
-number of access points that are visible in a room into account.
-The normal distribution $N_{\#,Room}$ is constructed using the previously collected training data.
-This gives the distribution of number of AP's in a scan based on the $\mu$ and $\sigma$ of the number of AP's per room in the training data.
-This helped in rooms where not a lot of signals were measurable, such as the Coffee room. Thus we can append the following to the previous algorithm:
+While we achieved a pretty good accuracy with pure bayesian filters (see performance evaluation section), we had trouble in the \emph{Coffee} room which did not have a large number of APs visibile, thus providing too little information for our bayesian filter.
+We solved this problem by constructing $N_{\#,Room}$ distributions.
+This distribution gives the probability for number of AP's in a scan based on the $\mu$ and $\sigma$ of the number of AP's per room in the training data.
+Thus we append the following to the previous algorithm:
 \\
 \begin{algorithmic}
 	\If {$\max\left(\mathbf{loc}\right) < 0.95$}
