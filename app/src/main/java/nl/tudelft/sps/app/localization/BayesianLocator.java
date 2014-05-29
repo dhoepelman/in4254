@@ -259,7 +259,7 @@ public class BayesianLocator implements ILocator {
     /**
      * Average length of a room in meters
      */
-    public static double ROOM_LENGTH_METERS = 5.0; // TODO This is a guess; measure actual length
+    public static double ROOM_LENGTH_METERS = 7.2;
 
     public static double SHORTEST_DISTANCE_PER_STEP = 0.5;
     public static double LONGEST_DISTANCE_PER_STEP = 1.2;
