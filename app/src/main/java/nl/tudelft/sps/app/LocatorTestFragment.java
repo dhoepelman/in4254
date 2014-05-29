@@ -169,8 +169,16 @@ public class LocatorTestFragment extends Fragment {
     }
 
     public void doMovementDetection(final int steps) {
+        System.err.println(String.format("Steps: %d", steps));
+
         locator.addMovement(steps);
-        updateLocationText();
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                updateLocationText();
+                toastManager.showText("Updated movement", Toast.LENGTH_SHORT);
+            }
+        });
     }
 
     private void updateLocationText(int iterations, int aps) {
