@@ -51,7 +51,7 @@ public interface ILocator {
     /**
      * Add a detected movement to the location
      */
-    public void addMovement(ACTIVITY currentActivity);
+    public void addMovement(int steps);
 
     /**
      * Reset the locator to the initial location

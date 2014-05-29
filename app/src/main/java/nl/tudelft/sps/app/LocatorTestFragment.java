@@ -160,9 +160,16 @@ public class LocatorTestFragment extends Fragment {
         wifiScanTask.execute((Room) null);
     }
 
-    private void doMovementDetection() {
-        // TODO: Implement
-        locator.addMovement(ACTIVITY.Walking);
+    /**
+     * The user pressed the "Movement" button
+     */
+    public void doMovementDetection() {
+        // Let us pretend that we walked one step
+        doMovementDetection(1);
+    }
+
+    public void doMovementDetection(final int steps) {
+        locator.addMovement(steps);
         updateLocationText();
     }
 
@@ -238,7 +245,7 @@ public class LocatorTestFragment extends Fragment {
     }
 
     private void startStepsCounter() {
-        stepsCounter = new StepsCounter((MainActivity) getActivity());
+        stepsCounter = new StepsCounter(this);
         stepsCounterThread = new Thread(stepsCounter);
         stepsCounterThread.start();
 

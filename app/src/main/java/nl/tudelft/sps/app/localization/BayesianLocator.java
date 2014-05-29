@@ -257,38 +257,28 @@ public class BayesianLocator implements ILocator {
     }
 
     @Override
-    public synchronized void addMovement(ACTIVITY currentActivity) {
-        Map<Room, Double> previousLocation = new HashMap<>(currentLocation);
+    public synchronized void addMovement(int steps) {
         // TODO: Improve movement model, I just made something up
-        switch (currentActivity) {
-            case Walking:
-            case Running:
-            case Stairs_Down:
-            case Stairs_Up:
-                // TODO 1) We need to find out s
-                //      2) We need to know size of cell in aisle (and assume position in center)
-                //      3) Calculate cells that fall within the boundaries:
-                // s = number of steps
-                // Location distribution:
-                // -1.2s --- -0.5s   x   0.5s --- 1.2s
-                // ^^^^^^^^^^^^^^^       ^^^^^^^^^^^^^
-                //     uniform              uniform
+        if (steps > 0) {
+            final Map<Room, Double> previousLocation = new HashMap<>(currentLocation);
 
-                // Give 10% of the current probability to each of the adjacent rooms
-                for (Map.Entry<Room, Double> locationProbability : previousLocation.entrySet()) {
-                    for (Room room : locationProbability.getKey().getAdjacentRooms()) {
-                        currentLocation.put(room, currentLocation.get(room) + 0.1 * locationProbability.getValue());
-                    }
+            // TODO 1) We need to find out s
+            //      2) We need to know size of cell in aisle (and assume position in center)
+            //      3) Calculate cells that fall within the boundaries:
+            // s = number of steps
+            // Location distribution:
+            // -1.2s --- -0.5s   x   0.5s --- 1.2s
+            // ^^^^^^^^^^^^^^^       ^^^^^^^^^^^^^
+            //     uniform              uniform
+
+            // Give 10% of the current probability to each of the adjacent rooms
+            for (Map.Entry<Room, Double> locationProbability : previousLocation.entrySet()) {
+                for (Room room : locationProbability.getKey().getAdjacentRooms()) {
+                    currentLocation.put(room, currentLocation.get(room) + 0.1 * locationProbability.getValue());
                 }
-                normalize();
-                break;
-            case Sitting:
-            default:
-                // Do nothing
-                break;
+            }
+            normalize();
         }
-
-
     }
 
     /**

@@ -12,10 +12,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import nl.tudelft.sps.app.LocatorTestFragment;
 import nl.tudelft.sps.app.MainActivity;
 import nl.tudelft.sps.app.localization.ILocator;
 
 public class StepsCounter implements Runnable, SensorEventListener {
+
+    public static final int STEPS_PER_UPDATE = 5;
+
+    /**
+     * 60 scans takes about 800 ms on Galaxy S
+     */
+    public static final int WINDOW_SIZE = 60;
 
     private final SensorManager sensorManager;
     private final Sensor accelerometer;
@@ -26,7 +34,7 @@ public class StepsCounter implements Runnable, SensorEventListener {
      */
     private final Object gate = new Object();
 
-    private final Measurement.MonitorHelper measurement;
+    private final Measurement.MonitorHelper measurement = new Measurement.MonitorHelper(Measurement.WINDOW_SIZE);
 
     /**
      * A variable used to indicate that the thread should stop running
@@ -34,14 +42,15 @@ public class StepsCounter implements Runnable, SensorEventListener {
     private boolean keepRunning = true;
 
     private final MainActivity activity;
+    private final LocatorTestFragment fragment;
     private final ILocator locator;
 
-    public StepsCounter(MainActivity activity) {
+    public StepsCounter(LocatorTestFragment fragment) {
         super();
 
-        this.activity = activity;
+        this.fragment = fragment;
+        this.activity = (MainActivity) fragment.getActivity();
         this.locator = activity.getLocator();
-        measurement = new Measurement.MonitorHelper();
 
         // Set-up sensor manager
         sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
@@ -79,15 +88,31 @@ public class StepsCounter implements Runnable, SensorEventListener {
                     // For reach window, determine the user is idle or took a
                     final ACTIVITY actualActivity = activity.getClassifier().classify(result);
 
-                    if (ACTIVITY.Sitting.equals(actualActivity)) {
-                        System.err.println(String.format("Steps: %d", steps));
-                        // TODO locator.addMovement(steps); or call LocatorTestFragment.doMovementDetection() so that GUI can be updated
+                    System.err.println("CLASSIFIED ACTIVITY: " + actualActivity.toString());
 
-                        steps = 0;
+                    if (ACTIVITY.Sitting == actualActivity) {
+                        System.err.println(String.format("Steps: %d", steps));
+
+                        if (steps > 0) {
+                            // TODO locator.addMovement(steps); or call LocatorTestFragment.doMovementDetection() so that GUI can be updated
+                            fragment.doMovementDetection(steps);
+                            steps = 0;
+                        }
                     }
                     else {
                         // If the user took a step, increment the step counter
                         steps++;
+
+                        System.err.println("One more step!");
+
+                        final boolean gotFiveSteps = (steps % STEPS_PER_UPDATE) == 0;
+                        System.err.println("GOT FIVE STEPS: " + String.valueOf(gotFiveSteps));
+
+                        if (gotFiveSteps) {
+                            // TODO locator.addMovement(steps); or call LocatorTestFragment.doMovementDetection() so that GUI can be updated
+                            fragment.doMovementDetection(steps);
+                            steps = 0;
+                        }
                     }
                 }
                 catch (InterruptedException exception) {

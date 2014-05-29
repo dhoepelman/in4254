@@ -135,7 +135,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         measurementStart = System.currentTimeMillis();
 
         // Create an empty helper
-        measurementHelper = new Measurement.TrainHelper(selectedActivity, ((MainActivity) getActivity()).getDatabaseHelper());
+        measurementHelper = new Measurement.TrainHelper(selectedActivity, ((MainActivity) getActivity()).getDatabaseHelper(), Measurement.WINDOW_SIZE);
 
         // Start listening
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);

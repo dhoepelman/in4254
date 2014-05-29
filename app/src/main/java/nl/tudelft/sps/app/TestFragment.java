@@ -229,6 +229,9 @@ public class TestFragment extends Fragment {
             });
         }
 
+        final ProgressBar progressBar = (ProgressBar) rootView.findViewById(R.id.progressBar_measurement);
+        progressBar.setMax(Measurement.WINDOW_SIZE); // TODO should depend on actual window size that we're gonna use (60 or 256)
+
         // Make all activity buttons gray
         colorSelectedButton();
 
@@ -257,7 +260,7 @@ public class TestFragment extends Fragment {
             toastManager.showText("Select an activity first", Toast.LENGTH_SHORT);
         }
         else {
-            measurementHelper = new Measurement.MonitorHelper();
+            measurementHelper = new Measurement.MonitorHelper(Measurement.WINDOW_SIZE);
             Log.w(getClass().getName(), "TEST NEW HELPER " + String.valueOf(measurementHelper.hashCode()));
 
             synchronized (updateLock) {

@@ -29,7 +29,9 @@ public class Measurement implements IMeasurement {
     /**
      * Window size. Based on [1]. 50Hz measurements
      */
-    public static final int WINDOW_SIZE = 256;
+    // TODO use 256 for normal activity training/testing, use 60 for steps counter training/testing
+//    public static final int WINDOW_SIZE = 256;
+    public static final int WINDOW_SIZE = StepsCounter.WINDOW_SIZE;
     /**
      * Window overlap. Based on [1]
      */
@@ -67,22 +69,37 @@ public class Measurement implements IMeasurement {
     private DescriptiveStatistics[] window;
     private double[] featureVector = null;
 
+    // Not final to make compiler happy
+    private int windowSize;
 
-    public Measurement(long timestamp, ACTIVITY activity) {
-        createEmptyWindow();
+    public Measurement(long timestamp, ACTIVITY activity, int windowSize) {
         this.timestamp = timestamp;
         this.activity = activity;
+        this.windowSize = windowSize;
+        createEmptyWindow();
+    }
+
+    public Measurement(int windowSize) {
+        this.windowSize = windowSize;
     }
 
     public Measurement() {
         // ORMLite
     }
 
+    public int getWindowSize() {
+        return windowSize;
+    }
+
+    public int getWindowOverlap() {
+        return windowSize / 2;
+    }
+
     private void createEmptyWindow() {
         window = new DescriptiveStatistics[]{
-                new DescriptiveStatistics(WINDOW_SIZE),
-                new DescriptiveStatistics(WINDOW_SIZE),
-                new DescriptiveStatistics(WINDOW_SIZE)
+                new DescriptiveStatistics(getWindowSize()),
+                new DescriptiveStatistics(getWindowSize()),
+                new DescriptiveStatistics(getWindowSize())
         };
     }
 
@@ -164,7 +181,7 @@ public class Measurement implements IMeasurement {
      * True if the window is full
      */
     public boolean isCompleted() {
-        return getProgress() >= WINDOW_SIZE;
+        return getProgress() >= getWindowSize();
     }
 
     @Override
@@ -233,19 +250,23 @@ public class Measurement implements IMeasurement {
         protected int loc_this_time = 0;
 
         public boolean isFull() {
-            return current_loc == WINDOW_SIZE;
+            return current_loc == current.getWindowSize();
         }
     }
 
     public static class MonitorHelper extends Helper {
         private Measurement next;
 
-        public MonitorHelper() {
-            current = new Measurement();
+        private long benchmarkTimestamp;
+
+        public MonitorHelper(final int windowSize) {
+            current = new Measurement(windowSize);
             current_loc = 0;
 
             // Create an empty "next" measurement
-            next = new Measurement();
+            next = new Measurement(windowSize);
+
+            benchmarkTimestamp = System.currentTimeMillis();
         }
 
         public synchronized Measurement getCurrentWindow() {
@@ -268,10 +289,14 @@ public class Measurement implements IMeasurement {
             if (isFull()) {
                 // Measurement was full, replace with next
                 current = next;
-                current_loc = WINDOW_OVERLAP;
+                current_loc = current.getWindowOverlap();
 
                 // Create an empty "next" measurement
-                next = new Measurement();
+                next = new Measurement(current.getWindowSize());
+
+                final long timestamp = System.currentTimeMillis();
+                System.err.println(String.format("Timestamp: %d ms", timestamp - benchmarkTimestamp));
+                benchmarkTimestamp = timestamp;
             }
         }
 
@@ -283,7 +308,7 @@ public class Measurement implements IMeasurement {
             addNewWindowIfFull();
 
             current.addToMeasurement(values);
-            if (current_loc >= WINDOW_OVERLAP) {
+            if (current_loc >= current.getWindowOverlap()) {
                 next.addToMeasurement(values);
             }
             current_loc++;
@@ -303,14 +328,16 @@ public class Measurement implements IMeasurement {
         private int numFullWindows = 0;
         private Collection<Sample> currentSamples;
         private Collection<Sample> nextSamples;
+        private final int windowSize;
 
-        public TrainHelper(ACTIVITY activity, DatabaseHelper dbhelper) {
+        public TrainHelper(ACTIVITY activity, DatabaseHelper dbhelper, int windowSize) {
             this.activity = activity;
             this.databaseHelper = dbhelper;
+            this.windowSize = windowSize;
         }
 
         public boolean isFull() {
-            return current_loc == WINDOW_SIZE;
+            return current_loc == current.getWindowSize();
         }
 
         /**
@@ -339,8 +366,8 @@ public class Measurement implements IMeasurement {
             if (current == null || isFull()) {
                 if (current == null) {
                     // We don't have any measurement, start one
-                    current = new Measurement(timestamp, activity);
-                    currentSamples = new ArrayList<>(WINDOW_SIZE);
+                    current = new Measurement(timestamp, activity, windowSize);
+                    currentSamples = new ArrayList<>(current.getWindowSize());
                     current_loc = 0;
                     measurements.add(current);
                 } else {
@@ -349,18 +376,18 @@ public class Measurement implements IMeasurement {
                     // Replace with next
                     current = next;
                     currentSamples = nextSamples;
-                    current_loc = WINDOW_OVERLAP;
+                    current_loc = current.getWindowOverlap();
                     numFullWindows++;
                 }
                 // Create an empty "next" measurement
-                next = new Measurement(timestamp, activity);
-                nextSamples = new ArrayList<>(WINDOW_SIZE);
+                next = new Measurement(timestamp, activity, current.getWindowSize());
+                nextSamples = new ArrayList<>(next.getWindowSize());
                 measurements.add(next);
             }
 
             currentSamples.add(new Sample(current, timestamp, values[0], values[1], values[2]));
             current.addToMeasurement(values);
-            if (current_loc >= WINDOW_OVERLAP) {
+            if (current_loc >= current.getWindowOverlap()) {
                 nextSamples.add(new Sample(current, timestamp, values[0], values[1], values[2]));
                 next.addToMeasurement(values);
             }
