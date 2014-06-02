@@ -266,7 +266,6 @@ public class BayesianLocator implements ILocator {
 
     @Override
     public synchronized void addMovement(int steps) {
-        // TODO: Improve movement model, I just made something up
         if (steps > 0) {
             final Map<Room, Double> previousLocation = new HashMap<>(currentLocation);
 
@@ -286,73 +285,23 @@ public class BayesianLocator implements ILocator {
             // Calculate length of original region
             final double lengthRegion = longestDistance - shortestDistance;
 
+            // Distance is between 2.5 and 6 meters if steps = 5 and
+            // between 0.5 and 1.2 if steps = 1
+            // |   x   |       |
+            //       [----]
+            //      2.5  6.0
+            final double fractionAdjacentRoom = Math.max(0, longestDistance - ROOM_LENGTH_METERS / 2.0) / lengthRegion;
+
+            System.err.println(String.format("Fraction in adjacent rooms: %.2f", fractionAdjacentRoom));
+
             // The region will cover a number of rooms, for example:
-            // 10 % of the current room i, 70 % of room i+1 and 20 % of room i+2
-            // Give these probabilities to these rooms
-
+            // 40 % in the current room, 60 % in the immediate adjacent room
+            // The uniform distribution assumes that total probability is 1, but
+            // we have n neighbors, so divide the probability by n
             for (Map.Entry<Room, Double> locationProbability : previousLocation.entrySet()) {
-                // We start in the center of the current room
-                double currentDistance = 0.0;
-
-                double currentMinimum = shortestDistance;
-
-                // Starting situation 1:
-                // 0     1     2     3     4   <-- border numbers
-                // |  x  |     |     |     |   <-- rooms
-                //     [               ]       <-- region
-                //     ^^^                     <-- distanceCurrentInRegion
-                //     {               }       <-- lengthRegion
-                // (The x is the original starting point and is in the center of the original room)
-
-                // Next situation 2:
-                // 0     1     2     3     4   <-- border numbers
-                // |  x  |  o  |     |     |   <-- rooms
-                //       [             ]       <-- region
-                //       ^^^^^^^               <-- distanceCurrentInRegion
-                //     {               }       <-- lengthRegion
-                // (The x is the original starting point and is in the center of the original room)
-                // (The o is the current center and o-x is the currentDistance)
-                // (currentMinimum is border 1)
-
-                // Last situation n:
-                // 0     1     2     3     4   <-- border numbers
-                // |  x  |     |     |  o  |   <-- rooms
-                //                   [ ]       <-- region
-                //                   ^^^       <-- distanceCurrentInRegion
-                //     {               }       <-- lengthRegion
-                // (currentMinimum is border 3)
-
-                // Get starting room 1 and set it as current room
-                final Room startRoom = locationProbability.getKey();
-                Room currentRoom = startRoom;
-
-                // TODO math cannot handle rooms -2, -3, -4, -5, -6, ... yet
-                // If while condition fails, then we are definitely further than upper bound of region (longestDistance)
-                while (currentDistance - ROOM_LENGTH_METERS/2.0 < longestDistance) {
-                    // If a room falls completely inside the region, then distanceCurrentInRegion == ROOM_LENGTH_METERS
-                    final double distanceCurrentInRegion = Math.min(longestDistance, currentDistance + ROOM_LENGTH_METERS / 2.0) - currentMinimum;
-
-                    // Give probCurrent to current room
-                    final double probCurrent = distanceCurrentInRegion / lengthRegion;
-                    // TODO uncomment once we know how to retrieve room 2, 3, 4, 5, 6, ... below
-//                    currentLocation.put(currentRoom, currentLocation.get(currentRoom) + probCurrent * locationProbability.getValue());
-
-                    // Set the border of the room as the next minimum
-                    // For example, when we are between 0 and 1, currentMinimum will become
-                    // distance from original starting point to border 1
-                    currentMinimum = currentDistance + ROOM_LENGTH_METERS / 2.0;
-
-                    // Travel to the center of the next adjacent room
-                    currentDistance += ROOM_LENGTH_METERS;
-
-                    // TODO get next adjacent room (2, 3, 4, 5, 6, ...) and set it as next current room
-//                    currentRoom = ...
-                }
-
-                // TODO remove following for loop once TODO's above have been implemented
-                // Give 10% of the current probability to each of the adjacent rooms
-                for (Room room : locationProbability.getKey().getAdjacentRooms()) {
-                    currentLocation.put(room, currentLocation.get(room) + 0.1 * locationProbability.getValue());
+                final Collection<Room> adjacentRooms = locationProbability.getKey().getAdjacentRooms();
+                for (Room room : adjacentRooms) {
+                    currentLocation.put(room, currentLocation.get(room) + fractionAdjacentRoom / adjacentRooms.size() * locationProbability.getValue());
                 }
             }
 
