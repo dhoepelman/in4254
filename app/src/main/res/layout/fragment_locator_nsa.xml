@@ -11,85 +11,16 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
+        android:gravity="center_horizontal|left"
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/but_initial"
+            android:id="@+id/but_nsa_toggle"
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Initial Belief" />
+            android:text="Start listening" />
 
-        <Button
-            android:id="@+id/but_scan"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="Scan" />
-
-        <Button
-            android:id="@+id/but_movement"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="Movement" />
-
-        <Button
-            android:id="@+id/but_fakescan"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fake Scan" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/label_num_iter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="left"
-            android:paddingLeft="0dp"
-            android:text="@+string/label_num_iter"
-            android:textAlignment="textStart"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-            android:id="@+id/val_num_iter"
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:paddingLeft="0dp"
-            android:text="0"
-            android:textAlignment="textEnd"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-            android:id="@+id/label_num_aps"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="left"
-            android:paddingLeft="50dp"
-            android:text="@+string/label_num_aps"
-            android:textAlignment="textStart"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-            android:id="@+id/val_num_aps"
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:paddingLeft="0dp"
-            android:text="0"
-            android:textAlignment="textEnd"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
     </LinearLayout>
 
     <LinearLayout
@@ -115,7 +46,6 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="9"
-                android:clickable="false"
                 android:text="@+string/label_c1_a1"
                 app:layout_column="1"
                 app:layout_gravity="fill"
@@ -129,7 +59,6 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="8"
-                android:clickable="false"
                 android:text="@+string/label_c2_a2"
                 app:layout_column="1"
                 app:layout_gravity="fill"
@@ -143,7 +72,6 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="7"
-                android:clickable="false"
                 android:text="@+string/label_c3_a3"
                 app:layout_column="1"
                 app:layout_gravity="fill"
@@ -157,7 +85,6 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="6"
-                android:clickable="false"
                 android:text="@+string/label_c4_a4"
                 app:layout_column="1"
                 app:layout_gravity="fill"
@@ -171,7 +98,6 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="5"
-                android:clickable="false"
                 android:text="@+string/label_c5_a5"
                 app:layout_column="1"
                 app:layout_gravity="fill"
@@ -185,7 +111,6 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="4"
-                android:clickable="false"
                 android:text="@+string/label_c6_a6"
                 app:layout_column="1"
                 app:layout_gravity="fill"
@@ -199,7 +124,6 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="3"
-                android:clickable="false"
                 android:text="@+string/label_c7_a7"
                 app:layout_column="1"
                 app:layout_gravity="fill"
@@ -213,7 +137,6 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="2"
-                android:clickable="false"
                 android:text="@+string/label_c8_a8"
                 app:layout_column="1"
                 app:layout_gravity="fill"
@@ -227,7 +150,6 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="1"
-                android:clickable="false"
                 android:text="@+string/label_c9_a9"
                 app:layout_column="1"
                 app:layout_gravity="fill"
@@ -241,7 +163,6 @@
                 android:layout_column="1"
                 android:layout_margin="-4dp"
                 android:layout_row="0"
-                android:clickable="false"
                 android:text="@+string/label_c10_a10"
                 app:layout_column="1"
                 app:layout_gravity="fill"
@@ -255,7 +176,6 @@
                 android:layout_column="0"
                 android:layout_margin="-4dp"
                 android:layout_row="9"
-                android:clickable="false"
                 android:text="@+string/label_c11_conf_btm"
                 app:layout_column="0"
                 app:layout_gravity="fill"
@@ -269,7 +189,6 @@
                 android:layout_column="0"
                 android:layout_margin="-4dp"
                 android:layout_row="8"
-                android:clickable="false"
                 android:text="@+string/label_c12_conf_top"
                 app:layout_column="0"
                 app:layout_gravity="fill"
@@ -283,7 +202,6 @@
                 android:layout_column="2"
                 android:layout_margin="-4dp"
                 android:layout_row="7"
-                android:clickable="false"
                 android:text="@+string/label_c13_coffee"
                 app:layout_column="2"
                 app:layout_gravity="fill"
@@ -297,7 +215,6 @@
                 android:layout_column="0"
                 android:layout_margin="-4dp"
                 android:layout_row="7"
-                android:clickable="false"
                 android:text="@+string/label_c14_plea"
                 app:layout_column="0"
                 app:layout_gravity="fill"
@@ -311,7 +228,6 @@
                 android:layout_column="0"
                 android:layout_margin="-4dp"
                 android:layout_row="6"
-                android:clickable="false"
                 android:text="@+string/label_c15_mtg"
                 app:layout_column="0"
                 app:layout_gravity="fill"
@@ -325,7 +241,6 @@
                 android:layout_column="2"
                 android:layout_margin="-4dp"
                 android:layout_row="2"
-                android:clickable="false"
                 android:text="@+string/label_c16_flex_btm"
                 app:layout_column="2"
                 app:layout_gravity="fill"
@@ -339,7 +254,6 @@
                 android:layout_column="2"
                 android:layout_margin="-4dp"
                 android:layout_row="1"
-                android:clickable="false"
                 android:text="@+string/label_c17_flex_top"
                 app:layout_column="2"
                 app:layout_gravity="fill"

@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import nl.tudelft.sps.app.activity.ACTIVITY;
 import nl.tudelft.sps.app.activity.StepsCounter;
 import nl.tudelft.sps.app.localization.ILocator;
 import nl.tudelft.sps.app.localization.Room;
@@ -33,17 +32,11 @@ import nl.tudelft.sps.app.localization.WifiScanTask;
 
 public class LocatorTestFragment extends Fragment {
 
-    private StepsCounter stepsCounter;
-    private Thread stepsCounterThread;
-
-    private MenuItem stepsCounterMenuItem;
-
     /**
      * The fragment argument representing the section number for this
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
-
     private final WifiScanTask.ResultProcessor wifiScanResultProcessor = new WifiScanTask.ResultProcessor() {
         @Override
         public void result(WifiMeasurementsWindow results) {
@@ -58,6 +51,9 @@ public class LocatorTestFragment extends Fragment {
     };
     ToastManager toastManager;
     View rootView;
+    private StepsCounter stepsCounter;
+    private Thread stepsCounterThread;
+    private MenuItem stepsCounterMenuItem;
     private ILocator locator;
 
     public LocatorTestFragment() {
@@ -117,11 +113,6 @@ public class LocatorTestFragment extends Fragment {
             }
         });
 
-        // Make buttons not clickable
-        for (Room room : Room.values()) {
-            final Button button = (Button) rootView.findViewById(room.getTestIdentifier());
-            button.setClickable(false);
-        }
         updateLocationText();
 
         setHasOptionsMenu(true);
