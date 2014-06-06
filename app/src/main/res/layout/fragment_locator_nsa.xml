@@ -15,6 +15,13 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/but_initial"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Initial Belief" />
+
+        <Button
             android:id="@+id/but_nsa_toggle"
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"

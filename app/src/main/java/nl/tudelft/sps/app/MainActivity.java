@@ -81,6 +81,9 @@ public class MainActivity extends ActionBarActivity
                 fragment = LocalizationOfflineProcessor.newInstance(position);
                 break;
             case 5:
+                fragment = LocatorNSAFragment.newInstance(position);
+                break;
+            case 6:
                 fragment = MiscFragment.newInstance(position);
                 break;
         }
@@ -109,14 +112,17 @@ public class MainActivity extends ActionBarActivity
             case 2:
                 mTitle = getString(R.string.title_section_localization);
                 break;
-            case 5:
-                mTitle = getString(R.string.title_section_misc);
-                break;
             case 3:
                 mTitle = getString(R.string.title_section_locator_test);
                 break;
             case 4:
                 mTitle = getString(R.string.title_section_processing);
+                break;
+            case 5:
+                mTitle = getString(R.string.title_section_nsa);
+                break;
+            case 6:
+                mTitle = getString(R.string.title_section_misc);
                 break;
         }
     }

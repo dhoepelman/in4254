@@ -76,7 +76,7 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated (Bundle savedInstanceState) {
+    public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         // Indicate that this fragment would like to influence the set of actions in the action bar.
         setHasOptionsMenu(true);
@@ -84,9 +84,9 @@ public class NavigationDrawerFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         mDrawerListView = (ListView) inflater.inflate(
-            R.layout.fragment_navigation_drawer, container, false);
+                R.layout.fragment_navigation_drawer, container, false);
         mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -94,17 +94,19 @@ public class NavigationDrawerFragment extends Fragment {
             }
         });
         mDrawerListView.setAdapter(new ArrayAdapter<>(
-            getActionBar().getThemedContext(),
-            android.R.layout.simple_list_item_1,
-            android.R.id.text1,
-            new String[] {
-                getString(R.string.title_section_test_activity),
-                getString(R.string.title_section_train_activity),
-                getString(R.string.title_section_localization),
-                getString(R.string.title_section_locator_test),
-                getString(R.string.title_section_processing),
-                getString(R.string.title_section_misc),
-            }));
+                getActionBar().getThemedContext(),
+                android.R.layout.simple_list_item_1,
+                android.R.id.text1,
+                new String[]{
+                        getString(R.string.title_section_test_activity),
+                        getString(R.string.title_section_train_activity),
+                        getString(R.string.title_section_localization),
+                        getString(R.string.title_section_locator_test),
+                        getString(R.string.title_section_processing),
+                        getString(R.string.title_section_nsa),
+                        getString(R.string.title_section_misc),
+                }
+        ));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
@@ -248,10 +250,10 @@ public class NavigationDrawerFragment extends Fragment {
 
         /**
          * Voorbeeld van een item
-        if (item.getItemId() == R.id.action_example) {
-            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
-            return true;
-        }**/
+         if (item.getItemId() == R.id.action_example) {
+         Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
+         return true;
+         }**/
 
         return super.onOptionsItemSelected(item);
     }
