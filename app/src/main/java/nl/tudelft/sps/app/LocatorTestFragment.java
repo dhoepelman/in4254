@@ -20,8 +20,11 @@ import com.j256.ormlite.dao.RuntimeExceptionDao;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,6 +66,8 @@ public class LocatorTestFragment extends Fragment {
             }
         }
     };
+    private final int stepsCounterMenuItemID = 0;
+    private final int showIPMenuItemID = 1;
     ToastManager toastManager;
     View rootView;
     /**
@@ -74,6 +79,7 @@ public class LocatorTestFragment extends Fragment {
     private StepsCounter stepsCounter;
     private Thread stepsCounterThread;
     private MenuItem stepsCounterMenuItem;
+    private MenuItem showIPMenuItem;
     private ILocator locator;
 
     public LocatorTestFragment() {
@@ -288,21 +294,49 @@ public class LocatorTestFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        stepsCounterMenuItem = menu.add(0, 0, 0, "Start steps counter");
+        stepsCounterMenuItem = menu.add(Menu.NONE, stepsCounterMenuItemID, stepsCounterMenuItemID, "Start steps counter");
+        showIPMenuItem = menu.add(Menu.NONE, showIPMenuItemID, showIPMenuItemID, "Show IP");
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.equals(stepsCounterMenuItem)) {
-            if (stepsCounterThread == null || !stepsCounterThread.isAlive()) {
-                // Start the steps counter
-                startStepsCounter();
-            } else {
-                stopStepsCounter();
-            }
+        switch (item.getItemId()) {
+            case stepsCounterMenuItemID:
+                if (stepsCounterThread == null || !stepsCounterThread.isAlive()) {
+                    // Start the steps counter
+                    startStepsCounter();
+                } else {
+                    stopStepsCounter();
+                }
+                break;
+            case showIPMenuItemID:
+                boolean success = false;
+                String ip = null;
+                try {
+                    ip = getIPAddress();
+                    success = !ip.equals("");
+                } catch (SocketException e) {
+                    Log.w(LocatorTestFragment.class.getName(), e);
+                }
+                toastManager.showText((success) ? ip : "Could not get IP address", Toast.LENGTH_SHORT);
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private String getIPAddress() throws SocketException {
+        // Based on http://stackoverflow.com/questions/6064510/how-to-get-ip-address-of-the-device
+        List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+        for (NetworkInterface intf : interfaces) {
+            List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+            for (InetAddress addr : addrs) {
+                if (!addr.isLoopbackAddress() && !addr.isLinkLocalAddress()) {
+                    return addr.getHostAddress().toUpperCase();
+                }
+            }
+        }
+        return "";
     }
 
     private void startStepsCounter() {
