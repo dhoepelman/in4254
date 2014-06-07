@@ -3,8 +3,10 @@ package nl.tudelft.sps.app;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +34,8 @@ public class LocatorNSAFragment extends Fragment {
 
     private Map<Room, Double> location = Collections.EMPTY_MAP;
     private DeviceFollowingRunnable follower;
+    private View but_start;
+    private View but_stop;
 
     public LocatorNSAFragment() {
         // Required empty public constructor
@@ -50,9 +54,8 @@ public class LocatorNSAFragment extends Fragment {
     }
 
     public void connectToDevice(final String ip, final int port) {
-        if (follower != null) {
-            follower.stop();
-        }
+        stopFollower();
+
         follower = new DeviceFollowingRunnable(ip, port);
         new Thread(follower).start();
     }
@@ -65,12 +68,22 @@ public class LocatorNSAFragment extends Fragment {
 
         toastManager = new ToastManager(getActivity());
 
-        (rootView.findViewById(R.id.but_nsa_toggle)).setOnClickListener(new View.OnClickListener() {
+        but_start = rootView.findViewById(R.id.but_nsa_start);
+        but_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: toggle scanning on or off
+                startListening();
             }
         });
+
+        but_stop = rootView.findViewById(R.id.but_nsa_stop);
+        but_stop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopListening();
+            }
+        });
+
         (rootView.findViewById(R.id.but_initial)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -88,6 +101,34 @@ public class LocatorNSAFragment extends Fragment {
         //setHasOptionsMenu(true);
 
         return rootView;
+    }
+
+    private void startListening() {
+        new IPInputDialog(new IPInputDialog.IPInputDialogListener() {
+            @Override
+            public void onIPInput(DialogFragment dialog, String ip) {
+                if (!Patterns.IP_ADDRESS.matcher(ip).matches()) {
+                    toastManager.showText(String.format("Invalid IP %s", ip), Toast.LENGTH_SHORT);
+                } else {
+                    but_start.setEnabled(false);
+                    but_stop.setEnabled(true);
+                    connectToDevice(ip, LocatorTestFragment.SOCKET_PORT);
+                }
+            }
+        }).show(getActivity().getSupportFragmentManager(), "ipinput");
+    }
+
+    private void stopListening() {
+        stopFollower();
+        but_stop.setEnabled(false);
+        but_start.setEnabled(true);
+    }
+
+    private void stopFollower() {
+        if (follower != null) {
+            follower.stop();
+            follower = null;
+        }
     }
 
     /**
@@ -119,6 +160,7 @@ public class LocatorNSAFragment extends Fragment {
 
     private void setInitialLocation() {
         location = Collections.EMPTY_MAP;
+        updateLocationText();
         toastManager.showText("Initial belief set", Toast.LENGTH_SHORT);
     }
 
@@ -128,18 +170,6 @@ public class LocatorNSAFragment extends Fragment {
 
         // Update title in navigation bar
         ((MainActivity) activity).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        /*try {
-            if (followingSocket != null && !followingSocket.isClosed()) {
-                followingSocket.close();
-            }
-        } catch (IOException e) {
-            Log.w(LocatorNSAFragment.class.getName(), e);
-        }*/
     }
 
     /**
@@ -169,6 +199,15 @@ public class LocatorNSAFragment extends Fragment {
             }
         }
 
+        private void showToast(final String msg, final int duration) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    toastManager.showText(msg, duration);
+                }
+            });
+        }
+
         @Override
         public void run() {
 
@@ -178,7 +217,7 @@ public class LocatorNSAFragment extends Fragment {
             } catch (IOException e) {
                 final String msg = String.format("Could not connect to %s:%d", ip, port);
                 Log.e(LocatorNSAFragment.class.getName(), msg, e);
-                toastManager.showText(msg, Toast.LENGTH_LONG);
+                showToast(msg, Toast.LENGTH_LONG);
                 return;
             }
 
@@ -191,9 +230,11 @@ public class LocatorNSAFragment extends Fragment {
                 } catch (IOException e) {
                     final String msg = String.format("Could not open inputstream of socket");
                     Log.e(LocatorNSAFragment.class.getName(), msg, e);
-                    toastManager.showText(msg, Toast.LENGTH_LONG);
+                    showToast(msg, Toast.LENGTH_LONG);
                     return;
                 }
+
+                showToast(String.format("Now listening to %s:%d", ip, port), Toast.LENGTH_SHORT);
 
                 // Continue receiving locations while we're not interrupted
                 while (keepRunning && !Thread.currentThread().isInterrupted()) {
@@ -217,6 +258,7 @@ public class LocatorNSAFragment extends Fragment {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                toastManager.showText("New location received", Toast.LENGTH_SHORT);
                                 location = newLocation;
                                 updateLocationText();
                             }
@@ -224,7 +266,7 @@ public class LocatorNSAFragment extends Fragment {
                     }
                 }
 
-                toastManager.showText(String.format("Stopped listening to %s:%d", ip, port), Toast.LENGTH_SHORT);
+                showToast(String.format("Stopped listening to %s:%d", ip, port), Toast.LENGTH_SHORT);
             } finally {
                 stop();
             }
