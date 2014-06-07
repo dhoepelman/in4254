@@ -133,6 +133,9 @@ public class LocatorTestFragment extends Fragment {
             }
         });
 
+        // Start the server thread
+        new Thread(new SocketAcceptThread()).start();
+
         updateLocationText();
 
         setHasOptionsMenu(true);
@@ -270,11 +273,13 @@ public class LocatorTestFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
 
-        // Close the socket
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            Log.w(LocatorTestFragment.class.getName(), e);
+        if (serverSocket != null) {
+            // Close the socket
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                Log.w(LocatorTestFragment.class.getName(), e);
+            }
         }
 
         // Kill the steps counter if it is running
@@ -332,7 +337,7 @@ public class LocatorTestFragment extends Fragment {
                 try {
                     locationListeners.add(serverSocket.accept());
                 } catch (IOException e) {
-                    Log.e(LocatorTestFragment.class.getName(), "Could not accept incoming socket connection", e);
+                    Log.w(LocatorTestFragment.class.getName(), "Could not accept incoming socket connection or serversocket was closed", e);
                 }
             }
         }
