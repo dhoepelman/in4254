@@ -18,7 +18,15 @@ import android.widget.Toast;
 
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -32,11 +40,17 @@ import nl.tudelft.sps.app.localization.WifiScanTask;
 
 public class LocatorTestFragment extends Fragment {
 
+    // A random port not in wikipedia's list of registered port numbers
+    public static final int SOCKET_PORT = 7727;
     /**
      * The fragment argument representing the section number for this
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
+    /**
+     * A synchronized list of devices listening to this phone's location.
+     */
+    final List<Socket> locationListeners = Collections.synchronizedList(new ArrayList<Socket>());
     private final WifiScanTask.ResultProcessor wifiScanResultProcessor = new WifiScanTask.ResultProcessor() {
         @Override
         public void result(WifiMeasurementsWindow results) {
@@ -51,6 +65,12 @@ public class LocatorTestFragment extends Fragment {
     };
     ToastManager toastManager;
     View rootView;
+    /**
+     * Sockets where other phones can connect to to follow this phone's location
+     *
+     * @see nl.tudelft.sps.app.LocatorNSAFragment
+     */
+    private ServerSocket serverSocket;
     private StepsCounter stepsCounter;
     private Thread stepsCounterThread;
     private MenuItem stepsCounterMenuItem;
@@ -188,6 +208,11 @@ public class LocatorTestFragment extends Fragment {
     private void updateLocationText() {
         final Map<Room, Double> location = locator.getLocation();
 
+        if (locationListeners.size() > 0) {
+            // Update listeners with a copy of the map so changes to the location won't affect it if it is still sending
+            updateLocationListeners(new HashMap<>(location));
+        }
+
         for (Room room : Room.values()) {
             final long percent = Math.round(location.get(room) * 100L);
             final Button button = (Button) rootView.findViewById(room.getTestIdentifier());
@@ -207,6 +232,32 @@ public class LocatorTestFragment extends Fragment {
         }
     }
 
+    private void updateLocationListeners(final HashMap<Room, Double> location) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Getting the lock is neccesary when iterating over the synchronized list
+                synchronized (locationListeners) {
+                    Iterator<Socket> iterator = locationListeners.iterator();
+                    while (iterator.hasNext()) {
+                        Socket listener = iterator.next();
+                        if (listener.isClosed() || !listener.isConnected()) {
+                            // Socket isn't open, remove it from the list
+                            iterator.remove();
+                        } else {
+                            try {
+                                ObjectOutputStream oos = new ObjectOutputStream(listener.getOutputStream());
+                                oos.writeObject(location);
+                            } catch (IOException e) {
+                                Log.e(LocatorTestFragment.class.getName(), String.format("Could not send location to socket %s", listener.getRemoteSocketAddress().toString()), e);
+                            }
+                        }
+                    }
+                }
+            }
+        }).start();
+    }
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -218,6 +269,13 @@ public class LocatorTestFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
+        // Close the socket
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            Log.w(LocatorTestFragment.class.getName(), e);
+        }
 
         // Kill the steps counter if it is running
         stopStepsCounter();
@@ -235,8 +293,7 @@ public class LocatorTestFragment extends Fragment {
             if (stepsCounterThread == null || !stepsCounterThread.isAlive()) {
                 // Start the steps counter
                 startStepsCounter();
-            }
-            else {
+            } else {
                 stopStepsCounter();
             }
         }
@@ -258,6 +315,26 @@ public class LocatorTestFragment extends Fragment {
 
             stepsCounterMenuItem.setTitle("Start steps counter");
             toastManager.showText("Stopped steps counter", Toast.LENGTH_SHORT);
+        }
+    }
+
+    private class SocketAcceptThread implements Runnable {
+
+        @Override
+        public void run() {
+            try {
+                serverSocket = new ServerSocket(SOCKET_PORT);
+            } catch (IOException e) {
+                Log.e(LocatorTestFragment.class.getName(), "Could not open server socket", e);
+            }
+            // This is not busy waiting, as ServerSocket.accept() blocks until a connection is made
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    locationListeners.add(serverSocket.accept());
+                } catch (IOException e) {
+                    Log.e(LocatorTestFragment.class.getName(), "Could not accept incoming socket connection", e);
+                }
+            }
         }
     }
 }

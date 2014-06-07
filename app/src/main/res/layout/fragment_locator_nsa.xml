@@ -22,11 +22,19 @@
             android:text="Initial Belief" />
 
         <Button
-            android:id="@+id/but_nsa_toggle"
+            android:id="@+id/but_nsa_start"
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Start listening" />
+
+        <Button
+            android:id="@+id/but_nsa_stop"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Stop listening" />
 
     </LinearLayout>
 
