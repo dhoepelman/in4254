@@ -17,7 +17,7 @@ public class StepsCounter implements Runnable, SensorEventListener {
     /**
      * 60 scans takes about 800 ms on Galaxy S
      */
-    public static final int WINDOW_SIZE = 60;
+    public static final int WINDOW_SIZE = MeasurementWindow.WINDOW_SIZE / 4;
 
     private final SensorManager sensorManager;
     private final Sensor accelerometer;
@@ -28,7 +28,7 @@ public class StepsCounter implements Runnable, SensorEventListener {
      */
     private final Object gate = new Object();
 
-    private final MeasurementWindow.MonitorHelper measurement = new MeasurementWindow.MonitorHelper(MeasurementWindow.WINDOW_SIZE);
+    private final MeasurementWindow.MonitorHelper measurement = new MeasurementWindow.MonitorHelper(WINDOW_SIZE);
 
     /**
      * A variable used to indicate that the thread should stop running
@@ -80,7 +80,7 @@ public class StepsCounter implements Runnable, SensorEventListener {
                     measurement.addNewWindowIfFull();
 
                     // For reach window, determine the user is idle or took a
-                    final ACTIVITY actualActivity = activity.getClassifier().classify(result);
+                    final ACTIVITY actualActivity = activity.getClassifier(WINDOW_SIZE).classify(result);
 
                     if (ACTIVITY.Sitting == actualActivity) {
                         if (steps > 0) {

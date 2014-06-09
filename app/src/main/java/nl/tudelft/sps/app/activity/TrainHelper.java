@@ -48,13 +48,20 @@ public class TrainHelper extends Helper {
 
     public void removeIncompleteMeasurements() {
         // Remove the last measurement if it's incomplete
-        while (!measurementWindows.isEmpty() && !measurementWindows.get(measurementWindows.size() - 1).isCompleted()) {
-            measurementWindows.remove(measurementWindows.size() - 1);
-        }
+//        while (!measurementWindows.isEmpty() && !measurementWindows.get(measurementWindows.size() - 1).isCompleted()) {
+//            measurementWindows.remove(measurementWindows.size() - 1);
+//        }
+        // Make current null so that a new MeasurementWindow will be
+        // created when addMeasurement() is called
+        current = null;
     }
 
     public int getNumberOfFullWindows() {
         return numFullWindows;
+    }
+
+    public int getWindowSize() {
+        return windowSize;
     }
 
     public void addMeasurement(float[] values, long timestamp) {
@@ -68,7 +75,7 @@ public class TrainHelper extends Helper {
                 current = new MeasurementWindow(timestamp, activity, windowSize);
                 currentSamples = new ArrayList<>(current.getWindowSize());
                 current_loc = 0;
-                measurementWindows.add(current);
+//                measurementWindows.add(current);
             } else {
                 // Measurement was full, store it
                 persistCurrentMeasurement();
@@ -81,7 +88,7 @@ public class TrainHelper extends Helper {
             // Create an empty "next" measurement
             next = new MeasurementWindow(timestamp, activity, current.getWindowSize());
             nextSamples = new ArrayList<>(next.getWindowSize());
-            measurementWindows.add(next);
+//            measurementWindows.add(next);
         }
 
         currentSamples.add(new Sample(current, timestamp, values[0], values[1], values[2]));
@@ -94,37 +101,49 @@ public class TrainHelper extends Helper {
     }
 
     private void persistCurrentMeasurement() {
-        current.calculateFeatureVector();
-
         final DatabaseSamplesWorker worker = new DatabaseSamplesWorker(databaseHelper, current, currentSamples);
         new Thread(worker).start();
     }
 
     private static class DatabaseSamplesWorker implements Runnable {
 
-        private final Iterator<Sample> snapshot;
         private final DatabaseHelper databaseHelper;
+        private final MeasurementWindow window;
+        private final List<Sample> samples;
 
         private DatabaseSamplesWorker(DatabaseHelper databaseHelper, MeasurementWindow window, List<Sample> samples) {
-            // Create a snapshot, so we can safely iterate over it
-            snapshot = new CopyOnWriteArrayList(samples).iterator();
-
-            // Create a new MeasurementWindow in the current thread
-            databaseHelper.getMeasurementDao().create(window);
+            // I know checking for a magic number is kind of ugly, but we are assuming here
+            // that the size is 240 so that we can divide it by 4 in order to get 4 windows
+            // of 60 samples for the StepsCounter
+            assert window.getWindowSize() == 240;
 
             this.databaseHelper = databaseHelper;
+            this.window = window;
+            this.samples = samples;
         }
 
         @Override
         public void run() {
+            // TODO split the window and the list of samples into four
+            // new smaller windows and add it to the database as well
+
+            window.calculateFeatureVector();
+
+            // Create a new MeasurementWindow in the current thread
+            databaseHelper.getMeasurementDao().create(window);
+
             final RuntimeExceptionDao<Sample, Void> sampleDao = databaseHelper.getSampleDao();
 
             sampleDao.callBatchTasks(new Callable<Void>() {
                 @Override
                 public Void call() {
-                    while (snapshot.hasNext()) {
-                        sampleDao.create(snapshot.next());
+                    System.err.println("Creating Samples...");
+                    final long currentTimestamp = System.currentTimeMillis();
+                    for (Sample sample : samples) {
+                        sampleDao.create(sample);
                     }
+                    final long duration = System.currentTimeMillis() - currentTimestamp;
+                    System.err.println(String.format("%d samples created in %d ms", samples.size(), duration));
                     return null;
                 }
             });

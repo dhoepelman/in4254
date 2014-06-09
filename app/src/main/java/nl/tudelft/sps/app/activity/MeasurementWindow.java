@@ -4,20 +4,12 @@ import android.util.Log;
 
 import com.google.common.primitives.Doubles;
 import com.j256.ormlite.dao.ForeignCollection;
-import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.Callable;
-
-import nl.tudelft.sps.app.DatabaseHelper;
 
 /**
  * [1] Ravi, Nishkam, et al. "Activity recognition from accelerometer data." AAAI. Vol. 5. 2005.
@@ -27,15 +19,16 @@ import nl.tudelft.sps.app.DatabaseHelper;
 public class MeasurementWindow implements IMeasurement {
 
     /**
-     * Window size. Based on [1]. 50Hz measurements
+     * Window size. Based on [1]. 50Hz measurements.
+     * Use 256 for normal activity training/testing, use 60 for steps counter training/testing
      */
-    // TODO use 256 for normal activity training/testing, use 60 for steps counter training/testing
-//    public static final int WINDOW_SIZE = 256;
-    public static final int WINDOW_SIZE = StepsCounter.WINDOW_SIZE;
+    public static final int WINDOW_SIZE = 240;
+
     /**
      * Window overlap. Based on [1]
      */
     public static final int WINDOW_OVERLAP = 128;
+
     @DatabaseField(generatedId = true)
     long id;
     @DatabaseField
@@ -62,6 +55,8 @@ public class MeasurementWindow implements IMeasurement {
     double CorrYZ = Double.NaN;
     @DatabaseField
     double CorrZX = Double.NaN;
+    @DatabaseField
+    int size;
 
     /**
      * Window
@@ -69,18 +64,15 @@ public class MeasurementWindow implements IMeasurement {
     private DescriptiveStatistics[] window;
     private double[] featureVector = null;
 
-    // Not final to make compiler happy
-    private int windowSize;
-
-    public MeasurementWindow(long timestamp, ACTIVITY activity, int windowSize) {
+    public MeasurementWindow(long timestamp, ACTIVITY activity, int size) {
         this.timestamp = timestamp;
         this.activity = activity;
-        this.windowSize = windowSize;
+        this.size = size;
         createEmptyWindow();
     }
 
-    public MeasurementWindow(int windowSize) {
-        this.windowSize = windowSize;
+    public MeasurementWindow(int size) {
+        this.size = size;
     }
 
     public MeasurementWindow() {
@@ -88,11 +80,11 @@ public class MeasurementWindow implements IMeasurement {
     }
 
     public int getWindowSize() {
-        return windowSize;
+        return size;
     }
 
     public int getWindowOverlap() {
-        return windowSize / 2;
+        return size / 2;
     }
 
     private void createEmptyWindow() {

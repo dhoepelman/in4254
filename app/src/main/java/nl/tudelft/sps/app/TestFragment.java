@@ -33,7 +33,7 @@ import nl.tudelft.sps.app.activity.MeasurementWindow;
 import nl.tudelft.sps.app.activity.MeasurementTask;
 
 /**
- * Fragment for testing the classifier
+ * Fragment for testing the activity classifier
  */
 public class TestFragment extends Fragment {
 
@@ -49,7 +49,7 @@ public class TestFragment extends Fragment {
             try {
                 final MainActivity mainActivity = (MainActivity) getActivity();
                 if (mainActivity != null) {
-                    final ACTIVITY actualActivity = mainActivity.getClassifier().classify(result);
+                    final ACTIVITY actualActivity = mainActivity.getClassifier(MeasurementWindow.WINDOW_SIZE).classify(result);
 
                     if (firstResult) {
                         firstResult = false;

@@ -29,9 +29,9 @@ import nl.tudelft.sps.app.localization.WifiResultCollection;
 
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private static final String DATABASE_NAME = "sps.db";
-    private static final int DATABASE_VERSION = 8;
-    public RuntimeExceptionDao<MeasurementWindow, Long> measurementDao;
-    public RuntimeExceptionDao<Sample, Void> sampleDao;
+    private static final int DATABASE_VERSION = 9;
+    private RuntimeExceptionDao<MeasurementWindow, Long> measurementDao;
+    private RuntimeExceptionDao<Sample, Void> sampleDao;
     private RuntimeExceptionDao<WifiResult, Long> wifiResultDao;
     private RuntimeExceptionDao<WifiResultCollection, Long> wifiResultCollectionDao;
     private RuntimeExceptionDao<FFTResult, Long> FFTResultDao;
@@ -199,20 +199,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
                 // We're screwed if upgrade fails halfway
             }
         }
-        /*{
-            //throw new RuntimeException("Old database version detected. Please manually delete the old database (sps.db) to avoid loss of data.");
-            try {
-                TableUtils.dropTable(connectionSource, Measurement.class, true);
-                TableUtils.dropTable(connectionSource, Sample.class, true);
-                TableUtils.dropTable(connectionSource, WifiResult.class, true);
-                TableUtils.dropTable(connectionSource, WifiResultCollection.class, true);
-                TableUtils.dropTable(connectionSource, FFTResult.class, true);
-                TableUtils.dropTable(connectionSource, LocalizationOfflineProcessor.LocalizationOfflineProcessingResult.class, true);
-            } catch (SQLException e) {
-                Log.e(DatabaseHelper.class.getName(), "Couldn't upgrade database");
-                throw new RuntimeException(e);
-            }
-        }*/
+        if (oldVersion == 8) {
+            // Add a column called "size". It should contain either the value 240 or 60
+            getWifiResultDao().executeRawNoArgs("ALTER TABLE measurement ADD COLUMN size");
+        }
         onCreate(db, connectionSource);
 
     }

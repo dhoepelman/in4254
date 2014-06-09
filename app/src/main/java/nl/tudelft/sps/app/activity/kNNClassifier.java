@@ -20,6 +20,16 @@ public class kNNClassifier implements IClassifier {
 
     private final DistanceMeasure distance = new EuclideanDistance();
 
+    private final int windowSize;
+
+    public kNNClassifier(int windowSize) {
+        this.windowSize = windowSize;
+    }
+
+    public int getWindowSize() {
+        return windowSize;
+    }
+
     /**
      * Classify a measurement as an activity using K-nn
      */

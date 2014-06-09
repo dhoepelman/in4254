@@ -160,11 +160,13 @@ public class MainActivity extends ActionBarActivity
     }
 
     /**
-     * Get the classifier for Activity from measurements
+     * Get the classifier for Activity from measurement windows with the
+     * given window size. Any previous classifier that used windows with
+     * a different size is thrown away. Tough luck.
      */
-    public IClassifier getClassifier() {
-        if (classifier == null || !classifier.isTrained()) {
-            resetClassifier();
+    public IClassifier getClassifier(int windowSize) {
+        if (classifier == null || !classifier.isTrained() || classifier.getWindowSize() != windowSize) {
+            resetClassifier(windowSize);
         }
         return classifier;
     }
@@ -193,16 +195,17 @@ public class MainActivity extends ActionBarActivity
         locator.trainNumberAPs(getDatabaseHelper().getWifiResultCollectionDao().iterator());
     }
 
-    public void resetClassifier() {
-        classifier = new kNNClassifier();
-        readTrainingData();
+    public void resetClassifier(int windowSize) {
+        classifier = new kNNClassifier(windowSize);
+        readTrainingData(windowSize);
     }
 
     /**
      * Read from the database containing the training measurements and
      * use them to train the classifier.
      */
-    private void readTrainingData() {
+    private void readTrainingData(int windowSize) {
+        // TODO add to query WHERE size = windowSize
         CloseableIterator<MeasurementWindow> measurementIt = getDatabaseHelper().getMeasurementDao().iterator();
         while (measurementIt.hasNext()) {
             MeasurementWindow m = measurementIt.next();

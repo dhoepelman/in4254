@@ -24,4 +24,9 @@ public interface IClassifier {
      */
     public boolean isTrained();
 
+    /**
+     * Return the size of the windows that are used by the classifier
+     */
+    public int getWindowSize();
+
 }
