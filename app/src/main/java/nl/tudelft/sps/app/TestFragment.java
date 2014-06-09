@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
 import nl.tudelft.sps.app.activity.IMeasurement;
-import nl.tudelft.sps.app.activity.Measurement;
+import nl.tudelft.sps.app.activity.MeasurementWindow;
 import nl.tudelft.sps.app.activity.MeasurementTask;
 
 /**
@@ -104,7 +104,7 @@ public class TestFragment extends Fragment {
      */
     private final Object updateLock = new Object();
 
-    private Measurement.MonitorHelper measurementHelper;
+    private MeasurementWindow.MonitorHelper measurementHelper;
 
     private int measureTimes = 1;
     private boolean measureInfinitely = false;
@@ -229,7 +229,7 @@ public class TestFragment extends Fragment {
         }
 
         final ProgressBar progressBar = (ProgressBar) rootView.findViewById(R.id.progressBar_measurement);
-        progressBar.setMax(Measurement.WINDOW_SIZE); // TODO should depend on actual window size that we're gonna use (60 or 256)
+        progressBar.setMax(MeasurementWindow.WINDOW_SIZE); // TODO should depend on actual window size that we're gonna use (60 or 256)
 
         // Make all activity buttons gray
         colorSelectedButton();
@@ -259,7 +259,7 @@ public class TestFragment extends Fragment {
             toastManager.showText("Select an activity first", Toast.LENGTH_SHORT);
         }
         else {
-            measurementHelper = new Measurement.MonitorHelper(Measurement.WINDOW_SIZE);
+            measurementHelper = new MeasurementWindow.MonitorHelper(MeasurementWindow.WINDOW_SIZE);
             Log.w(getClass().getName(), "TEST NEW HELPER " + String.valueOf(measurementHelper.hashCode()));
 
             synchronized (updateLock) {

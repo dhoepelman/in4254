@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.sql.SQLException;
 
-import nl.tudelft.sps.app.activity.Measurement;
+import nl.tudelft.sps.app.activity.MeasurementWindow;
 import nl.tudelft.sps.app.activity.Sample;
 import nl.tudelft.sps.app.localization.FFTResult;
 import nl.tudelft.sps.app.localization.LocalizationOfflineProcessor;
@@ -30,7 +30,7 @@ import nl.tudelft.sps.app.localization.WifiResultCollection;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private static final String DATABASE_NAME = "sps.db";
     private static final int DATABASE_VERSION = 8;
-    public RuntimeExceptionDao<Measurement, Long> measurementDao;
+    public RuntimeExceptionDao<MeasurementWindow, Long> measurementDao;
     public RuntimeExceptionDao<Sample, Void> sampleDao;
     private RuntimeExceptionDao<WifiResult, Long> wifiResultDao;
     private RuntimeExceptionDao<WifiResultCollection, Long> wifiResultCollectionDao;
@@ -102,9 +102,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         }
     }
 
-    public RuntimeExceptionDao<Measurement, Long> getMeasurementDao() {
+    public RuntimeExceptionDao<MeasurementWindow, Long> getMeasurementDao() {
         if (measurementDao == null) {
-            measurementDao = getRuntimeExceptionDao(Measurement.class);
+            measurementDao = getRuntimeExceptionDao(MeasurementWindow.class);
         }
         return measurementDao;
     }
@@ -161,7 +161,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {
         try {
-            TableUtils.createTableIfNotExists(connectionSource, Measurement.class);
+            TableUtils.createTableIfNotExists(connectionSource, MeasurementWindow.class);
             TableUtils.createTableIfNotExists(connectionSource, Sample.class);
             TableUtils.createTableIfNotExists(connectionSource, WifiResult.class);
             TableUtils.createTableIfNotExists(connectionSource, WifiResultCollection.class);

@@ -20,7 +20,7 @@ import com.j256.ormlite.stmt.QueryBuilder;
 import java.sql.SQLException;
 
 import nl.tudelft.sps.app.activity.IClassifier;
-import nl.tudelft.sps.app.activity.Measurement;
+import nl.tudelft.sps.app.activity.MeasurementWindow;
 import nl.tudelft.sps.app.activity.kNNClassifier;
 import nl.tudelft.sps.app.localization.BayesianLocator;
 import nl.tudelft.sps.app.localization.ILocator;
@@ -203,9 +203,9 @@ public class MainActivity extends ActionBarActivity
      * use them to train the classifier.
      */
     private void readTrainingData() {
-        CloseableIterator<Measurement> measurementIt = getDatabaseHelper().getMeasurementDao().iterator();
+        CloseableIterator<MeasurementWindow> measurementIt = getDatabaseHelper().getMeasurementDao().iterator();
         while (measurementIt.hasNext()) {
-            Measurement m = measurementIt.next();
+            MeasurementWindow m = measurementIt.next();
             classifier.train(m.getActivity(), m);
         }
         measurementIt.closeQuietly();

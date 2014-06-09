@@ -19,7 +19,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
-import nl.tudelft.sps.app.activity.Measurement;
+import nl.tudelft.sps.app.activity.MeasurementWindow;
 
 /**
  * Fragment to train the activity detection
@@ -46,7 +46,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     private long measurementStart;
 
     private ACTIVITY selectedActivity;
-    private Measurement.TrainHelper measurementHelper;
+    private MeasurementWindow.TrainHelper measurementHelper;
 
     /**
      * Returns a new instance of this fragment for the given section number
@@ -134,7 +134,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         measurementStart = System.currentTimeMillis();
 
         // Create an empty helper
-        measurementHelper = new Measurement.TrainHelper(selectedActivity, ((MainActivity) getActivity()).getDatabaseHelper(), Measurement.WINDOW_SIZE);
+        measurementHelper = new MeasurementWindow.TrainHelper(selectedActivity, ((MainActivity) getActivity()).getDatabaseHelper(), MeasurementWindow.WINDOW_SIZE);
 
         // Start listening
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
@@ -152,8 +152,8 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     }
 
     private void writeBuffer() {
-        for (Measurement measurement : measurementHelper.getMeasurements()) {
-            ((MainActivity) getActivity()).getDatabaseHelper().getMeasurementDao().create(measurement);
+        for (MeasurementWindow measurementWindow : measurementHelper.getMeasurementWindows()) {
+            ((MainActivity) getActivity()).getDatabaseHelper().getMeasurementDao().create(measurementWindow);
         }
     }
 

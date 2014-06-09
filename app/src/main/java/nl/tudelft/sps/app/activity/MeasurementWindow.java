@@ -23,8 +23,8 @@ import nl.tudelft.sps.app.DatabaseHelper;
  * [1] Ravi, Nishkam, et al. "Activity recognition from accelerometer data." AAAI. Vol. 5. 2005.
  */
 
-@DatabaseTable()
-public class Measurement implements IMeasurement {
+@DatabaseTable(tableName = "measurement")
+public class MeasurementWindow implements IMeasurement {
 
     /**
      * Window size. Based on [1]. 50Hz measurements
@@ -72,18 +72,18 @@ public class Measurement implements IMeasurement {
     // Not final to make compiler happy
     private int windowSize;
 
-    public Measurement(long timestamp, ACTIVITY activity, int windowSize) {
+    public MeasurementWindow(long timestamp, ACTIVITY activity, int windowSize) {
         this.timestamp = timestamp;
         this.activity = activity;
         this.windowSize = windowSize;
         createEmptyWindow();
     }
 
-    public Measurement(int windowSize) {
+    public MeasurementWindow(int windowSize) {
         this.windowSize = windowSize;
     }
 
-    public Measurement() {
+    public MeasurementWindow() {
         // ORMLite
     }
 
@@ -245,7 +245,7 @@ public class Measurement implements IMeasurement {
     }
 
     private static abstract class Helper {
-        protected Measurement current;
+        protected MeasurementWindow current;
         protected int current_loc = 0;
         protected int loc_this_time = 0;
 
@@ -255,21 +255,21 @@ public class Measurement implements IMeasurement {
     }
 
     public static class MonitorHelper extends Helper {
-        private Measurement next;
+        private MeasurementWindow next;
 
         private long benchmarkTimestamp;
 
         public MonitorHelper(final int windowSize) {
-            current = new Measurement(windowSize);
+            current = new MeasurementWindow(windowSize);
             current_loc = 0;
 
             // Create an empty "next" measurement
-            next = new Measurement(windowSize);
+            next = new MeasurementWindow(windowSize);
 
             benchmarkTimestamp = System.currentTimeMillis();
         }
 
-        public synchronized Measurement getCurrentWindow() {
+        public synchronized MeasurementWindow getCurrentWindow() {
             return current;
         }
 
@@ -292,7 +292,7 @@ public class Measurement implements IMeasurement {
                 current_loc = current.getWindowOverlap();
 
                 // Create an empty "next" measurement
-                next = new Measurement(current.getWindowSize());
+                next = new MeasurementWindow(current.getWindowSize());
 
                 final long timestamp = System.currentTimeMillis();
                 System.err.println(String.format("Timestamp: %d ms", timestamp - benchmarkTimestamp));
@@ -321,10 +321,10 @@ public class Measurement implements IMeasurement {
     public static class TrainHelper extends Helper {
         public final ACTIVITY activity;
         private final DatabaseHelper databaseHelper;
-        private final List<Measurement> measurements = new ArrayList<>();
-        protected Measurement current;
+        private final List<MeasurementWindow> measurementWindows = new ArrayList<>();
+        protected MeasurementWindow current;
         protected int current_loc = 0;
-        private Measurement next;
+        private MeasurementWindow next;
         private int numFullWindows = 0;
         private Collection<Sample> currentSamples;
         private Collection<Sample> nextSamples;
@@ -343,14 +343,14 @@ public class Measurement implements IMeasurement {
         /**
          * Get all measurements
          */
-        public Collection<Measurement> getMeasurements() {
-            return measurements;
+        public Collection<MeasurementWindow> getMeasurementWindows() {
+            return measurementWindows;
         }
 
         public void removeIncompleteMeasurements() {
             // Remove the last measurement if it's incomplete
-            while (measurements.size() > 0 && !measurements.get(measurements.size() - 1).isCompleted()) {
-                measurements.remove(measurements.size() - 1);
+            while (measurementWindows.size() > 0 && !measurementWindows.get(measurementWindows.size() - 1).isCompleted()) {
+                measurementWindows.remove(measurementWindows.size() - 1);
             }
         }
 
@@ -366,10 +366,10 @@ public class Measurement implements IMeasurement {
             if (current == null || isFull()) {
                 if (current == null) {
                     // We don't have any measurement, start one
-                    current = new Measurement(timestamp, activity, windowSize);
+                    current = new MeasurementWindow(timestamp, activity, windowSize);
                     currentSamples = new ArrayList<>(current.getWindowSize());
                     current_loc = 0;
-                    measurements.add(current);
+                    measurementWindows.add(current);
                 } else {
                     // Measurement was full, store it
                     persistCurrentMeasurement();
@@ -380,9 +380,9 @@ public class Measurement implements IMeasurement {
                     numFullWindows++;
                 }
                 // Create an empty "next" measurement
-                next = new Measurement(timestamp, activity, current.getWindowSize());
+                next = new MeasurementWindow(timestamp, activity, current.getWindowSize());
                 nextSamples = new ArrayList<>(next.getWindowSize());
-                measurements.add(next);
+                measurementWindows.add(next);
             }
 
             currentSamples.add(new Sample(current, timestamp, values[0], values[1], values[2]));

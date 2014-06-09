@@ -1,16 +1,10 @@
 package nl.tudelft.sps.app.activity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Callable;
 
 import nl.tudelft.sps.app.LocatorTestFragment;
 import nl.tudelft.sps.app.MainActivity;
@@ -34,7 +28,7 @@ public class StepsCounter implements Runnable, SensorEventListener {
      */
     private final Object gate = new Object();
 
-    private final Measurement.MonitorHelper measurement = new Measurement.MonitorHelper(Measurement.WINDOW_SIZE);
+    private final MeasurementWindow.MonitorHelper measurement = new MeasurementWindow.MonitorHelper(MeasurementWindow.WINDOW_SIZE);
 
     /**
      * A variable used to indicate that the thread should stop running

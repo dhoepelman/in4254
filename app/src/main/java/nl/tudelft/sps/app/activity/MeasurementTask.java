@@ -14,7 +14,7 @@ import android.util.Log;
  */
 public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> implements SensorEventListener {
 
-    private final Measurement.MonitorHelper measurement;
+    private final MeasurementWindow.MonitorHelper measurement;
 
     /**
      * Object on which doInBackground can wait for the measurement to complete
@@ -23,7 +23,7 @@ public class MeasurementTask extends AsyncTask<Activity, Integer, IMeasurement> 
     private final ProgressUpdater progressUpdater;
     private final ResultProcessor resultProcessor;
 
-    public MeasurementTask(ResultProcessor processor, ProgressUpdater updater, Measurement.MonitorHelper helper) {
+    public MeasurementTask(ResultProcessor processor, ProgressUpdater updater, MeasurementWindow.MonitorHelper helper) {
         if (helper == null) {
             throw new NullPointerException("Helper is null");
         }
