@@ -205,8 +205,23 @@ public class MainActivity extends ActionBarActivity
      * use them to train the classifier.
      */
     private void readTrainingData(int windowSize) {
-        // TODO add to query WHERE size = windowSize
-        CloseableIterator<MeasurementWindow> measurementIt = getDatabaseHelper().getMeasurementDao().iterator();
+        final RuntimeExceptionDao<MeasurementWindow, Long> dao = getDatabaseHelper().getMeasurementDao();
+
+        // Build query WHERE size = windowSize
+        PreparedQuery<MeasurementWindow> query;
+        try {
+            // Only select windows that have the required size
+            final QueryBuilder<MeasurementWindow, Long> queryBuilder = dao.queryBuilder();
+            queryBuilder.where().eq("size", windowSize);
+
+            query = queryBuilder.prepare();
+        }
+        catch (SQLException e) {
+            throw new RuntimeException("Could not build the query to retrieve stored measurement windows");
+        }
+
+        // Iterate over the measurement windows that have the required size
+        CloseableIterator<MeasurementWindow> measurementIt = dao.iterator();
         while (measurementIt.hasNext()) {
             MeasurementWindow m = measurementIt.next();
             classifier.train(m.getActivity(), m);
