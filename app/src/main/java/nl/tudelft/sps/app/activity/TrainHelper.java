@@ -4,7 +4,9 @@ import com.j256.ormlite.dao.RuntimeExceptionDao;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import nl.tudelft.sps.app.DatabaseHelper;
 import nl.tudelft.sps.app.activity.MeasurementWindow.Helper;
@@ -46,7 +48,7 @@ public class TrainHelper extends Helper {
 
     public void removeIncompleteMeasurements() {
         // Remove the last measurement if it's incomplete
-        while (measurementWindows.size() > 0 && !measurementWindows.get(measurementWindows.size() - 1).isCompleted()) {
+        while (!measurementWindows.isEmpty() && !measurementWindows.get(measurementWindows.size() - 1).isCompleted()) {
             measurementWindows.remove(measurementWindows.size() - 1);
         }
     }
@@ -93,16 +95,39 @@ public class TrainHelper extends Helper {
 
     private void persistCurrentMeasurement() {
         current.calculateFeatureVector();
-        databaseHelper.getMeasurementDao().create(current);
-        final RuntimeExceptionDao<Sample, Void> sampleDao = databaseHelper.getSampleDao();
-        sampleDao.callBatchTasks(new Callable<Void>() {
-            @Override
-            public Void call() {
-                for (Sample s : currentSamples) {
-                    sampleDao.create(s);
+
+        final DatabaseSamplesWorker worker = new DatabaseSamplesWorker(databaseHelper, current, currentSamples);
+        new Thread(worker).start();
+    }
+
+    private static class DatabaseSamplesWorker implements Runnable {
+
+        private final Iterator<Sample> snapshot;
+        private final DatabaseHelper databaseHelper;
+
+        private DatabaseSamplesWorker(DatabaseHelper databaseHelper, MeasurementWindow window, List<Sample> samples) {
+            // Create a snapshot, so we can safely iterate over it
+            snapshot = new CopyOnWriteArrayList(samples).iterator();
+
+            // Create a new MeasurementWindow in the current thread
+            databaseHelper.getMeasurementDao().create(window);
+
+            this.databaseHelper = databaseHelper;
+        }
+
+        @Override
+        public void run() {
+            final RuntimeExceptionDao<Sample, Void> sampleDao = databaseHelper.getSampleDao();
+
+            sampleDao.callBatchTasks(new Callable<Void>() {
+                @Override
+                public Void call() {
+                    while (snapshot.hasNext()) {
+                        sampleDao.create(snapshot.next());
+                    }
+                    return null;
                 }
-                return null;
-            }
-        });
+            });
+        }
     }
 }
