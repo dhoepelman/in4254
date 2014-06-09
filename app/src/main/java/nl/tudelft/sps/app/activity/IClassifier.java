@@ -25,6 +25,12 @@ public interface IClassifier {
     public boolean isTrained();
 
     /**
+     * Return the number of training points that were used to train
+     * the classifier.
+     */
+    public int getNumberOfTrainingPoints();
+
+    /**
      * Return the size of the windows that are used by the classifier
      */
     public int getWindowSize();

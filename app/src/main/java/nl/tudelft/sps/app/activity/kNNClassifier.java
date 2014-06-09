@@ -102,6 +102,11 @@ public class kNNClassifier implements IClassifier {
         return !trainingPoints.isEmpty();
     }
 
+    @Override
+    public synchronized int getNumberOfTrainingPoints() {
+        return trainingPoints.size();
+    }
+
     /**
      * Tuple containing a measurement and its activity type
      */
