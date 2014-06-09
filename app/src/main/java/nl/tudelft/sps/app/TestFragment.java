@@ -121,8 +121,7 @@ public class TestFragment extends Fragment {
         .put(R.id.but_test_sitting, ACTIVITY.Sitting)
         .put(R.id.but_test_walking, ACTIVITY.Walking)
         .put(R.id.but_test_running, ACTIVITY.Running)
-        .put(R.id.but_test_stairsup, ACTIVITY.Stairs_Up)
-        .put(R.id.but_test_stairsdown, ACTIVITY.Stairs_Down)
+        .put(R.id.but_test_elevator, ACTIVITY.Elevator)
         .build();
 
     private ACTIVITY selectedActivity;

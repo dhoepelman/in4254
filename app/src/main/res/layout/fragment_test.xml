@@ -110,15 +110,9 @@
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/but_test_stairsup"
+            android:id="@+id/but_test_elevator"
             android:src="@drawable/act_stairsup"
             android:clickable="true" />
-
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/but_test_stairsdown"
-            android:src="@drawable/act_stairsdown" />
 
     </LinearLayout>
 

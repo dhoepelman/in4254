@@ -36,8 +36,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
             .put(R.id.but_sitting, ACTIVITY.Sitting)
             .put(R.id.but_walking, ACTIVITY.Walking)
             .put(R.id.but_running, ACTIVITY.Running)
-            .put(R.id.but_stairsup, ACTIVITY.Stairs_Up)
-            .put(R.id.but_stairsdown, ACTIVITY.Stairs_Down)
+            .put(R.id.but_elevator, ACTIVITY.Elevator)
             .build();
     private View rootView;
     private TextView valueMeasurement;
