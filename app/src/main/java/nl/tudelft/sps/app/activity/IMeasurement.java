@@ -20,6 +20,8 @@ public interface IMeasurement {
      */
     public ACTIVITY getActivity();
 
+    public long getTimestamp();
+
     /**
      * This measurement can be returned when there is an invalid measurement
      */
@@ -49,6 +51,11 @@ public interface IMeasurement {
         @Override
         public ACTIVITY getActivity() {
             return ACTIVITY.Unknown;
+        }
+
+        @Override
+        public long getTimestamp() {
+            return 0;
         }
     };
 }

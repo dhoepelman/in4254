@@ -64,6 +64,11 @@ public class MeasurementWindow implements IMeasurement {
     private DescriptiveStatistics[] statistics;
     private double[] featureVector = null;
 
+    public MeasurementWindow(long timestamp, ACTIVITY activity, DescriptiveStatistics[] statistics) {
+        this(timestamp, activity, statistics[0].getWindowSize());
+        this.statistics = statistics;
+    }
+
     public MeasurementWindow(long timestamp, ACTIVITY activity, int size) {
         this.timestamp = timestamp;
         this.activity = activity;
@@ -86,7 +91,7 @@ public class MeasurementWindow implements IMeasurement {
         return size / 2;
     }
 
-    private static DescriptiveStatistics[] createEmptyWindow(int windowSize) {
+    public static DescriptiveStatistics[] createEmptyWindow(int windowSize) {
         return new DescriptiveStatistics[] {
             new DescriptiveStatistics(windowSize),
             new DescriptiveStatistics(windowSize),
@@ -94,7 +99,7 @@ public class MeasurementWindow implements IMeasurement {
         };
     }
 
-    private DescriptiveStatistics[] getDescriptiveStatistics() {
+    public DescriptiveStatistics[] getDescriptiveStatistics() {
         if (statistics == null) {
             if (samples != null) {
                 statistics = Sample.toDescriptiveStatistics(samples);
@@ -178,6 +183,11 @@ public class MeasurementWindow implements IMeasurement {
     @Override
     public boolean isValid() {
         return isCompleted();
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
     }
 
     @Override

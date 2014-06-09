@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
 import nl.tudelft.sps.app.DatabaseHelper;
 import nl.tudelft.sps.app.activity.MeasurementWindow.Helper;
 
@@ -111,21 +113,74 @@ public class TrainHelper extends Helper {
 
         @Override
         public void run() {
-            // TODO split the window and the list of samples into four
+            // Split the window and the list of samples into four
             // new smaller windows and add it to the database as well
+
+            final DescriptiveStatistics[] statistics = window.getDescriptiveStatistics();
+            final double[] valuesX = statistics[0].getValues();
+            final double[] valuesY = statistics[1].getValues();
+            final double[] valuesZ = statistics[2].getValues();
+
+            // Create four arrays each containing a slice of 60 samples of the original statistics
+            // Each array contains three DescriptiveStatistics for X-, Y-, and Z-axis
+            final DescriptiveStatistics[] statistics1 = MeasurementWindow.createEmptyWindow(StepsCounter.WINDOW_SIZE);
+            final DescriptiveStatistics[] statistics2 = MeasurementWindow.createEmptyWindow(StepsCounter.WINDOW_SIZE);
+            final DescriptiveStatistics[] statistics3 = MeasurementWindow.createEmptyWindow(StepsCounter.WINDOW_SIZE);
+            final DescriptiveStatistics[] statistics4 = MeasurementWindow.createEmptyWindow(StepsCounter.WINDOW_SIZE);
+
+            for (int i = 0; i < 60; i++) {
+                statistics1[0].addValue(valuesX[i]);
+                statistics1[1].addValue(valuesY[i]);
+                statistics1[2].addValue(valuesZ[i]);
+            }
+
+            for (int i = 60; i < 120; i++) {
+                statistics2[0].addValue(valuesX[i]);
+                statistics2[1].addValue(valuesY[i]);
+                statistics2[2].addValue(valuesZ[i]);
+            }
+
+            for (int i = 120; i < 180; i++) {
+                statistics3[0].addValue(valuesX[i]);
+                statistics3[1].addValue(valuesY[i]);
+                statistics3[2].addValue(valuesZ[i]);
+            }
+
+            for (int i = 180; i < 240; i++) {
+                statistics4[0].addValue(valuesX[i]);
+                statistics4[1].addValue(valuesY[i]);
+                statistics4[2].addValue(valuesZ[i]);
+            }
+
+            // Create four new small windows of 60 samples for the StepsCounter
+            final MeasurementWindow window1 = new MeasurementWindow(window.getTimestamp(), window.getActivity(), statistics1);
+            final MeasurementWindow window2 = new MeasurementWindow(window.getTimestamp(), window.getActivity(), statistics2);
+            final MeasurementWindow window3 = new MeasurementWindow(window.getTimestamp(), window.getActivity(), statistics3);
+            final MeasurementWindow window4 = new MeasurementWindow(window.getTimestamp(), window.getActivity(), statistics4);
 
             window.calculateFeatureVector();
 
-            // Create a new MeasurementWindow in the current thread
-            databaseHelper.getMeasurementDao().create(window);
+            window1.calculateFeatureVector();
+            window2.calculateFeatureVector();
+            window3.calculateFeatureVector();
+            window4.calculateFeatureVector();
 
             final RuntimeExceptionDao<Sample, Void> sampleDao = databaseHelper.getSampleDao();
+            final RuntimeExceptionDao<MeasurementWindow, Long> windowDao = databaseHelper.getMeasurementDao();
 
             sampleDao.callBatchTasks(new Callable<Void>() {
                 @Override
                 public Void call() {
-                    System.err.println("Creating Samples...");
                     final long currentTimestamp = System.currentTimeMillis();
+
+                    System.err.println("Creating windows...");
+                    windowDao.create(window);
+                    windowDao.create(window1);
+                    windowDao.create(window2);
+                    windowDao.create(window3);
+                    windowDao.create(window4);
+
+                    System.err.println("Creating Samples...");
                     for (Sample sample : samples) {
                         sampleDao.create(sample);
                     }
