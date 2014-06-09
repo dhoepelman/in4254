@@ -224,12 +224,7 @@ public class MainActivity extends ActionBarActivity
         }
 
         // Iterate over the measurement windows that have the required size
-        CloseableIterator<MeasurementWindow> measurementIt = dao.iterator(query);
-        while (measurementIt.hasNext()) {
-            final MeasurementWindow window = measurementIt.next();
-            classifier.train(window.getActivity(), window);
-        }
-        measurementIt.closeQuietly();
+        classifier.train(dao.iterator(query));
 
         final long duration = System.currentTimeMillis() - currentTimestamp;
         System.err.println(String.format("Read %d training points in %d ms", classifier.getNumberOfTrainingPoints(), duration));
