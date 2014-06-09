@@ -285,7 +285,7 @@ public class BayesianLocator implements ILocator {
             // Calculate length of original region
             final double lengthRegion = longestDistance - shortestDistance;
 
-            // Distance is between 2.5 and 6 meters if steps = 5 and
+            // Distance is between 4.5 and 10.8 (1.5 rooms) meters if steps = 9 and
             // between 0.5 and 1.2 if steps = 1
             // |   x   |       |
             //       [----]

@@ -12,7 +12,7 @@ import nl.tudelft.sps.app.localization.ILocator;
 
 public class StepsCounter implements Runnable, SensorEventListener {
 
-    public static final int STEPS_PER_UPDATE = 5;
+    public static final int STEPS_PER_UPDATE = 9;
 
     /**
      * 60 scans takes about 800 ms on Galaxy S
