@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableBiMap;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
 import nl.tudelft.sps.app.activity.MeasurementWindow;
+import nl.tudelft.sps.app.activity.TrainHelper;
 
 /**
  * Fragment to train the activity detection
@@ -46,7 +47,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
     private long measurementStart;
 
     private ACTIVITY selectedActivity;
-    private MeasurementWindow.TrainHelper measurementHelper;
+    private TrainHelper measurementHelper;
 
     /**
      * Returns a new instance of this fragment for the given section number
@@ -134,7 +135,7 @@ public class TrainFragment extends Fragment implements SensorEventListener {
         measurementStart = System.currentTimeMillis();
 
         // Create an empty helper
-        measurementHelper = new MeasurementWindow.TrainHelper(selectedActivity, ((MainActivity) getActivity()).getDatabaseHelper(), MeasurementWindow.WINDOW_SIZE);
+        measurementHelper = new TrainHelper(selectedActivity, ((MainActivity) getActivity()).getDatabaseHelper(), MeasurementWindow.WINDOW_SIZE);
 
         // Start listening
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
