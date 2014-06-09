@@ -19,7 +19,6 @@ public class TrainHelper extends Helper {
     public final ACTIVITY activity;
 
     private final DatabaseHelper databaseHelper;
-    private final List<MeasurementWindow> measurementWindows = new ArrayList<>();
 
     protected MeasurementWindow current;
     protected int current_loc = 0;
@@ -39,18 +38,7 @@ public class TrainHelper extends Helper {
         return current_loc == current.getWindowSize();
     }
 
-    /**
-     * Get all measurements
-     */
-    public List<MeasurementWindow> getMeasurementWindows() {
-        return measurementWindows;
-    }
-
     public void removeIncompleteMeasurements() {
-        // Remove the last measurement if it's incomplete
-//        while (!measurementWindows.isEmpty() && !measurementWindows.get(measurementWindows.size() - 1).isCompleted()) {
-//            measurementWindows.remove(measurementWindows.size() - 1);
-//        }
         // Make current null so that a new MeasurementWindow will be
         // created when addMeasurement() is called
         current = null;
@@ -75,10 +63,10 @@ public class TrainHelper extends Helper {
                 current = new MeasurementWindow(timestamp, activity, windowSize);
                 currentSamples = new ArrayList<>(current.getWindowSize());
                 current_loc = 0;
-//                measurementWindows.add(current);
             } else {
                 // Measurement was full, store it
                 persistCurrentMeasurement();
+
                 // Replace with next
                 current = next;
                 currentSamples = nextSamples;
@@ -88,7 +76,6 @@ public class TrainHelper extends Helper {
             // Create an empty "next" measurement
             next = new MeasurementWindow(timestamp, activity, current.getWindowSize());
             nextSamples = new ArrayList<>(next.getWindowSize());
-//            measurementWindows.add(next);
         }
 
         currentSamples.add(new Sample(current, timestamp, values[0], values[1], values[2]));

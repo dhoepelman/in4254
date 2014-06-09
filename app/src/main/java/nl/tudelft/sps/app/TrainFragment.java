@@ -148,16 +148,8 @@ public class TrainFragment extends Fragment implements SensorEventListener {
             // Listener was already unregistered or never registered
         }
         measurementHelper.removeIncompleteMeasurements();
-//        writeBuffer();
         ((MainActivity) getActivity()).resetClassifier(MeasurementWindow.WINDOW_SIZE);
     }
-
-//    private void writeBuffer() {
-        // TODO Already done in persistCurrentMeasurement()?
-//        for (MeasurementWindow measurementWindow : measurementHelper.getMeasurementWindows()) {
-//            ((MainActivity) getActivity()).getDatabaseHelper().getMeasurementDao().create(measurementWindow);
-//        }
-//    }
 
     public void onSelectActivityButtonClick(final View view) {
         selectedActivity = activity_buttons.get(view.getId());
