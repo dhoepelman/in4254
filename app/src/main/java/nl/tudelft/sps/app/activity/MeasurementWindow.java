@@ -61,14 +61,18 @@ public class MeasurementWindow implements IMeasurement {
     /**
      * Window
      */
-    private DescriptiveStatistics[] window;
+    private DescriptiveStatistics[] statistics;
     private double[] featureVector = null;
+
+    public MeasurementWindow(long timestamp, ACTIVITY activity, DescriptiveStatistics[] statistics) {
+        this(timestamp, activity, statistics[0].getWindowSize());
+        this.statistics = statistics;
+    }
 
     public MeasurementWindow(long timestamp, ACTIVITY activity, int size) {
         this.timestamp = timestamp;
         this.activity = activity;
         this.size = size;
-        createEmptyWindow();
     }
 
     public MeasurementWindow(int size) {
@@ -87,23 +91,23 @@ public class MeasurementWindow implements IMeasurement {
         return size / 2;
     }
 
-    private void createEmptyWindow() {
-        window = new DescriptiveStatistics[]{
-                new DescriptiveStatistics(getWindowSize()),
-                new DescriptiveStatistics(getWindowSize()),
-                new DescriptiveStatistics(getWindowSize())
+    public static DescriptiveStatistics[] createEmptyWindow(int windowSize) {
+        return new DescriptiveStatistics[] {
+            new DescriptiveStatistics(windowSize),
+            new DescriptiveStatistics(windowSize),
+            new DescriptiveStatistics(windowSize)
         };
     }
 
-    private DescriptiveStatistics[] getDescriptiveStatistics() {
-        if (window == null) {
+    public DescriptiveStatistics[] getDescriptiveStatistics() {
+        if (statistics == null) {
             if (samples != null) {
-                window = Sample.toDescriptiveStatistics(samples);
+                statistics = Sample.toDescriptiveStatistics(samples);
             } else {
-                createEmptyWindow();
+                statistics = createEmptyWindow(getWindowSize());
             }
         }
-        return window;
+        return statistics;
     }
 
     public double getMeanX() {
@@ -182,6 +186,11 @@ public class MeasurementWindow implements IMeasurement {
     }
 
     @Override
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    @Override
     public ACTIVITY getActivity() {
         return activity;
     }
@@ -230,7 +239,7 @@ public class MeasurementWindow implements IMeasurement {
         if (values.length != 3) {
             throw new IllegalArgumentException("Measurement must have only X,Y,Z axis");
         }
-        DescriptiveStatistics[] window = getDescriptiveStatistics();
+        final DescriptiveStatistics[] window = getDescriptiveStatistics();
         window[0].addValue(values[0]);
         window[1].addValue(values[1]);
         window[2].addValue(values[2]);

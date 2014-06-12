@@ -1,5 +1,7 @@
 package nl.tudelft.sps.app.activity;
 
+import com.j256.ormlite.dao.CloseableIterator;
+
 import org.apache.commons.math3.ml.distance.DistanceMeasure;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
@@ -10,6 +12,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.Iterator;
 
 /**
  * K-nn classifier
@@ -98,8 +101,24 @@ public class kNNClassifier implements IClassifier {
     }
 
     @Override
+    public void train(Iterator<MeasurementWindow> trainingData) {
+        while (trainingData.hasNext()) {
+            final MeasurementWindow window = trainingData.next();
+            train(window.getActivity(), window);
+        }
+        if (trainingData instanceof CloseableIterator) {
+            ((CloseableIterator) trainingData).closeQuietly();
+        }
+    }
+
+    @Override
     public synchronized boolean isTrained() {
         return !trainingPoints.isEmpty();
+    }
+
+    @Override
+    public synchronized int getNumberOfTrainingPoints() {
+        return trainingPoints.size();
     }
 
     /**

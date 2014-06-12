@@ -205,6 +205,9 @@ public class MainActivity extends ActionBarActivity
      * use them to train the classifier.
      */
     private void readTrainingData(int windowSize) {
+        System.err.println("Reading training data...");
+        final long currentTimestamp = System.currentTimeMillis();
+
         final RuntimeExceptionDao<MeasurementWindow, Long> dao = getDatabaseHelper().getMeasurementDao();
 
         // Build query WHERE size = windowSize
@@ -221,12 +224,10 @@ public class MainActivity extends ActionBarActivity
         }
 
         // Iterate over the measurement windows that have the required size
-        CloseableIterator<MeasurementWindow> measurementIt = dao.iterator();
-        while (measurementIt.hasNext()) {
-            MeasurementWindow m = measurementIt.next();
-            classifier.train(m.getActivity(), m);
-        }
-        measurementIt.closeQuietly();
+        classifier.train(dao.iterator(query));
+
+        final long duration = System.currentTimeMillis() - currentTimestamp;
+        System.err.println(String.format("Read %d training points in %d ms", classifier.getNumberOfTrainingPoints(), duration));
     }
 
     @Override

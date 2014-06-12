@@ -363,16 +363,18 @@ public class LocatorTestFragment extends Fragment {
         public void run() {
             try {
                 serverSocket = new ServerSocket(SOCKET_PORT);
-            } catch (IOException e) {
-                Log.e(LocatorTestFragment.class.getName(), "Could not open server socket", e);
-            }
-            // This is not busy waiting, as ServerSocket.accept() blocks until a connection is made
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    locationListeners.add(serverSocket.accept());
-                } catch (IOException e) {
-                    Log.w(LocatorTestFragment.class.getName(), "Could not accept incoming socket connection or serversocket was closed", e);
+
+                // This is not busy waiting, as ServerSocket.accept() blocks until a connection is made
+                while (!Thread.currentThread().isInterrupted() && !serverSocket.isClosed()) {
+                    try {
+                        locationListeners.add(serverSocket.accept());
+                    } catch (IOException e) {
+                        Log.w(LocatorTestFragment.class.getName(), "Could not accept incoming socket connection or serversocket was closed", e);
+                    }
                 }
+            }
+            catch (IOException e) {
+                Log.e(LocatorTestFragment.class.getName(), "Could not open server socket", e);
             }
         }
     }

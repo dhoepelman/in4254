@@ -1,5 +1,7 @@
 package nl.tudelft.sps.app.activity;
 
+import java.util.Iterator;
+
 /**
  * Interface for Activity classifiers
  */
@@ -20,9 +22,21 @@ public interface IClassifier {
     public void train(ACTIVITY a, IMeasurement m);
 
     /**
+     * Train the classifier by adding training points from some
+     * training data.
+     */
+    public void train(Iterator<MeasurementWindow> trainingData);
+
+    /**
      * If the classifier has training data available
      */
     public boolean isTrained();
+
+    /**
+     * Return the number of training points that were used to train
+     * the classifier.
+     */
+    public int getNumberOfTrainingPoints();
 
     /**
      * Return the size of the windows that are used by the classifier
