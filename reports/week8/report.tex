@@ -235,7 +235,9 @@ We have not tested how less data or a lower iterations cap would influence the n
 
 \section{Cloud Computing (1 page)}
 \label{sec:cloud-computing}
-TODO
+For cloud computing we decided to implement the ability to spy on the detected localization using a second phone. The ``NSA fragment'' allows another user to see the location of the first user on a map. More precisely, the GUI shows a map -- identical to the map shown in the localization testing GUI -- which duplicates the probabilities shown on the screen of the phone of the first user.
+
+Initially the Google Cloud Messaging (GCM) service was used, but this proved to be slow. Because of this reason, we switched to using using a simple direct TCP socket connection. Response time was shown to be much faster; updating the location probabilities takes on average about $1.6$~seconds. Furhermore, the approach using TCP sockets was easier to implement than GCM.
 
 \section{Challenges \& Innovation (0.25 pages)}
 \label{sec:innovation}
