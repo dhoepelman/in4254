@@ -3,127 +3,133 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:layout_margin="6dp">
+    android:layout_margin="6dp"
+    android:orientation="vertical">
 
     <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Select activity:"
-        android:id="@+id/textView" />
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="left">
+        android:gravity="left"
+        android:orientation="horizontal">
 
         <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:id="@+id/but_sitting"
-            android:src="@drawable/act_sitting"
-            android:clickable="true" />
-
-        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:clickable="true"
+            android:src="@drawable/act_sitting" />
+
+        <ImageButton
             android:id="@+id/but_walking"
-            android:src="@drawable/act_walking"
-            android:clickable="true" />
-
-        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:clickable="true"
+            android:src="@drawable/act_walking" />
+
+        <ImageButton
             android:id="@+id/but_running"
-            android:src="@drawable/act_running"
-            android:clickable="true" />
-
-        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:clickable="true"
+            android:src="@drawable/act_running" />
+
+        <ImageButton
             android:id="@+id/but_elevator"
-            android:src="@drawable/act_stairsup"
-            android:clickable="true" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:src="@drawable/act_stairsup" />
 
     </LinearLayout>
 
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
         android:layout_marginBottom="6dp"
-        android:gravity="left">
+        android:layout_marginTop="6dp"
+        android:gravity="left"
+        android:orientation="horizontal">
 
         <Button
+            android:id="@+id/but_start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Start training"
-            android:id="@+id/but_start" />
+            android:text="Start training" />
 
         <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Stop traing"
             android:id="@+id/but_stop"
-            android:enabled="false" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Stop traing" />
+
+        <Button
+            android:id="@+id/but_cleardb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clear DB" />
     </LinearLayout>
 
     <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Measuring for:"
-            android:id="@+id/lblMeasureing" />
-
-        <TextView
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="0.0"
-            android:id="@+id/val_measuring"
-            android:paddingLeft="25dp"
-            android:textAlignment="textEnd"
-            android:gravity="right" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="s"
-            android:id="@+id/lblS"
-            android:gravity="right" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/linearLayout">
+        android:orientation="horizontal">
 
         <TextView
+            android:id="@+id/lblMeasureing"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="# Windows:"
-            android:id="@+id/lblNumWindows" />
+            android:text="Measuring for:"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
+            android:id="@+id/val_measuring"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:paddingLeft="25dp"
+            android:text="0.0"
+            android:textAlignment="textEnd"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/lblS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:text="s"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/lblNumWindows"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="# Windows:"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/val_num_windows"
             android:layout_width="179dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="0"
-            android:id="@+id/val_num_windows"
+            android:gravity="right"
             android:paddingLeft="25dp"
+            android:text="0"
             android:textAlignment="textEnd"
-            android:gravity="right" />
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
     </LinearLayout>
 

@@ -17,9 +17,13 @@ import android.widget.Toast;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.j256.ormlite.table.TableUtils;
+
+import java.sql.SQLException;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
 import nl.tudelft.sps.app.activity.MeasurementWindow;
+import nl.tudelft.sps.app.activity.Sample;
 import nl.tudelft.sps.app.activity.TrainHelper;
 
 /**
@@ -92,6 +96,21 @@ public class TrainFragment extends Fragment implements SensorEventListener {
             @Override
             public void onClick(View view) {
                 onStopTrainingButtonClick(view);
+            }
+        });
+
+        // Register clear db button
+        rootView.findViewById(R.id.but_cleardb).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    int numwindows = TableUtils.clearTable(((MainActivity) getActivity()).getDatabaseHelper().getConnectionSource(), MeasurementWindow.class);
+                    int numsamples = TableUtils.clearTable(((MainActivity) getActivity()).getDatabaseHelper().getConnectionSource(), Sample.class);
+                    Toast.makeText(getActivity(), String.format("Deleted %d windows and %d samples", numwindows, numsamples), Toast.LENGTH_SHORT).show();
+                } catch (SQLException e) {
+                    Toast.makeText(getActivity(), "SQLException when clearing", Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
 
