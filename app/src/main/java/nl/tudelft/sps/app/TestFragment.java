@@ -12,25 +12,30 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ArrayTable;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.Table;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import nl.tudelft.sps.app.activity.ACTIVITY;
 import nl.tudelft.sps.app.activity.IMeasurement;
-import nl.tudelft.sps.app.activity.MeasurementWindow;
 import nl.tudelft.sps.app.activity.MeasurementTask;
+import nl.tudelft.sps.app.activity.MeasurementWindow;
 
 /**
  * Fragment for testing the activity classifier
@@ -38,11 +43,64 @@ import nl.tudelft.sps.app.activity.MeasurementTask;
 public class TestFragment extends Fragment {
 
     /**
+     * File to which the measured acceleration values are written
+     */
+    public static final String RESULTS_FILE_PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/testing.csv";
+    /**
      * The fragment argument representing the section number for this
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
-
+    private static final String LOG_TAG = TestFragment.class.toString();
+    /**
+     * Confusion matrix
+     * Row = expected
+     * Column = measured
+     */
+    private final Table<ACTIVITY, ACTIVITY, Integer> confusionMatrix = ArrayTable.create(Arrays.asList(ACTIVITY.values()), Arrays.asList(ACTIVITY.values()));
+    private final MeasurementTask.ProgressUpdater measurementProgressUpdater = new MeasurementTask.ProgressUpdater() {
+        @Override
+        public void update(Integer progress) {
+            ((ProgressBar) rootView.findViewById(R.id.progressBar_measurement)).setProgress(progress);
+        }
+    };
+    // Race conditions should not occur, but better safe than sorry
+    private final AtomicInteger timesLeft = new AtomicInteger(0);
+    private final AtomicBoolean doInfinitely = new AtomicBoolean(false);
+    /**
+     * A reference to keep track of the current task. It is used to
+     * clean up the current task when creating and executing a new task,
+     * because otherwise the user can spawn many executing tasks and
+     * the progress bar will go haywire.
+     */
+    private final AtomicReference<MeasurementTask> currentTask = new AtomicReference<MeasurementTask>(null);
+    /**
+     * A Lock to make sure that the updates of both timesLeft and
+     * doInfinitely happen atomically.
+     */
+    private final Object updateLock = new Object();
+    private TableLayout table_confusionmatrix;
+    private View rootView;
+    private TextView valueResults;
+    private boolean firstResult;
+    private ToastManager toastManager;
+    private MeasurementWindow.MonitorHelper measurementHelper;
+    private int measureTimes = 1;
+    private boolean measureInfinitely = false;
+    private int[] RBTimesList = new int[]{
+            R.id.rb_times_1,
+            R.id.rb_times_5,
+            R.id.rb_times_10,
+            R.id.rb_times_50,
+            R.id.rb_times_infinite
+    };
+    private BiMap<Integer, ACTIVITY> activity_buttons = new ImmutableBiMap.Builder<Integer, ACTIVITY>()
+            .put(R.id.but_test_sitting, ACTIVITY.Sitting)
+            .put(R.id.but_test_walking, ACTIVITY.Walking)
+            .put(R.id.but_test_running, ACTIVITY.Running)
+            .put(R.id.but_test_elevator, ACTIVITY.Elevator)
+            .build();
+    private ACTIVITY selectedActivity;
     private final MeasurementTask.ResultProcessor measurementResultProcessor = new MeasurementTask.ResultProcessor() {
         @Override
         public void result(IMeasurement result) {
@@ -51,87 +109,22 @@ public class TestFragment extends Fragment {
                 if (mainActivity != null) {
                     final ACTIVITY actualActivity = mainActivity.getClassifier(MeasurementWindow.WINDOW_SIZE).classify(result);
 
-                    if (firstResult) {
-                        firstResult = false;
-                    }
-                    else {
-                        valueResults.append("\n");
-                    }
-
-                    valueResults.append(String.format("Actual: %s\tExpected: %s", actualActivity.name(), selectedActivity.name()));
+                    valueResults.setText(String.format("Actual: %s\tExpected: %s\n%s", actualActivity.name(), selectedActivity.name(), valueResults.getText()));
 
                     // Log the result so it can be processed later to create a confusion matrix
-                    writeResult(actualActivity, selectedActivity); // TODO write results asynchronous (it seems to slow down the start of the next measurement)
+                    //writeResult(actualActivity, selectedActivity); // TODO write results asynchronous (it seems to slow down the start of the next measurement)
+
+                    Integer current = confusionMatrix.get(selectedActivity, actualActivity);
+                    confusionMatrix.put(selectedActivity, actualActivity, (current == null) ? 1 : current + 1);
 
                     // Do more tests if needed
                     doTest();
                 }
-            }
-            catch (IllegalStateException e) {
+            } catch (IllegalStateException e) {
                 toastManager.showText("Please train the classifier first", Toast.LENGTH_LONG);
             }
         }
     };
-
-    private final MeasurementTask.ProgressUpdater measurementProgressUpdater = new MeasurementTask.ProgressUpdater() {
-        @Override
-        public void update(Integer progress) {
-            ((ProgressBar) rootView.findViewById(R.id.progressBar_measurement)).setProgress(progress);
-        }
-    };
-
-    private View rootView;
-    private TextView valueResults;
-    private boolean firstResult;
-
-    // Race conditions should not occur, but better safe than sorry
-    private final AtomicInteger timesLeft = new AtomicInteger(0);
-    private final AtomicBoolean doInfinitely = new AtomicBoolean(false);
-
-    /**
-     * A reference to keep track of the current task. It is used to
-     * clean up the current task when creating and executing a new task,
-     * because otherwise the user can spawn many executing tasks and
-     * the progress bar will go haywire.
-     */
-    private final AtomicReference<MeasurementTask> currentTask = new AtomicReference<MeasurementTask>(null);
-
-    private ToastManager toastManager;
-
-    /**
-     * A Lock to make sure that the updates of both timesLeft and
-     * doInfinitely happen atomically.
-     */
-    private final Object updateLock = new Object();
-
-    private MeasurementWindow.MonitorHelper measurementHelper;
-
-    private int measureTimes = 1;
-    private boolean measureInfinitely = false;
-
-    private int[] RBTimesList = new int[] {
-        R.id.rb_times_1,
-        R.id.rb_times_5,
-        R.id.rb_times_10,
-        R.id.rb_times_50,
-        R.id.rb_times_infinite
-    };
-
-    private BiMap<Integer, ACTIVITY> activity_buttons = new ImmutableBiMap.Builder<Integer, ACTIVITY>()
-        .put(R.id.but_test_sitting, ACTIVITY.Sitting)
-        .put(R.id.but_test_walking, ACTIVITY.Walking)
-        .put(R.id.but_test_running, ACTIVITY.Running)
-        .put(R.id.but_test_elevator, ACTIVITY.Elevator)
-        .build();
-
-    private ACTIVITY selectedActivity;
-
-    private static final String LOG_TAG = TestFragment.class.toString();
-
-    /**
-     * File to which the measured acceleration values are written
-     */
-    public static final String RESULTS_FILE_PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/testing.csv";
 
     /**
      * Returns a new instance of this fragment for the given section number
@@ -166,14 +159,12 @@ public class TestFragment extends Fragment {
                 final String message = String.format("Succesfully written results to %s", RESULTS_FILE_PATH);
                 toastManager.showText(message, Toast.LENGTH_SHORT);
                 Log.w(LOG_TAG, message);
-            }
-            else {
+            } else {
                 final String message = "Could not write buffer: external storage not mounted";
                 toastManager.showText(message, Toast.LENGTH_SHORT);
                 Log.w(LOG_TAG, message);
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             final String message = String.format("Could not create or write results file %s", RESULTS_FILE_PATH);
             toastManager.showText(message, Toast.LENGTH_LONG);
             Log.w(LOG_TAG, message);
@@ -191,6 +182,9 @@ public class TestFragment extends Fragment {
 
         valueResults = (TextView) rootView.findViewById(R.id.val_testresults);
         firstResult = true;
+
+        table_confusionmatrix = (TableLayout) rootView.findViewById(R.id.table_confusionmatrix);
+        fillTableCells();
 
         // Connect click listener to radio buttons
         for (int rb : RBTimesList) {
@@ -237,6 +231,19 @@ public class TestFragment extends Fragment {
         return rootView;
     }
 
+    private void fillTableCells() {
+        // Check if the table already contains TextViews
+        if (((TableRow) table_confusionmatrix.getChildAt(1)).getChildAt(1) == null) {
+            for (int i = 1; i < 5; i++) {
+                for (int j = 1; j < 5; j++) {
+                    TextView t = new TextView(getActivity().getApplicationContext());
+                    t.setText(String.format("(%d,%d)", i, j));
+                    ((TableRow) table_confusionmatrix.getChildAt(i)).addView(t, new TableRow.LayoutParams(j));
+                }
+            }
+        }
+    }
+
     public void onClickActivityButton(final View view) {
         selectedActivity = activity_buttons.get(view.getId());
         colorSelectedButton();
@@ -257,10 +264,9 @@ public class TestFragment extends Fragment {
     public void onStartTestsButtonClick(final View view) {
         if (selectedActivity == null) {
             toastManager.showText("Select an activity first", Toast.LENGTH_SHORT);
-        }
-        else {
+        } else {
             measurementHelper = new MeasurementWindow.MonitorHelper(MeasurementWindow.WINDOW_SIZE);
-            Log.w(getClass().getName(), "TEST NEW HELPER " + String.valueOf(measurementHelper.hashCode()));
+            Log.w(((Object) this).getClass().getName(), "TEST NEW HELPER " + String.valueOf(measurementHelper.hashCode()));
 
             synchronized (updateLock) {
                 doInfinitely.set(measureInfinitely);
@@ -292,14 +298,13 @@ public class TestFragment extends Fragment {
             if (!infinitelyRemaining) {
                 // TODO for some reasons the 2nd .. nth toast gets shown only after half way during the measurement (1st gets displayed immediately)
                 toastManager.showText(String.format("%d remaining tests", timesRemaining), Toast.LENGTH_SHORT);
-            }
-            else {
+            } else {
                 // TODO for some reasons the 2nd .. nth toast gets shown only after half way during the measurement (1st gets displayed immediately)
                 toastManager.showText("Many more remaining", Toast.LENGTH_SHORT);
             }
 
             final MeasurementTask task = new MeasurementTask(measurementResultProcessor, measurementProgressUpdater, measurementHelper);
-            Log.w(getClass().getName(), "TEST NEW TASK " + String.valueOf(measurementHelper.hashCode()));
+            Log.w(((Object) this).getClass().getName(), "TEST NEW TASK " + String.valueOf(measurementHelper.hashCode()));
 
             // Clean up the old task to prevent building up many running
             // tasks if the user hits the start button many times
@@ -310,8 +315,7 @@ public class TestFragment extends Fragment {
 
             // Start executing the new task
             task.execute(getActivity());
-        }
-        else {
+        } else {
             toastManager.showText("Finished testing", Toast.LENGTH_LONG);
         }
     }
