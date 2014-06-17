@@ -2,32 +2,33 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="nl.tudelft.sps.app.TestFragment"
     android:layout_gravity="center_horizontal|center_vertical"
+    android:layout_margin="6dp"
     android:orientation="vertical"
-    android:layout_margin="6dp">
+    tools:context="nl.tudelft.sps.app.TestFragment">
 
     <!-- TODO: Update blank fragment layout -->
 
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="top|center_horizontal">
+        android:gravity="top|center_horizontal"
+        android:orientation="horizontal">
 
         <RadioGroup
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:checkedButton="@+id/rb_times_1"
             android:gravity="center_vertical"
-            android:checkedButton="@+id/rb_times_1">
+            android:orientation="vertical">
 
             <LinearLayout
-                android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical">
-                    <RadioButton android:id="@+id/rb_times_1"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+            <RadioButton android:id="@+id/rb_times_1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="1"/>
@@ -46,11 +47,12 @@
                         android:text="50"/>
             </LinearLayout>
             <LinearLayout
-                android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical">
-                <RadioButton android:id="@+id/rb_times_infinite"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+            <RadioButton android:id="@+id/rb_times_infinite"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Continuously"/>
@@ -58,23 +60,25 @@
         </RadioGroup>
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
             android:gravity="fill_vertical"
-            android:layout_marginLeft="10dp">
+            android:orientation="vertical">
+
             <Button android:id="@+id/but_test_start"
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Start testing"
-                android:layout_marginTop="7dp"/>
+                android:layout_marginTop="7dp"
+                android:text="Start testing" />
+
             <Button android:id="@+id/but_test_stop"
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Stop testing"
-                android:layout_marginTop="6dp"/>
+                android:layout_marginTop="6dp"
+                android:text="Stop testing" />
         </LinearLayout>
 
     </LinearLayout>
@@ -82,50 +86,50 @@
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
        android:layout_width="fill_parent"
        android:layout_height="wrap_content"
-       android:orientation="horizontal"
+        android:layout_marginLeft="2dp"
        android:gravity="left"
-       android:layout_marginLeft="2dp">
+        android:orientation="horizontal">
 
         <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:id="@+id/but_test_sitting"
-            android:src="@drawable/act_sitting"
-            android:clickable="true" />
-
-        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:clickable="true"
+            android:src="@drawable/act_sitting" />
+
+        <ImageButton
             android:id="@+id/but_test_walking"
-            android:src="@drawable/act_walking"
-            android:clickable="true" />
-
-        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:clickable="true"
+            android:src="@drawable/act_walking" />
+
+        <ImageButton
             android:id="@+id/but_test_running"
-            android:src="@drawable/act_running"
-            android:clickable="true" />
-
-        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:clickable="true"
+            android:src="@drawable/act_running" />
+
+        <ImageButton
             android:id="@+id/but_test_elevator"
-            android:src="@drawable/act_stairsup"
-            android:clickable="true" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:src="@drawable/act_lift" />
 
     </LinearLayout>
 
     <!-- Margin right and left to align with TextView -->
     <ProgressBar
+        android:id="@+id/progressBar_measurement"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/progressBar_measurement"
+        android:layout_marginBottom="6dp"
         android:layout_marginLeft="2dp"
         android:layout_marginRight="2dp"
         android:layout_marginTop="6dp"
-        android:layout_marginBottom="6dp"
         android:indeterminate="false"/>
 
     <ScrollView
@@ -133,11 +137,11 @@
         android:layout_height="fill_parent">
 
         <TextView
+            android:id="@+id/val_testresults"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:id="@+id/val_testresults"
-            android:scrollbars="vertical"
-            android:background="@android:drawable/editbox_background_normal"/>
+            android:background="@android:drawable/editbox_background_normal"
+            android:scrollbars="vertical" />
     </ScrollView>
 
 </LinearLayout>

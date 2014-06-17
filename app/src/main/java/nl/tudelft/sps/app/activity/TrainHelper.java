@@ -2,13 +2,11 @@ package nl.tudelft.sps.app.activity;
 
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Iterator;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import nl.tudelft.sps.app.DatabaseHelper;
 import nl.tudelft.sps.app.activity.MeasurementWindow.Helper;
@@ -21,14 +19,13 @@ public class TrainHelper extends Helper {
     public final ACTIVITY activity;
 
     private final DatabaseHelper databaseHelper;
-
+    private final int windowSize;
     protected MeasurementWindow current;
     protected int current_loc = 0;
     private MeasurementWindow next;
     private int numFullWindows = 0;
     private List<Sample> currentSamples;
     private List<Sample> nextSamples;
-    private final int windowSize;
 
     public TrainHelper(ACTIVITY activity, DatabaseHelper dbhelper, int windowSize) {
         this.activity = activity;
@@ -171,21 +168,16 @@ public class TrainHelper extends Helper {
             sampleDao.callBatchTasks(new Callable<Void>() {
                 @Override
                 public Void call() {
-                    final long currentTimestamp = System.currentTimeMillis();
-
-                    System.err.println("Creating windows...");
                     windowDao.create(window);
                     windowDao.create(window1);
                     windowDao.create(window2);
                     windowDao.create(window3);
                     windowDao.create(window4);
 
-                    System.err.println("Creating Samples...");
                     for (Sample sample : samples) {
                         sampleDao.create(sample);
                     }
-                    final long duration = System.currentTimeMillis() - currentTimestamp;
-                    System.err.println(String.format("%d samples created in %d ms", samples.size(), duration));
+
                     return null;
                 }
             });
