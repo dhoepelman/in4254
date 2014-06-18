@@ -1,0 +1,5 @@
+wifiscans_normal_distributions.csv contains our processed data.
+For every (BSSID/SSID,Room) combination the mean and standard deviation is given.
+
+wifiscans_raw_data.csv contains our unprocessed data.
+For every RSS signal detected a (BSSID,SSID,Room,level,unique id,timestamp,scan id) tuple is given
