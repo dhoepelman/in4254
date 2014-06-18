@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -125,6 +126,7 @@ public class TestFragment extends Fragment {
             }
         }
     };
+    private TextView[][] table_confusionmatrix_cells = new TextView[5][5];
 
     /**
      * Returns a new instance of this fragment for the given section number
@@ -235,10 +237,13 @@ public class TestFragment extends Fragment {
         // Check if the table already contains TextViews
         if (((TableRow) table_confusionmatrix.getChildAt(1)).getChildAt(1) == null) {
             for (int i = 1; i < 5; i++) {
-                for (int j = 1; j < 5; j++) {
+                // The table layout only seems to work if we make 5 Textviews, even though there already is something in the first column
+                for (int j = 0; j < 5; j++) {
                     TextView t = new TextView(getActivity().getApplicationContext());
-                    t.setText(String.format("(%d,%d)", i, j));
+                    //t.setText(String.format("(%d,%d)", i, j));
+                    t.setGravity(Gravity.CENTER);
                     ((TableRow) table_confusionmatrix.getChildAt(i)).addView(t, new TableRow.LayoutParams(j));
+                    table_confusionmatrix_cells[i][j] = t;
                 }
             }
         }
