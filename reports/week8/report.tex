@@ -235,8 +235,11 @@ We tried to make our windows as long as a single step (\~0.65s), but these windo
 Every time the the steps counter detects movement it signals the locator.
 THe locator then calculates the possible movement area based on a minimum step size of 0.5~m and a maximum step size of 1.2~m.
 The probability of every room is then distributed among this area, where the middle of the area is in the center of the room.
+
+This means that a certain part of the room probability remains in that room (the fraction of the "movement"  area that overlaps with the room physical area) while the remaining probability goes to the adjacent rooms (the fraction of the "movement" area that overlaps with the adjacent room physical area).
+
 Due to the size of the rooms (about 7.2~meters for the hallway) and the maximum of 4 steps (4.8~m) probability only has to be distributed among adjacent rooms.
-\\
+
 The following algorithm implements this idea:
 \begin{algorithmic}
 	\State $longest = 1.2 \cdot s$
