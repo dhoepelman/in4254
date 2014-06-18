@@ -115,7 +115,7 @@ For $k$ we used  $\lceil\sqrt{n}\rceil$, where $n$ is the number of windows in o
 We used a random tie-breaker if more than 1 class had the equal (largest) number of neighbours. 
 
 \subsection{Performance evaluation}
-We collected 20 windows of each activity type as training and different 20 windows of each activity type as testing data which were fed into our classifier.
+We collected 20 windows of each activity type as training and 40 different windows of each activity type as testing data which were fed into our classifier.
 The resulting confusion matrix is shown in \autoref{tab:confusion-matrix}.
 
 \begin{table}[ht]
@@ -125,16 +125,16 @@ The resulting confusion matrix is shown in \autoref{tab:confusion-matrix}.
 \toprule
 & Sitting & Walking & Running & Jumping  \\
 \midrule
-Sitting & 90 \% &  10 \% &       &       \\
-Walking &       & 100 \% &       &       \\
-Running &       &  15 \% & 70 \% & 15 \% \\
-Jumping &       &        & 15 \% & 85 \% \\
+Sitting & 0.93 &  0.08 &       &       \\
+Walking &       & 1.00 &       &       \\
+Running &       &  0.10 & 0.75 & 0.15 \\
+Jumping &       &        & 0.10 & 0.90 \\
 \bottomrule
 \end{tabular}
 \label{tab:confusion-matrix}
  \end{table}
 
-The confusion matrix shows that the classifier is able to classify activities which reasonable accuracy.
+The confusion matrix shows that the classifier is able to classify activities which reasonable accuracy, especially considering how little training was done.
 Running is hardest to classify, which can be explained because the movements often resemble either walking or jumping.
 
 \section{Localization}
@@ -161,12 +161,15 @@ We did a fixed number of scans per room on every day, but this does not translat
 The reason for this is that the time required to perform a signal scan
 differs greatly depending on the number of AP's that are visible in a room.
 
-\subsection{Localization method}
+\subsection{Localization}
 \label{sec:loc-data}
 
-We chose to use \textbf{Bayesian Filters} for our localization method. We identify an AP using the $BSSID$, which is guaranteed globally unique.
+We chose to use \textbf{Bayesian Filters} for our localization method.
+We have drawn a rough not-to-scale map of the rooms, and show it to the user as part of our GUI.
+Because Bayesian gives a probability distribution for location, we show the probability of each room in this GUI and give likely (> 50\%) or probable (> 20\%) rooms another color.
+See the screenshot in \autoref{fig:screenshot}.
 
-For our calculations we group the training data on $BSSID$ and $Room$ and calculate the normal distribution $N_{BSSID,Room}(\mu_{BSSID,Room}, \sigma^2_{BSSID,Room})$ using the measured signal strengths.
+For our calculations we group the training data on $BSSID$ and $Room$ and calculate the normal distribution $N_{BSSID,Room}(\mu_{BSSID,Room}, \sigma^2_{BSSID,Room})$ using the measured signal strengths. We identify an AP using the $BSSID$, because it is guaranteed to be globally unique.
 
 We provide an example with 2 BSSID's and two Rooms, pulled from our collected data.
 You can see the histogram of the 4 $(BSSID, Room)$ combination in \autoref{fig:histogram}.
@@ -233,7 +236,7 @@ We treated a window classified as sitting as no steps taken and any other window
 We tried to make our windows as long as a single step (\~0.65s), but these windows turned out to be too short to provide accurate detection.
 
 Every time the the steps counter detects movement it signals the locator.
-THe locator then calculates the possible movement area based on a minimum step size of 0.5~m and a maximum step size of 1.2~m.
+The locator then calculates the possible movement area based on a minimum step size of 0.5~m and a maximum step size of 1.2~m.
 The probability of every room is then distributed among this area, where the middle of the area is in the center of the room.
 
 This means that a certain part of the room probability remains in that room (the fraction of the "movement"  area that overlaps with the room physical area) while the remaining probability goes to the adjacent rooms (the fraction of the "movement" area that overlaps with the adjacent room physical area).
@@ -259,8 +262,6 @@ The following algorithm implements this idea:
 
 \subsection{Performance evaluation}
 \label{sec:loc-evaluation}
-
-We have drawn a rough not-to-scale map of the rooms, and show it to the user as part of our GUI. See \autoref{fig:screenshot}.
 
 For our performance evaluation we used off-line processing. We divided the scans of our training data into 10 random partitions, and tested every partition while using the other partitions as training data for the locator.
 
