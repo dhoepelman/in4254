@@ -96,7 +96,7 @@ Apache Commons Math & 3.2\\
 
 \section{Activity Monitoring (1 page)}
 \label{sec:activity-monitoring}
-We define four activities that need to be recognized by the application: sitting, walking, running, and going up and down in the elevator. The application measures the three axes (x, y, and z) of the accelerometer every 20~ms and groups them together in windows of 240 samples. Originally we used windows of 256 samples, but this was reduced somewhat to 240 so that each window can be evenly split into four smaller windows of 60 samples, which are used by the steps counter for updating the movement model during localization. The activity testing uses the larger windows of 240 samples. For each window several features are computed:
+We define four activities that need to be recognized by the application: sitting, walking, running, and going up and down in the elevator. The application measures the three axes (x, y, and z) of the accelerometer every 20~ms and groups them together in windows of 240 samples. Originally we used windows of 256 samples, but this was reduced somewhat to 240 so that each window can be evenly split into four smaller windows of 60 samples, which is the amount that is needed by the steps counter for updating the movement model during localization. During activity testing the larger window of 240 samples is used. For each window several features are computed:
 
 \begin{itemize}
 \item Mean $\mu$ for each axis: $\mu_x$, $\mu_y$, and $\mu_z$
@@ -104,19 +104,19 @@ We define four activities that need to be recognized by the application: sitting
 \item Correlation between each two axes:  $\text{Corr(}x,y{)}$, $\text{Corr(}y,z{)}$, and $\text{Corr(}z,x{)}$
 \end{itemize}
 
-To classify the windows a k-NN classifier was constructed. The classifier uses the Euclidean distance for which we used the Apache Commons Math library. For $n$ measured windows during the training, the classifier tests a measurement using $\sqrt{n}$ neighbors with a 50-50 random tie breaker. We have collected about 999 training measurement windows and 999 testing measurement windows. The resulting confusion matrix is shown in \autoref{tab:confusion-matrix}.
+To classify the windows a k-NN classifier was constructed. The classifier uses the Euclidean distance for which we used the Apache Commons Math library. For $n$ measured windows during the training, the classifier tests a measurement using $\sqrt{n}$ neighbors with a 50-50 random tie breaker. We have collected about 10 training measurement windows of each activity type and 20 testing measurement windows of each activity type. The resulting confusion matrix is shown in \autoref{tab:confusion-matrix}.
 
 \begin{table}[ht]
 \centering
 \caption{Confusion matrix of our classifier.}
 \begin{tabular}{lccccc}
 \toprule
-& Sitting & Walking & Running & Elevator\\
+& Sitting & Walking & Running & Jumping\\
 \midrule
-Sitting  & 1.0 &     &     &     \\
-Walking  &     & 1.0 &     &     \\
-Running  &     &     & 1.0 &     \\
-Elevator &     &     &     & 1.0 \\
+Sitting & 18=0.90 & 2=0.10 &        &         \\
+Walking &         & 20=1.0 &        &         \\
+Running &         & 3=0.15 & 14=0.7 & 3=0.15  \\
+Jumping &         &        & 3=0.15 & 17=0.85 \\
 \bottomrule
 \end{tabular}
 \label{tab:confusion-matrix}
@@ -210,9 +210,10 @@ We append the following to the previous algorithm:
 \end{algorithmic}
 
 \subsection{Movement Model}
+\label{sec:loc-movement-model}
 For updating the probabilities using a movement model, a steps counter was implemented. The steps counter trains the k-NN classifier using the features of the smaller (60 samples) windows collected during the activity training. When the steps counter is active, it collects one window containing 60 samples and then calls the classifier to find out whether the user is walking or not. If the classifier classifies the window as walking, then the steps counter increases the number of counted steps.
 
-Every 9 steps, or when the steps counter measures that the user is standing still, the Bayesian locator is invoked to update the probabilities. The locator constructs a uniform distribution of between $0.5s$ and $1.2s$ meters, where $s$ is the number of steps. Due to the size of the rooms ($7.2$~meters) and the upper bound on the number of steps that the locator receives (at most 9), the probabilities are such that the current room and its adjacent rooms have a non-zero probability, but the $2^{nd}$ level of neighbors always have a zero probability. Taking advantage of this upper bound of 9 steps simplifies the code quite a bit.
+Every 9 steps, or when the steps counter measures that the user is standing still, the Bayesian locator is invoked to update the probabilities. The locator constructs a uniform distribution of between $0.5s$ and $1.2s$ meters, where $s$ is the number of steps. Due to the size of the rooms ($7.2$~meters) and the upper bound on the number of steps that the locator receives (at most 9), the probabilities are such that the current room and its adjacent rooms have a zero or non-zero probability, but the $2^{nd}$ level of adjacent rooms always have a zero probability. Taking advantage of this upper bound of 9 steps simplifies the code quite a bit.
 
 \subsection{Performance evaluation}
 \label{sec:loc-evaluation}
@@ -237,11 +238,15 @@ We have not tested how less data or a lower iterations cap would influence the n
 \label{sec:cloud-computing}
 For cloud computing we decided to implement the ability to spy on the detected localization using a second phone. The ``NSA fragment'' allows another user to see the location of the first user on a map. More precisely, the GUI shows a map -- identical to the map shown in the localization testing GUI -- which duplicates the probabilities shown on the screen of the phone of the first user.
 
-Initially the Google Cloud Messaging (GCM) service was used, but this proved to be slow. Because of this reason, we switched to using using a simple direct TCP socket connection. Response time was shown to be much faster; updating the location probabilities takes on average about $1.6$~seconds. Furhermore, the approach using TCP sockets was easier to implement than GCM.
+Initially the Google Cloud Messaging (GCM) service was used, but this proved to be quite slow. Because of this reason, we switched to using using a simple direct TCP socket connection. When the user enters an IP address in the GUI of \textsc{LocatorNSAFragment}, the application creates a new \textsc{Thread} which creates a \textsc{ObjectInputStream} from a client socket. It then calls the \textsc{readObject()} method on this object to receive \textsc{Map<Room, Double>} and if Java can successfully deserialize the object, it will use the received probabilities to update the map shown on the screen.
+
+Response time was shown to be much faster; sending the location probabilities from the LG Nexus 4 to the Samsung Galaxy S over the eduroam network takes on average about $1.6$~seconds. Furthermore, the approach using TCP sockets was found to be easier to implement than GCM.
 
 \section{Challenges \& Innovation (0.25 pages)}
 \label{sec:innovation}
-TODO
+\subsection{Activity Monitoring Difficulties}
+One of the challenges of activity monitoring was selecting the appropriate features and the size of the feature vectors.
+We noticed that the correlation features (visually) do not seem to have clear clusters.
 
 \subsection{Localization Difficulties}
 
