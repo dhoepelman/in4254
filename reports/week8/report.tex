@@ -233,10 +233,18 @@ We append the following to the previous algorithm:
 We tried various approaches for our movement model, see \autoref{sec:innovation}.
 We finally settled on re-using our activity classifier as a detector of movement and approximation for the number of steps taken. 
 We treated a window classified as sitting as no steps taken and any other window (walking, running or jumping) as 4 steps, because this was about the number of steps we took in the 2.4~s window size.
-We tried to make our windows as long as a single step (\~0.65s), but these windows turned out to be too short to provide accurate detection.
+We tried to make our windows as long as a single step (0.65s), but these windows turned out to be too short to provide accurate detection.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.5\textwidth]{movementmodel}
+    \caption{Our movement model}
+    \label{fig:movementmodel}
+\end{figure}
 
 Every time the the steps counter detects movement it signals the locator.
-The locator then calculates the possible movement area based on a minimum step size of 0.5~m and a maximum step size of 1.2~m.
+The locator distributes the probability of every room among the area that whereto the movement might have been, when taking a minimum step size of 0.5~m and a maximum step size of 1.2~m.
+This idea is illustrated in \autoref{fig:movementmodel}.
 The probability of every room is then distributed among this area, where the middle of the area is in the center of the room.
 
 This means that a certain part of the room probability remains in that room (the fraction of the "movement"  area that overlaps with the room physical area) while the remaining probability goes to the adjacent rooms (the fraction of the "movement" area that overlaps with the adjacent room physical area).
@@ -411,5 +419,7 @@ This will more likely work in the general case.
     \caption{Correct localizations per room when taking the probability of number of AP's per room into account.}
     \label{fig:correctness-perroom}
 \end{figure}
+
+
 
 \end{document}
