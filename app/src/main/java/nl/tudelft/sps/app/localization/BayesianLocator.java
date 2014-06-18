@@ -70,13 +70,7 @@ public class BayesianLocator implements ILocator {
      * Normalize the probabilities of the current location so that they add up to 1
      */
     private synchronized void normalize() {
-        Double sum = 0.0;
-        // Add from smallest to largest to prevent floating-point errors
-        List<Double> values = new ArrayList<>(currentLocation.values());
-        Collections.sort(values);
-        for (Double p : values) {
-            sum += p;
-        }
+        Double sum = getLocationSum();
         // Normalize them to (almost) 1, while preventing entries from going lower than PROBABILITY_EPSILON
         double secondSum = 0.0;
         for (Map.Entry<Room, Double> entry : currentLocation.entrySet()) {
@@ -97,6 +91,17 @@ public class BayesianLocator implements ILocator {
             }
         }
         // Really normalize to 1
+    }
+
+    private Double getLocationSum() {
+        Double sum = 0.0;
+        // Add from smallest to largest to prevent floating-point errors
+        List<Double> values = new ArrayList<>(currentLocation.values());
+        Collections.sort(values);
+        for (Double p : values) {
+            sum += p;
+        }
+        return sum;
     }
 
     @Override
@@ -290,17 +295,27 @@ public class BayesianLocator implements ILocator {
 
             System.err.println(String.format("Fraction in adjacent rooms: %.2f", fractionAdjacentRoom));
 
+            System.out.println(getLocationSum());
+
             // The region will cover a number of rooms, for example:
             // 40 % in the current room, 60 % in the immediate adjacent room
             // The uniform distribution assumes that total probability is 1, but
             // we have n neighbors, so divide the probability by n
+            Map<Room, Double> fromAdjacent = new HashMap<>();
             for (Map.Entry<Room, Double> locationProbability : previousLocation.entrySet()) {
                 final Collection<Room> adjacentRooms = locationProbability.getKey().getAdjacentRooms();
+                double p_to_adjacent = (fractionAdjacentRoom * locationProbability.getValue()) / adjacentRooms.size();
+                double p_remaining = 1 - p_to_adjacent * adjacentRooms.size();
                 for (Room room : adjacentRooms) {
-                    currentLocation.put(room, currentLocation.get(room) + fractionAdjacentRoom / adjacentRooms.size() * locationProbability.getValue());
+                    fromAdjacent.put(room, (fromAdjacent.get(room) == null ? 0.0 : fromAdjacent.get(room)) + p_to_adjacent);
                 }
-                currentLocation.put(locationProbability.getKey(), locationProbability.getValue() * (1 - fractionAdjacentRoom));
+                currentLocation.put(locationProbability.getKey(), currentLocation.get(locationProbability.getKey()) * p_remaining);
             }
+            for (Map.Entry<Room, Double> e : fromAdjacent.entrySet()) {
+                System.out.println(String.format("Was %.2f becomes %.2f", currentLocation.get(e.getKey()), currentLocation.get(e.getKey()) + e.getValue()));
+                currentLocation.put(e.getKey(), currentLocation.get(e.getKey()) + e.getValue());
+            }
+            System.out.println(getLocationSum());
 
             normalize();
         }
