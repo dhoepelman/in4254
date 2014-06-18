@@ -243,11 +243,15 @@ The following algorithm implements this idea:
 	\State $shortest = 0.5 \cdot s$
 	\State $room\_radius = \frac{7.2}{2}$
 	\State $p_{in\_adjacent} = \max\left\{0, \frac{longest - room\_radius}{longest-shortest}\right\}$
+	\State $\mathbf{loc'} = \mathbf{0}$
 	\ForAll{$Room$}
-		\State $p \gets N_{\#,Room}(|scan|-0.5,|scan|+0.5)$
-		\State $\mathbf{loc}_{Room} \gets \mathbf{loc}_{Room} \cdot p $
+		
+		\ForAll{$a \in Room_{adjacent}$}
+			\State $\mathbf{loc'}_a \gets \mathbf{loc'}_{a} + \mathbf{loc}_{Room} \cdot \frac{p_{in\_adjacent}}{|Room_{adjacent}|} $
+		\EndFor
+		\State $\mathbf{loc}_{Room} \gets \mathbf{loc}_{Room} \cdot (1-p_{in\_adjacent})$
 	\EndFor
-	\State $\mathbf{loc} = \text{normalize}\left(\mathbf{loc}'\right)$
+	\State $\mathbf{loc} \gets \mathbf{loc} + \mathbf{loc'}$
 \end{algorithmic}
 
 \subsection{Performance evaluation}

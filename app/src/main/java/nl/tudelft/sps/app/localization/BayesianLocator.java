@@ -312,7 +312,6 @@ public class BayesianLocator implements ILocator {
                 currentLocation.put(locationProbability.getKey(), currentLocation.get(locationProbability.getKey()) * p_remaining);
             }
             for (Map.Entry<Room, Double> e : fromAdjacent.entrySet()) {
-                System.out.println(String.format("Was %.2f becomes %.2f", currentLocation.get(e.getKey()), currentLocation.get(e.getKey()) + e.getValue()));
                 currentLocation.put(e.getKey(), currentLocation.get(e.getKey()) + e.getValue());
             }
             System.out.println(getLocationSum());
