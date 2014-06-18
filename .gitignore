@@ -44,6 +44,5 @@ reports/*/*.pdf
 # BibTex
 *.bbl
 *.blg
-/reports/week5/report.synctex.gz
+*.synctex.gz
 ~*.xlsx
-/reports/week8/report.synctex.gz
