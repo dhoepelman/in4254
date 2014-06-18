@@ -27,7 +27,7 @@ public class MeasurementWindow implements IMeasurement {
     /**
      * Window overlap. Based on [1]
      */
-    public static final int WINDOW_OVERLAP = 128;
+    public static final int WINDOW_OVERLAP = WINDOW_SIZE / 2;
 
     @DatabaseField(generatedId = true)
     long id;

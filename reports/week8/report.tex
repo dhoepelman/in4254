@@ -142,8 +142,7 @@ Running is hardest to classify, which can be explained because the movements oft
 
 \subsection{Data collection}
 \label{sec:loc-localization-method}
-
-For each of the available 17 rooms on the 9$^{\text{th}}$ floor of EWI, we have collected Wi-Fi signal strengths of all the access points our mobile phone could find.
+For each of the available 17 rooms on the 9$^{\text{th}}$ floor of EWI, we have collected Wi-Fi signal strengths of all the access points our mobile phone could find. The signals collected for training the locator have been collected using the LG Nexus~4 smart phone, since it has the capability to measure 5~GHz signals as well as the 2.4~GHz signals (the Samsung Galaxy~S can only detect 2.4~GHz signals) and overall has a much better reception of the signals. This shows that in order for the locator to work reliably, the user needs to have a decent modern smart phone.
 We have drawn a rough not-to-scale map of the rooms, and show it to the user as part of our GUI. See \autoref{fig:screenshot}.
 
 In total we have collected \textbf{3300} scans on three different days.
@@ -258,9 +257,11 @@ Response time was shown to be much faster; sending the location probabilities fr
 \subsection{Activity Monitoring Difficulties}
 One of the challenges of activity monitoring was selecting the appropriate features and the size of the feature vectors.
 We noticed that the correlation features (visually) do not seem to have clear clusters.
+Furthermore, it proved to be difficult to reliably classify activities with small windows of around 60 samples.
+This forced us to count steps using windows of 240 samples, which take about 2.5 seconds to collect.
+For this reason we estimate that the user has taken four steps when a window is classified as non-sitting.
 
 TODO Mahalanobis distance versus Euclidean
-TODO Correlation features useful?
 
 \subsection{Localization Difficulties}
 
