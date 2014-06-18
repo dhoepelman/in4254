@@ -244,9 +244,11 @@ Response time was shown to be much faster; sending the location probabilities fr
 \subsection{Activity Monitoring Difficulties}
 One of the challenges of activity monitoring was selecting the appropriate features and the size of the feature vectors.
 We noticed that the correlation features (visually) do not seem to have clear clusters.
+Furthermore, it proved to be difficult to reliably classify activities with small windows of around 60 samples.
+This forced us to count steps using windows of 240 samples, which take about 2.5 seconds to collect.
+For this reason we estimate that the user has taken four steps when a window is classified as non-sitting.
 
 TODO Mahalanobis distance versus Euclidean
-TODO Correlation features useful?
 
 \subsection{Localization Difficulties}
 
