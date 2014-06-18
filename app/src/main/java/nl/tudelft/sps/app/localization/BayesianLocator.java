@@ -21,8 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.tudelft.sps.app.activity.ACTIVITY;
-
 /**
  * Implements a Locator according using bayesian interference and a normally distributed RSS probability based on the training data
  */
@@ -42,6 +40,12 @@ public class BayesianLocator implements ILocator {
      * The "zero" probability. We never want to remove a room completely so this is the smallest we'll multiply with
      */
     private static final double PROBABILITY_EPSILON = 0.002;
+    /**
+     * Average length of a room in meters
+     */
+    public static double ROOM_LENGTH_METERS = 7.2;
+    public static double SHORTEST_DISTANCE_PER_STEP = 0.5;
+    public static double LONGEST_DISTANCE_PER_STEP = 1.2;
     /**
      * The current location as a map from Room to a probability that the user is in that room
      */
@@ -256,14 +260,6 @@ public class BayesianLocator implements ILocator {
         }
     }
 
-    /**
-     * Average length of a room in meters
-     */
-    public static double ROOM_LENGTH_METERS = 7.2;
-
-    public static double SHORTEST_DISTANCE_PER_STEP = 0.5;
-    public static double LONGEST_DISTANCE_PER_STEP = 1.2;
-
     @Override
     public synchronized void addMovement(int steps) {
         if (steps > 0) {
@@ -303,6 +299,7 @@ public class BayesianLocator implements ILocator {
                 for (Room room : adjacentRooms) {
                     currentLocation.put(room, currentLocation.get(room) + fractionAdjacentRoom / adjacentRooms.size() * locationProbability.getValue());
                 }
+                currentLocation.put(locationProbability.getKey(), locationProbability.getValue() * (1 - fractionAdjacentRoom));
             }
 
             normalize();

@@ -96,7 +96,7 @@ Apache Commons Math & 3.2\\
 
 \section{Activity Monitoring}
 \label{sec:activity-monitoring}
-\subsection{Techinical methods}
+\subsection{Technical methods}
 We define four activities that need to be recognized by the application: Sitting, Walking, Running, and Jumping.
 The application measures the three axes of the accelerometer every 20~ms and groups them together in windows of 240 samples, making the windows 4.8~s long.
 We made half of every window overlap, so that (after the first window) every 2.4~s a window can be completed.
@@ -137,16 +137,21 @@ Jumping &       &        & 15 \% & 85 \% \\
 The confusion matrix shows that the classifier is able to classify activities which reasonable accuracy.
 Running is hardest to classify, which can be explained because the movements often resemble either walking or jumping.
 
-\section{Localization (3 pages)}
+\section{Localization}
 \label{sec:localization}
 
 \subsection{Data collection}
 \label{sec:loc-localization-method}
-For each of the available 17 rooms on the 9$^{\text{th}}$ floor of EWI, we have collected Wi-Fi signal strengths of all the access points our mobile phone could find. The signals collected for training the locator have been collected using the LG Nexus~4 smart phone, since it has the capability to measure 5~GHz signals as well as the 2.4~GHz signals (the Samsung Galaxy~S can only detect 2.4~GHz signals) and overall has a much better reception of the signals. This shows that in order for the locator to work reliably, the user needs to have a decent modern smart phone.
-We have drawn a rough not-to-scale map of the rooms, and show it to the user as part of our GUI. See \autoref{fig:screenshot}.
+For each of the available 17 rooms on the 9$^{\text{th}}$ floor of EWI, we collected Wi-Fi signal strengths of all the access points our mobile phone could find.
 
-In total we have collected \textbf{3300} scans on three different days.
-A scan list contains the \emph{access points} (AP's) that were detected as a list of $signal = (BSSID, SSID, level)$ tuples where $level$ is expressed in dBm with a range of $[-30,-100]$.
+The signals collected for training the locator have been collected using the LG Nexus~4 smart phone.
+In addition to it being able to detect 5~Ghz WiFi signals, the Samsung Galaxy~S took a much longer time to detect all WiFi signals and had a much worse reception.
+In the time that the Nexus~4 could detect the RSS of all visible networks (usually about 20) the Galaxy~S usually had detected only about 2 or 3 networks. While more scans revealed other networks they did not include the previously detected networks.
+  
+This shows that not all smartphones might be suitable for this task, and that worse results might be achieved if the user does not use a relatively recent and high-end smartphone.
+
+In total we have collected \textbf{3300} scans on 3 different days.
+A scan list contains the access points (AP's) that were detected as a list of $signal = (BSSID, SSID, level)$ tuples where $level$ is expressed in dBm with a range of $[-30,-100]$.
 Both 2.4~GHz and 5~GHz access points were detected and stored in the database.
 Most rooms have either 180 or 240 scans, depending on which days they were accessible.
 The collected scans inside a room were evenly divided among the room area.
@@ -221,12 +226,34 @@ We append the following to the previous algorithm:
 
 \subsection{Movement Model}
 \label{sec:loc-movement-model}
-For updating the probabilities using a movement model, a steps counter was implemented. The steps counter trains the k-NN classifier using the features of the windows collected during the activity training. When the steps counter is active, it collects one window containing 240 samples and then calls the classifier to find out whether the user is walking or not. If the classifier classifies the window as walking, then the steps counter increases the number of counted steps.
 
-Every time the the steps counter classifies the window as not-sitting, it counts this as the user has takes four steps. It then invokes the Bayesian locator to update the probabilities. The locator constructs a uniform distribution of between $0.5s$ and $1.2s$ meters, where $s$ is the number of steps. Due to the size of the rooms ($7.2$~meters) and the upper bound on the number of steps that the locator receives (4 steps), the probabilities are such that the current room and its adjacent rooms have a zero or non-zero probability, but the $2^{nd}$ level of adjacent rooms always have a zero probability. Taking advantage of this upper bound simplifies the code quite a bit.
+We tried various approaches for our movement model, see \autoref{sec:innovation}.
+We finally settled on re-using our activity classifier as a detector of movement and approximation for the number of steps taken. 
+We treated a window classified as sitting as no steps taken and any other window (walking, running or jumping) as 4 steps, because this was about the number of steps we took in the 2.4~s window size.
+We tried to make our windows as long as a single step (\~0.65s), but these windows turned out to be too short to provide accurate detection.
+
+Every time the the steps counter detects movement it signals the locator.
+THe locator then calculates the possible movement area based on a minimum step size of 0.5~m and a maximum step size of 1.2~m.
+The probability of every room is then distributed among this area, where the middle of the area is in the center of the room.
+Due to the size of the rooms (about 7.2~meters for the hallway) and the maximum of 4 steps (4.8~m) probability only has to be distributed among adjacent rooms.
+\\
+The following algorithm implements this idea:
+\begin{algorithmic}
+	\State $longest = 1.2 \cdot s$
+	\State $shortest = 0.5 \cdot s$
+	\State $room\_radius = \frac{7.2}{2}$
+	\State $p_{in\_adjacent} = \max\left\{0, \frac{longest - room\_radius}{longest-shortest}\right\}$
+	\ForAll{$Room$}
+		\State $p \gets N_{\#,Room}(|scan|-0.5,|scan|+0.5)$
+		\State $\mathbf{loc}_{Room} \gets \mathbf{loc}_{Room} \cdot p $
+	\EndFor
+	\State $\mathbf{loc} = \text{normalize}\left(\mathbf{loc}'\right)$
+\end{algorithmic}
 
 \subsection{Performance evaluation}
 \label{sec:loc-evaluation}
+
+We have drawn a rough not-to-scale map of the rooms, and show it to the user as part of our GUI. See \autoref{fig:screenshot}.
 
 For our performance evaluation we used off-line processing. We divided the scans of our training data into 10 random partitions, and tested every partition while using the other partitions as training data for the locator.
 
