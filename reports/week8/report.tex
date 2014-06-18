@@ -279,13 +279,23 @@ We see that almost all signals are used, and only after about 23 signals the inf
 We do note that this is purely for the 95\% certainty threshold.
 We have not tested how less data or a lower iterations cap would influence the number of correct (but less certain) localizations.
 
-\section{Cloud Computing (1 page)}
+\section{Cloud Computing)}
 \label{sec:cloud-computing}
-For cloud computing we decided to implement the ability to spy on the detected localization using a second phone. The ``NSA fragment'' allows another user to see the location of the first user on a map. More precisely, the GUI shows a map -- identical to the map shown in the localization testing GUI -- which duplicates the probabilities shown on the screen of the phone of the first user.
 
-Initially the Google Cloud Messaging (GCM) service was used, but this proved to be quite slow. Because of this reason, we switched to using using a simple direct TCP socket connection. When the user enters an IP address in the GUI of \textsc{LocatorNSAFragment}, the application creates a new \textsc{Thread} which creates a \textsc{ObjectInputStream} from a client socket. It then calls the \textsc{readObject()} method on this object to receive \textsc{Map<Room, Double>} and if Java can successfully deserialize the object, it will use the received probabilities to update the map shown on the screen.
+For cloud computing we decided to implement the ability to follow a phone using a second android device.
+The ``NSA fragment'' allows another user to see the location of the first user on a map. More precisely the GUI shows a map, identical to the map shown in the localization testing GUI, which shows the same probability distribution as shown on the screen of the followed phone.
 
-Response time was shown to be much faster; sending the location probabilities from the LG Nexus 4 to the Samsung Galaxy S over the eduroam network takes on average about $1.6$~seconds. Furthermore, the approach using TCP sockets was found to be easier to implement than GCM.
+Initially the Google Cloud Messaging (GCM) service was used, but this proved to introduce very noticeable lag, usually several seconds but sometimes more than a minute.
+Because of this reason, we switched to using using a simple direct TCP socket connection.
+When the user enters the IP address of the phone to be followed, the application opens a connection to followed phone socket.
+Whenever there is a location update the followed phone serializes its location object and sends it over the socket.
+The following phone deserializes the location object it receives over the socket and uses it to update its GUI.
+
+Response time was shown to be much faster; sending the location probabilities from the LG Nexus 4 to the Samsung Galaxy S over the eduroam network takes about a second. Furthermore, the approach using TCP sockets was found to be much easier to implement than GCM.
+
+We also tested offloading the computation of the Bayesian location to a remote server, but found it to be too slow (several seconds) too be useful, especially since the local computation is done in several milliseconds.
+We also tested offloading the database with distributions to a remote server.
+This seemed more promising, but we did not complete the functionality on time.
 
 \section{Challenges \& Innovation (0.25 pages)}
 \label{sec:innovation}
