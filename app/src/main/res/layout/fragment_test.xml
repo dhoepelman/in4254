@@ -112,11 +112,11 @@
             android:src="@drawable/act_running" />
 
         <ImageButton
-            android:id="@+id/but_test_elevator"
+            android:id="@+id/but_test_jumping"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"
-            android:src="@drawable/act_lift" />
+            android:src="@drawable/act_jumping" />
 
     </LinearLayout>
 
@@ -191,7 +191,7 @@
                 android:layout_height="wrap_content"
                 android:layout_column="5"
                 android:clickable="false"
-                android:src="@drawable/act_lift" />
+                android:src="@drawable/act_jumping" />
         </TableRow>
 
         <TableRow
@@ -242,7 +242,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="false"
-                android:src="@drawable/act_lift" />
+                android:src="@drawable/act_jumping" />
 
         </TableRow>
     </TableLayout>

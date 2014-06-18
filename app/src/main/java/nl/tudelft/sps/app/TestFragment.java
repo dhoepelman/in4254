@@ -55,7 +55,7 @@ public class TestFragment extends Fragment {
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
     private static final String LOG_TAG = TestFragment.class.toString();
-    private static final List<ACTIVITY> order = ImmutableList.of(ACTIVITY.Sitting, ACTIVITY.Walking, ACTIVITY.Running, ACTIVITY.Elevator);
+    private static final List<ACTIVITY> order = ImmutableList.of(ACTIVITY.Sitting, ACTIVITY.Walking, ACTIVITY.Running, ACTIVITY.Jumping);
     /**
      * Confusion matrix
      * Row = expected
@@ -102,7 +102,7 @@ public class TestFragment extends Fragment {
             .put(R.id.but_test_sitting, ACTIVITY.Sitting)
             .put(R.id.but_test_walking, ACTIVITY.Walking)
             .put(R.id.but_test_running, ACTIVITY.Running)
-            .put(R.id.but_test_elevator, ACTIVITY.Elevator)
+            .put(R.id.but_test_jumping, ACTIVITY.Jumping)
             .build();
     private ACTIVITY selectedActivity;
     private final MeasurementTask.ResultProcessor measurementResultProcessor = new MeasurementTask.ResultProcessor() {
