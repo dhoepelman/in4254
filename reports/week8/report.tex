@@ -96,7 +96,7 @@ Apache Commons Math & 3.2\\
 
 \section{Activity Monitoring (1 page)}
 \label{sec:activity-monitoring}
-We define four activities that need to be recognized by the application: sitting, walking, running, and going up and down in the elevator. The application measures the three axes (x, y, and z) of the accelerometer every 20~ms and groups them together in windows of 240 samples. Originally we used windows of 256 samples, but this was reduced somewhat to 240 so that each window can be evenly split into four smaller windows of 60 samples, which is the amount that is needed by the steps counter for updating the movement model during localization. During activity testing the larger window of 240 samples is used. For each window several features are computed:
+We define four activities that need to be recognized by the application: sitting, walking, running, and going up and down in the elevator. The application measures the three axes (x, y, and z) of the accelerometer every 20~ms and groups them together in windows of 240 samples. These windows are also used by the steps counter for updating the movement model during localization. For each window several features are computed:
 
 \begin{itemize}
 \item Mean $\mu$ for each axis: $\mu_x$, $\mu_y$, and $\mu_z$
@@ -104,27 +104,25 @@ We define four activities that need to be recognized by the application: sitting
 \item Correlation between each two axes:  $\text{Corr(}x,y{)}$, $\text{Corr(}y,z{)}$, and $\text{Corr(}z,x{)}$
 \end{itemize}
 
-To classify the windows a k-NN classifier was constructed. The classifier uses the Euclidean distance for which we used the Apache Commons Math library. For $n$ measured windows during the training, the classifier tests a measurement using $\sqrt{n}$ neighbors with a 50-50 random tie breaker. We have collected about 10 training measurement windows of each activity type and 20 testing measurement windows of each activity type. The resulting confusion matrix is shown in \autoref{tab:confusion-matrix}.
+To classify the windows a k-NN classifier was constructed. The classifier uses the Euclidean distance for which we used the Apache Commons Math library. For $n$ measured windows during the training, the classifier tests a measurement using $\sqrt{n}$ neighbors with a 50-50 random tie breaker. We have collected about 20 training measurement windows of each activity type and 20 testing measurement windows of each activity type. The resulting confusion matrix is shown in \autoref{tab:confusion-matrix}.
 
 \begin{table}[ht]
 \centering
 \caption{Confusion matrix of our classifier.}
-\begin{tabular}{lccccc}
+\begin{tabular}{lrrrr}
 \toprule
-& Sitting & Walking & Running & Jumping\\
+& Sitting & Walking & Running & Jumping  \\
 \midrule
-Sitting & 18=0.90 & 2=0.10 &        &         \\
-Walking &         & 20=1.0 &        &         \\
-Running &         & 3=0.15 & 14=0.7 & 3=0.15  \\
-Jumping &         &        & 3=0.15 & 17=0.85 \\
+Sitting & 90 \% &  10 \% &       &       \\
+Walking &       & 100 \% &       &       \\
+Running &       &  15 \% & 70 \% & 15 \% \\
+Jumping &       &        & 15 \% & 85 \% \\
 \bottomrule
 \end{tabular}
 \label{tab:confusion-matrix}
  \end{table}
 
-TODO Mention curious things about the matrix
-TODO Mahalanobis distance versus Euclidean
-TODO Correlation features useful?
+The confusion matrix shows that the classifier is able to correctly classify the various activities most of the time. When running or jumping it sometimes incorrectly classifies the activity as jumping and running, respectively.
 
 \section{Localization (3 pages)}
 \label{sec:localization}
@@ -211,9 +209,9 @@ We append the following to the previous algorithm:
 
 \subsection{Movement Model}
 \label{sec:loc-movement-model}
-For updating the probabilities using a movement model, a steps counter was implemented. The steps counter trains the k-NN classifier using the features of the smaller (60 samples) windows collected during the activity training. When the steps counter is active, it collects one window containing 60 samples and then calls the classifier to find out whether the user is walking or not. If the classifier classifies the window as walking, then the steps counter increases the number of counted steps.
+For updating the probabilities using a movement model, a steps counter was implemented. The steps counter trains the k-NN classifier using the features of the windows collected during the activity training. When the steps counter is active, it collects one window containing 240 samples and then calls the classifier to find out whether the user is walking or not. If the classifier classifies the window as walking, then the steps counter increases the number of counted steps.
 
-Every 9 steps, or when the steps counter measures that the user is standing still, the Bayesian locator is invoked to update the probabilities. The locator constructs a uniform distribution of between $0.5s$ and $1.2s$ meters, where $s$ is the number of steps. Due to the size of the rooms ($7.2$~meters) and the upper bound on the number of steps that the locator receives (at most 9), the probabilities are such that the current room and its adjacent rooms have a zero or non-zero probability, but the $2^{nd}$ level of adjacent rooms always have a zero probability. Taking advantage of this upper bound of 9 steps simplifies the code quite a bit.
+Every time the the steps counter classifies the window as not-sitting, it counts this as the user has takes four steps. It then invokes the Bayesian locator to update the probabilities. The locator constructs a uniform distribution of between $0.5s$ and $1.2s$ meters, where $s$ is the number of steps. Due to the size of the rooms ($7.2$~meters) and the upper bound on the number of steps that the locator receives (4 steps), the probabilities are such that the current room and its adjacent rooms have a zero or non-zero probability, but the $2^{nd}$ level of adjacent rooms always have a zero probability. Taking advantage of this upper bound simplifies the code quite a bit.
 
 \subsection{Performance evaluation}
 \label{sec:loc-evaluation}
@@ -247,6 +245,9 @@ Response time was shown to be much faster; sending the location probabilities fr
 \subsection{Activity Monitoring Difficulties}
 One of the challenges of activity monitoring was selecting the appropriate features and the size of the feature vectors.
 We noticed that the correlation features (visually) do not seem to have clear clusters.
+
+TODO Mahalanobis distance versus Euclidean
+TODO Correlation features useful?
 
 \subsection{Localization Difficulties}
 
@@ -285,9 +286,10 @@ Mark:
 
 \section{Possible Future Directions (0.25 pages)}
 \label{sec:future-directions}
+\subsection{Activity Monitoring}
 TODO
 
-\subsection{Localization Ideas for improvement}
+\subsection{Localization}
 Bayesian filters are not that useful if you have rooms with only a low number of visible access points.
 Our trick to take the number of AP's into accounts works well when there
 are not too many rooms with few visible AP's.
