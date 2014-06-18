@@ -77,24 +77,10 @@ public class StepsCounter implements Runnable, SensorEventListener {
                     // For reach window, determine the user is idle or took a
                     final ACTIVITY actualActivity = activity.getClassifier(WINDOW_SIZE).classify(result);
 
-                    System.out.println(String.format("Measured activity %s", actualActivity.name()));
+                    //System.out.println(String.format("Measured activity %s", actualActivity.name()));
 
-
-
-                    if (ACTIVITY.Sitting == actualActivity) {
-                        if (steps > 0) {
-                            fragment.doMovementDetection(steps);
-                            steps = 0;
-                        }
-                    }
-                    else {
-                        // If the user took a step, increment the step counter
-                        steps += 4;
-
-                        if ((steps % STEPS_PER_UPDATE) == 0) {
-                            fragment.doMovementDetection(steps);
-                            steps = 0;
-                        }
+                    if (ACTIVITY.Sitting != actualActivity) {
+                        fragment.doMovementDetection(5);
                     }
                 }
                 catch (InterruptedException exception) {

@@ -196,7 +196,7 @@ public class LocatorTestFragment extends Fragment {
             @Override
             public void run() {
                 updateLocationText();
-                toastManager.showText(String.format("Updated movement (%d steps)", steps), Toast.LENGTH_SHORT);
+                //toastManager.showText(String.format("Updated movement (%d steps)", steps), Toast.LENGTH_SHORT);
             }
         });
     }

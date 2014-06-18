@@ -19,7 +19,6 @@ import com.j256.ormlite.stmt.Where;
 
 import java.sql.SQLException;
 
-import nl.tudelft.sps.app.activity.ACTIVITY;
 import nl.tudelft.sps.app.activity.IClassifier;
 import nl.tudelft.sps.app.activity.MeasurementWindow;
 import nl.tudelft.sps.app.activity.kNNClassifier;
@@ -217,14 +216,9 @@ public class MainActivity extends ActionBarActivity
             // Only select windows that have the required size
             final QueryBuilder<MeasurementWindow, Long> queryBuilder = dao.queryBuilder();
             Where<MeasurementWindow, Long> where = queryBuilder.where().eq("size", windowSize);
-            if (windowSize == 60) {
-                where.and().ne("activity", ACTIVITY.Jumping);
-                where.and().ne("activity", ACTIVITY.Running);
-            }
 
             query = queryBuilder.prepare();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException("Could not build the query to retrieve stored measurement windows");
         }
 
