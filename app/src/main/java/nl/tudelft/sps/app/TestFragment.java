@@ -22,6 +22,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ArrayTable;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Table;
 
 import java.io.File;
@@ -29,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -53,6 +55,7 @@ public class TestFragment extends Fragment {
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
     private static final String LOG_TAG = TestFragment.class.toString();
+    private static final List<ACTIVITY> order = ImmutableList.of(ACTIVITY.Sitting, ACTIVITY.Walking, ACTIVITY.Running, ACTIVITY.Elevator);
     /**
      * Confusion matrix
      * Row = expected
@@ -115,18 +118,19 @@ public class TestFragment extends Fragment {
                     // Log the result so it can be processed later to create a confusion matrix
                     //writeResult(actualActivity, selectedActivity); // TODO write results asynchronous (it seems to slow down the start of the next measurement)
 
-                    Integer current = confusionMatrix.get(selectedActivity, actualActivity);
-                    confusionMatrix.put(selectedActivity, actualActivity, (current == null) ? 1 : current + 1);
-
                     // Do more tests if needed
                     doTest();
+
+                    Integer current = confusionMatrix.get(selectedActivity, actualActivity);
+                    confusionMatrix.put(selectedActivity, actualActivity, (current == null) ? 1 : current + 1);
+                    fillTableCells();
                 }
             } catch (IllegalStateException e) {
                 toastManager.showText("Please train the classifier first", Toast.LENGTH_LONG);
             }
         }
     };
-    private TextView[][] table_confusionmatrix_cells = new TextView[5][5];
+    private TextView[][] table_confusionmatrix_cells = new TextView[4][4];
 
     /**
      * Returns a new instance of this fragment for the given section number
@@ -236,15 +240,43 @@ public class TestFragment extends Fragment {
     private void fillTableCells() {
         // Check if the table already contains TextViews
         if (((TableRow) table_confusionmatrix.getChildAt(1)).getChildAt(1) == null) {
-            for (int i = 1; i < 5; i++) {
+            for (int i = 0; i < 4; i++) {
                 // The table layout only seems to work if we make 5 Textviews, even though there already is something in the first column
                 for (int j = 0; j < 5; j++) {
                     TextView t = new TextView(getActivity().getApplicationContext());
                     //t.setText(String.format("(%d,%d)", i, j));
                     t.setGravity(Gravity.CENTER);
-                    ((TableRow) table_confusionmatrix.getChildAt(i)).addView(t, new TableRow.LayoutParams(j));
-                    table_confusionmatrix_cells[i][j] = t;
+                    ((TableRow) table_confusionmatrix.getChildAt(i + 1)).addView(t, new TableRow.LayoutParams(j));
+                    //t.setBackgroundColor(Color.rgb(i*25,j*25,0));
+                    if (j != 0) {
+                        table_confusionmatrix_cells[i][j - 1] = t;
+                    }
                 }
+            }
+        }
+        // Sum of every activity
+        double[] sum = new double[order.size()];
+        for (int i = 0; i < order.size(); i++) {
+            for (int j = 0; j < order.size(); j++) {
+                Integer v = confusionMatrix.get(order.get(i), order.get(j));
+                if (v != null) {
+                    sum[i] += v;
+                }
+            }
+        }
+        for (int i = 0; i < order.size(); i++) {
+            for (int j = 0; j < order.size(); j++) {
+                String val;
+                final ACTIVITY expected = order.get(i);
+                final ACTIVITY actual = order.get(j);
+                Integer v = confusionMatrix.get(expected, actual);
+                if (v == null || v == 0) {
+                    val = "";
+                } else {
+                    val = String.format("%d = %4.2f", v, v / sum[i]);
+                }
+                table_confusionmatrix_cells[i][j].setText(val);
+                //table_confusionmatrix_cells[i+1][j].invalidate();
             }
         }
     }
