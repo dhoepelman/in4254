@@ -12,13 +12,14 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
-import com.j256.ormlite.dao.CloseableIterator;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.Where;
 
 import java.sql.SQLException;
 
+import nl.tudelft.sps.app.activity.ACTIVITY;
 import nl.tudelft.sps.app.activity.IClassifier;
 import nl.tudelft.sps.app.activity.MeasurementWindow;
 import nl.tudelft.sps.app.activity.kNNClassifier;
@@ -215,7 +216,11 @@ public class MainActivity extends ActionBarActivity
         try {
             // Only select windows that have the required size
             final QueryBuilder<MeasurementWindow, Long> queryBuilder = dao.queryBuilder();
-            queryBuilder.where().eq("size", windowSize);
+            Where<MeasurementWindow, Long> where = queryBuilder.where().eq("size", windowSize);
+            if (windowSize == 60) {
+                where.and().ne("activity", ACTIVITY.Jumping);
+                where.and().ne("activity", ACTIVITY.Running);
+            }
 
             query = queryBuilder.prepare();
         }

@@ -12,32 +12,27 @@ import nl.tudelft.sps.app.localization.ILocator;
 
 public class StepsCounter implements Runnable, SensorEventListener {
 
-    public static final int STEPS_PER_UPDATE = 9;
+    public static final int STEPS_PER_UPDATE = 8;
 
     /**
      * 60 scans takes about 800 ms on Galaxy S
      */
-    public static final int WINDOW_SIZE = MeasurementWindow.WINDOW_SIZE / 4;
-
+    public static final int WINDOW_SIZE = MeasurementWindow.WINDOW_SIZE;// / 4;
+    private final MeasurementWindow.MonitorHelper measurement = new MeasurementWindow.MonitorHelper(WINDOW_SIZE);
     private final SensorManager sensorManager;
     private final Sensor accelerometer;
-
     /**
      * A lock used by onSensorChanged() to signal to run() that a window
      * has been filled
      */
     private final Object gate = new Object();
-
-    private final MeasurementWindow.MonitorHelper measurement = new MeasurementWindow.MonitorHelper(WINDOW_SIZE);
-
+    private final MainActivity activity;
+    private final LocatorTestFragment fragment;
+    private final ILocator locator;
     /**
      * A variable used to indicate that the thread should stop running
      */
     private boolean keepRunning = true;
-
-    private final MainActivity activity;
-    private final LocatorTestFragment fragment;
-    private final ILocator locator;
 
     public StepsCounter(LocatorTestFragment fragment) {
         super();
@@ -82,6 +77,10 @@ public class StepsCounter implements Runnable, SensorEventListener {
                     // For reach window, determine the user is idle or took a
                     final ACTIVITY actualActivity = activity.getClassifier(WINDOW_SIZE).classify(result);
 
+                    System.out.println(String.format("Measured activity %s", actualActivity.name()));
+
+
+
                     if (ACTIVITY.Sitting == actualActivity) {
                         if (steps > 0) {
                             fragment.doMovementDetection(steps);
@@ -90,9 +89,7 @@ public class StepsCounter implements Runnable, SensorEventListener {
                     }
                     else {
                         // If the user took a step, increment the step counter
-                        steps++;
-
-                        System.err.println("One more step!");
+                        steps += 4;
 
                         if ((steps % STEPS_PER_UPDATE) == 0) {
                             fragment.doMovementDetection(steps);
