@@ -300,7 +300,8 @@ The following algorithm implements this idea:
 \subsection{Performance evaluation}
 \label{sec:loc-evaluation}
 
-For our performance evaluation we used off-line processing. Using a technique mentioned by \cite{mit1}, we divided the scans of our training data into 10 random partitions, and tested every partition while using the other partitions as training data for the locator.
+For our performance evaluation we used off-line processing.
+We used 10-fold cross validation \cite{mit1}, meaning we divided the scans of our training data into 10 random partitions, and tested every partition while using the other partitions as training data for the locator.
 
 Using this method we achieved an accuracy of \textbf{83\%} (2731 correct out of 3300).
 While analyzing the data we saw that a lot of the misclassified scans occurred in the Coffee room,
@@ -346,8 +347,9 @@ This seemed more promising, but we did not complete the functionality on time.
 \subsection{Activity Monitoring Difficulties}
 One of the challenges of activity monitoring was selecting the appropriate features and the size of the feature vectors.
 We noticed that the correlation features do not seem to have clear clusters (based on visual inspection of the data), but we did not implement off-line processing which we could've used to see which combination of features was most effective.
-We also considered implementing additional distances, especially Mahalanobis distance, since Euclidean distance does not perform well with high-dimensionality data \cite{wikipedia1}, but did not get around to it. 
+We also considered implementing additional distances, especially Mahalanobis distance, but did not get around to it. 
 We suspect that other distances will perform better, because of the high-dimensionality and sparsity (we used 9 features) of our feature space.
+A high-dimensional sparse feature space is a known weak point of Eucledian distance \cite{wikipedia1}.
 
 \subsection{Movement model difficulties}
 
@@ -374,7 +376,7 @@ David:
 \begin{itemize}
 	\item Activity training GUI
     \item Computation of feature vectors
-    \item Wifi distributions calculation for locator
+    \item Wifi distributions calculation 
     \item Bayesian locator
     \item Localization Offline processing
     \item Phone Following "NSA" functionality
@@ -389,9 +391,9 @@ Mark:
     \item Activity testing GUI
     \item k-NN classifier for activity monitoring
     \item Code for measuring Wifi signals
-    \item Steps counter and movement model for locator
+    \item Steps counter and movement model
     \item Localization training \& testing GUI
-    \item Various minor reliability improvements
+    \item Performance improvements
     \item Final report
 \end{itemize}
 
